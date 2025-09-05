@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22 d17.14
+VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SideroLabs.Omni.Api", "SideroLabs.Omni.Api\SideroLabs.Omni.Api.csproj", "{6187D53A-0B69-42E2-96B5-4AAD8595F821}"
 EndProject
@@ -11,8 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		LICENSE.txt = LICENSE.txt
 		management.proto = management.proto
+		nuget_key.txt = nuget_key.txt
 		README.md = README.md
 		SideroLabs.Omni.Api.dic = SideroLabs.Omni.Api.dic
+		Tag.ps1 = Tag.ps1
 		version.json = version.json
 	EndProjectSection
 EndProject
