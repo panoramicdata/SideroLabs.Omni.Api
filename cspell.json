@@ -1,0 +1,19 @@
+{
+	"version": "0.2",
+	"language": "en-US",
+	"words": [],
+	"dictionaries": [ "SideroLabs.Omni.Api.dic" ],
+	"dictionaryDefinitions": [
+		{
+			"name": "project-words",
+			"path": "./SideroLabs.Omni.Api.dic",
+			"description": "Project specific dictionary"
+		}
+	],
+	"languageSettings": [
+		{
+			"languageId": "csharp",
+			"dictionaries": [ "project-words" ]
+		}
+	]
+}

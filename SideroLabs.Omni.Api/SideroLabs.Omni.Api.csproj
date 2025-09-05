@@ -1,9 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<WarningsAsErrors />
+		
+		<!-- Package Information -->
+		<PackageId>SideroLabs.Omni.Api</PackageId>
+		<Title>SideroLabs Omni API Client</Title>
+		<Authors>Panoramic Data Limited</Authors>
+		<Company>Panoramic Data Limited</Company>
+		<Product>SideroLabs.Omni.Api</Product>
+		<Description>A .NET client library for interacting with the SideroLabs Omni Management API using gRPC</Description>
+		<Copyright>Panoramic Data Limited 2025</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>siderolabs;omni;api;grpc;kubernetes;talos;cluster;management</PackageTags>
+		<PackageReleaseNotes>Initial release of the SideroLabs Omni API client library</PackageReleaseNotes>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.133">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Grpc.Net.Client" Version="2.66.0" />
+		<PackageReference Include="Grpc.Core.Api" Version="2.66.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.66.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Google.Protobuf" Version="3.28.2" />
+		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.66.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<!-- Protobuf compilation ready for when needed -->
+	<!--
+	<ItemGroup>
+		<Protobuf Include="Protos\management.proto" GrpcServices="Client" />
+	</ItemGroup>
+	-->
 
 </Project>

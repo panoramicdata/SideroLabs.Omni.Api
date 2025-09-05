@@ -1,0 +1,10 @@
+# NuGet API Key Template
+# 
+# Replace the text below with your actual NuGet API key from:
+# https://www.nuget.org/account/apikeys
+#
+# Important: 
+# - Keep this file private and never commit it to source control
+# - Add nuget_key.txt to your .gitignore file
+#
+your-nuget-api-key-goes-here

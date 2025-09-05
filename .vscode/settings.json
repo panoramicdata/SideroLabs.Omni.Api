@@ -1,0 +1,13 @@
+{
+  "cSpell.words": [],
+  "cSpell.dictionaries": ["project-words"],
+  "cSpell.dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "./SideroLabs.Omni.Api.dic",
+      "description": "Project specific dictionary"
+    }
+  ],
+  "cSpell.enableFiletypes": ["csharp"],
+  "cSpell.language": "en-US"
+}
