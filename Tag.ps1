@@ -66,15 +66,96 @@ try {
 	# Get the current version from NerdBank GitVersioning
 	Write-Host "[*] Getting current version..." -ForegroundColor Blue
 	
-	# Check if nbgv tool is available
-	$nbgvVersion = dotnet nbgv get-version --format json 2>$null
-	if ($LASTEXITCODE -ne 0) {
-		Write-Error "[!] NerdBank GitVersioning tool not found. Make sure it's installed and the project is configured correctly."
-		exit 1
+	# Check if nbgv tool is available - try different approaches
+	$nbgvVersion = $null
+	$nbgvFound = $false
+	$version = $null
+	
+	# First try: dotnet nbgv (global tool)
+	try {
+		$nbgvVersion = dotnet nbgv get-version --format json 2>$null
+		if ($LASTEXITCODE -eq 0) {
+			$nbgvFound = $true
+			Write-Host "   Using global dotnet nbgv tool" -ForegroundColor Green
+		}
+	} catch {
+		# Ignore and try next approach
 	}
 	
-	$versionObject = $nbgvVersion | ConvertFrom-Json
-	$version = $versionObject.NuGetPackageVersion
+	# Second try: dotnet tool run nbgv (local tool)
+	if (-not $nbgvFound) {
+		try {
+			$nbgvVersion = dotnet tool run nbgv get-version --format json 2>$null
+			if ($LASTEXITCODE -eq 0) {
+				$nbgvFound = $true
+				Write-Host "   Using local dotnet tool nbgv" -ForegroundColor Green
+			}
+		} catch {
+			# Ignore and try next approach
+		}
+	}
+	
+	# Third try: Check if it's installed as a local tool and restore if needed
+	if (-not $nbgvFound) {
+		Write-Host "   NerdBank GitVersioning tool not found, attempting to install..." -ForegroundColor Yellow
+		
+		# Try to restore local tools first
+		if (Test-Path ".config/dotnet-tools.json") {
+			Write-Host "   Restoring local tools..." -ForegroundColor Blue
+			dotnet tool restore 2>$null
+			if ($LASTEXITCODE -eq 0) {
+				$nbgvVersion = dotnet tool run nbgv get-version --format json 2>$null
+				if ($LASTEXITCODE -eq 0) {
+					$nbgvFound = $true
+					Write-Host "   Using restored local nbgv tool" -ForegroundColor Green
+				}
+			}
+		}
+		
+		# If still not found, try to install it locally
+		if (-not $nbgvFound) {
+			Write-Host "   Installing NerdBank GitVersioning as local tool..." -ForegroundColor Blue
+			dotnet new tool-manifest --force 2>$null
+			dotnet tool install nbgv 2>$null
+			if ($LASTEXITCODE -eq 0) {
+				$nbgvVersion = dotnet tool run nbgv get-version --format json 2>$null
+				if ($LASTEXITCODE -eq 0) {
+					$nbgvFound = $true
+					Write-Host "   Successfully installed and using local nbgv tool" -ForegroundColor Green
+				}
+			}
+		}
+	}
+	
+	# Fourth try: Fallback to reading version.json directly
+	if (-not $nbgvFound) {
+		Write-Host "   NerdBank GitVersioning tool unavailable, using fallback method..." -ForegroundColor Yellow
+		
+		if (Test-Path "version.json") {
+			try {
+				$versionJson = Get-Content "version.json" -Raw | ConvertFrom-Json
+				$baseVersion = $versionJson.version
+				
+				# Simple fallback versioning - just use the base version with build number
+				$buildNumber = (Get-Date).ToString("yyyyMMdd")
+				$version = "$baseVersion-build$buildNumber"
+				
+				Write-Host "   Using fallback version: $version" -ForegroundColor Yellow
+				Write-Host "   Note: This is a simplified version. For production releases, please install nbgv." -ForegroundColor Yellow
+			} catch {
+				Write-Error "[!] Could not read version.json file."
+				exit 1
+			}
+		} else {
+			Write-Error "[!] version.json file not found and nbgv tool unavailable."
+			exit 1
+		}
+	} else {
+		# Parse the nbgv output
+		$versionObject = $nbgvVersion | ConvertFrom-Json
+		$version = $versionObject.NuGetPackageVersion
+	}
+	
 	Write-Host "   Current version: $version" -ForegroundColor Green
 
 	# Check if tag already exists
