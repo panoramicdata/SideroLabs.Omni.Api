@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Extensions;
+using SideroLabs.Omni.Api.Tests.Logging;
+using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests;
 
@@ -22,11 +25,17 @@ public abstract class TestBase : IDisposable
 	private readonly ServiceProvider _serviceProvider;
 	private bool _disposed;
 
+	protected ILogger Logger { get; }
+
 	/// <summary>
 	/// Initializes the test base with configuration and dependency injection
 	/// </summary>
-	protected TestBase()
+	protected TestBase(ITestOutputHelper testOutputHelper)
 	{
+		Logger = new LoggerFactory()
+				.AddXUnit(testOutputHelper)
+				.CreateLogger<TestBase>();
+
 		// Build configuration from multiple sources
 		var configuration = new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())

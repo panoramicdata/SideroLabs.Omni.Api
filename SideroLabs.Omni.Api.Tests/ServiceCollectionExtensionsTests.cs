@@ -8,7 +8,7 @@ namespace SideroLabs.Omni.Api.Tests;
 /// <summary>
 /// Tests for the ServiceCollectionExtensions class
 /// </summary>
-public class ServiceCollectionExtensionsTests : TestBase
+public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
 	[Fact]
 	public void AddOmniClient_WithConfigureAction_RegistersServices()
