@@ -5,7 +5,7 @@ namespace SideroLabs.Omni.Api.Tests.Logging;
 
 public class XunitLogger(ITestOutputHelper output, string categoryName) : ILogger
 {
-	public IDisposable BeginScope<TState>(TState state) => null!;
+	public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
 	public bool IsEnabled(LogLevel logLevel) => true;
 

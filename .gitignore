@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /SideroLabs.Omni.Api.Tests/appsettings.json
 /nuget_key.txt
+
+# Test data files with sensitive information
+/SideroLabs.Omni.Api.Tests/TestData/pgp-key-test.txt
