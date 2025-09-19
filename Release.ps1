@@ -61,6 +61,74 @@ $ErrorActionPreference = "Stop"
 # Ensure information messages are visible
 $InformationPreference = "Continue"
 
+function Generate-Changelog {
+	param([string]$version)
+	
+	Write-Information "[*] Generating changelog for v$version..." -InformationAction Continue
+	
+	try {
+		# Get the previous tag
+		$previousTags = git tag --sort=-version:refname | Where-Object { $_ -ne "v$version" } | Select-Object -First 1
+		$previousTag = $previousTags
+		
+		if ($previousTag) {
+			Write-Information "   Comparing changes since $previousTag..." -InformationAction Continue
+			
+			# Get commits since the last tag
+			$commits = git log --pretty=format:"- %s (%h)" "$previousTag..HEAD" 2>$null
+			
+			if ($commits) {
+				$changelog = @"
+## What's Changed
+
+$($commits -join "`n")
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
+"@
+			} else {
+				$changelog = @"
+## What's Changed
+
+No significant changes since $previousTag.
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
+"@
+			}
+		} else {
+			$changelog = @"
+## What's Changed
+
+This is the initial release of the SideroLabs Omni API Client.
+
+### Features
+- Native gRPC client for SideroLabs Omni Management API
+- PGP-based authentication compatible with go-api-signature
+- Streaming support for real-time log streaming and manifest synchronization
+- Type-safe operations generated from official Omni proto definitions
+- Read-only mode for safe production use
+- Comprehensive logging and error handling
+
+### Available Operations
+- Configuration Management (kubeconfig, talosconfig, omniconfig)
+- Service Account Management (create, renew, list, destroy)
+- Operational Tasks (streaming, validation, upgrade checks)
+- Machine Provisioning (schematics)
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version
+"@
+		}
+		
+		return $changelog
+	} catch {
+		Write-Warning "[!] Error generating changelog: $_"
+		return @"
+## Release v$version
+
+See the [full changelog](https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version) for details.
+"@
+	}
+}
+
 Write-Information "[*] SideroLabs.Omni.Api Release Script" -InformationAction Continue
 Write-Information "=====================================" -InformationAction Continue
 
@@ -467,71 +535,3 @@ if ($shouldPublish) {
 	Write-Output "   2. Publish to NuGet manually if needed"
 }
 Write-Information "   [*] Don't forget to add detailed release notes if you created a GitHub release!" -InformationAction Continue
-
-function Generate-Changelog {
-	param([string]$version)
-	
-	Write-Information "[*] Generating changelog for v$version..." -InformationAction Continue
-	
-	try {
-		# Get the previous tag
-		$previousTags = git tag --sort=-version:refname | Where-Object { $_ -ne "v$version" } | Select-Object -First 1
-		$previousTag = $previousTags
-		
-		if ($previousTag) {
-			Write-Information "   Comparing changes since $previousTag..." -InformationAction Continue
-			
-			# Get commits since the last tag
-			$commits = git log --pretty=format:"- %s (%h)" "$previousTag..HEAD" 2>$null
-			
-			if ($commits) {
-				$changelog = @"
-## What's Changed
-
-$($commits -join "`n")
-
-**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
-"@
-			} else {
-				$changelog = @"
-## What's Changed
-
-No significant changes since $previousTag.
-
-**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
-"@
-			}
-		} else {
-			$changelog = @"
-## What's Changed
-
-This is the initial release of the SideroLabs Omni API Client.
-
-### Features
-- Native gRPC client for SideroLabs Omni Management API
-- PGP-based authentication compatible with go-api-signature
-- Streaming support for real-time log streaming and manifest synchronization
-- Type-safe operations generated from official Omni proto definitions
-- Read-only mode for safe production use
-- Comprehensive logging and error handling
-
-### Available Operations
-- Configuration Management (kubeconfig, talosconfig, omniconfig)
-- Service Account Management (create, renew, list, destroy)
-- Operational Tasks (streaming, validation, upgrade checks)
-- Machine Provisioning (schematics)
-
-**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version
-"@
-		}
-		
-		return $changelog
-	} catch {
-		Write-Warning "[!] Error generating changelog: $_"
-		return @"
-## Release v$version
-
-See the [full changelog](https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version) for details.
-"@
-	}
-}

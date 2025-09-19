@@ -2,7 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="LICENSE.txt" />
+    <File Path="LICENSE" />
     <File Path="management.proto" />
     <File Path="nuget_key.example.txt" />
     <File Path="nuget_key.txt" />
