@@ -1,5 +1,7 @@
 # SideroLabs Omni API Client
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/986be4f5bfb142bcbc92d92d33950b49)](https://app.codacy.com/gh/panoramicdata/SideroLabs.Omni.Api?utm_source=github.com&utm_medium=referral&utm_content=panoramicdata/SideroLabs.Omni.Api&utm_campaign=Badge_Grade)
+
 A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
 This client provides strongly-typed C# interfaces for the Omni gRPC services, with built-in PGP-based authentication and enterprise-ready features.
