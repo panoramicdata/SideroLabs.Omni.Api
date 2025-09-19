@@ -1,3 +1,5 @@
+using SideroLabs.Omni.Api.Enums;
+
 namespace SideroLabs.Omni.Api.Exceptions;
 
 /// <summary>
@@ -20,35 +22,4 @@ public sealed class IsWriteActionAttribute(WriteActionType actionType) : Attribu
 	/// Optional description of the write action
 	/// </summary>
 	public string? Description { get; set; }
-}
-
-/// <summary>
-/// Types of write actions that can be performed
-/// </summary>
-public enum WriteActionType
-{
-	/// <summary>
-	/// Create a new resource
-	/// </summary>
-	Create,
-
-	/// <summary>
-	/// Update an existing resource
-	/// </summary>
-	Update,
-
-	/// <summary>
-	/// Delete an existing resource
-	/// </summary>
-	Delete,
-
-	/// <summary>
-	/// Start or trigger an operation
-	/// </summary>
-	Start,
-
-	/// <summary>
-	/// Stop or cancel an operation
-	/// </summary>
-	Stop
 }

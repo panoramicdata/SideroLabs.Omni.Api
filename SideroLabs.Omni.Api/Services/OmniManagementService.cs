@@ -5,6 +5,7 @@ using Grpc.Net.Client;
 using Management;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Constants;
+using SideroLabs.Omni.Api.Enums;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Models;
 using SideroLabs.Omni.Api.Security;
@@ -366,7 +367,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		{
 			yield return new KubernetesSyncResult
 			{
-				ResponseType = (KubernetesSyncResult.SyncType)(int)syncResult.ResponseType,
+				ResponseType = (SyncType)(int)syncResult.ResponseType,
 				Path = syncResult.Path,
 				Object = syncResult.Object.ToByteArray(),
 				Diff = syncResult.Diff,

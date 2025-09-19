@@ -1,3 +1,5 @@
+using SideroLabs.Omni.Api.Enums;
+
 namespace SideroLabs.Omni.Api.Models;
 
 /// <summary>
@@ -5,13 +7,6 @@ namespace SideroLabs.Omni.Api.Models;
 /// </summary>
 public class KubernetesSyncResult
 {
-	public enum SyncType
-	{
-		Unknown = 0,
-		Manifest = 1,
-		Rollout = 2
-	}
-
 	public SyncType ResponseType { get; set; }
 	public string Path { get; set; } = "";
 	public byte[] Object { get; set; } = [];
