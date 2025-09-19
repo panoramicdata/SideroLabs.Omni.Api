@@ -1,18 +1,18 @@
 namespace SideroLabs.Omni.Api.Examples.Infrastructure;
 
 /// <summary>
-/// Interface for example output operations
+/// Interface for example output handling
 /// </summary>
 public interface IExampleOutput
 {
 	/// <summary>
-	/// Writes a line to the output
+	/// Writes a line of text
 	/// </summary>
 	/// <param name="message">Message to write</param>
 	void WriteLine(string message);
 
 	/// <summary>
-	/// Writes a formatted line to the output
+	/// Writes a formatted line of text
 	/// </summary>
 	/// <param name="format">Format string</param>
 	/// <param name="args">Format arguments</param>

@@ -17,42 +17,42 @@ This client provides strongly-typed C# interfaces for the Omni gRPC services, wi
 
 ### 🔐 **Authentic gRPC Implementation**
 
-  - **Native gRPC client** - Direct implementation of Omni's actual gRPC services
-  - **PGP-based authentication** - Uses Omni's standard PGP signature authentication (compatible with [go-api-signature](https://github.com/siderolabs/go-api-signature))
-  - **Streaming support** - Real-time log streaming and manifest synchronization
-  - **Type-safe operations** - Generated from official Omni proto definitions
+- **Native gRPC client** - Direct implementation of Omni's actual gRPC services
+- **PGP-based authentication** - Uses Omni's standard PGP signature authentication (compatible with [go-api-signature](https://github.com/siderolabs/go-api-signature))
+- **Streaming support** - Real-time log streaming and manifest synchronization
+- **Type-safe operations** - Generated from official Omni proto definitions
 
 ### 🛠️ **Omni ManagementService Operations**
 Based on the actual `management.proto` from the [Omni project](https://github.com/siderolabs/omni/tree/main/client):
 
 **Configuration Management:**
 
-  - `GetKubeConfigAsync()` - Retrieve kubeconfig for clusters
-  - `GetTalosConfigAsync()` - Retrieve talosconfig for Talos clusters  
-  - `GetOmniConfigAsync()` - Retrieve omnictl client configuration
+- `GetKubeConfigAsync()` - Retrieve kubeconfig for clusters
+- `GetTalosConfigAsync()` - Retrieve talosconfig for Talos clusters  
+- `GetOmniConfigAsync()` - Retrieve omnictl client configuration
 
 **Service Account Management:**
 
-  - `CreateServiceAccountAsync()` - Create new service accounts
-  - `RenewServiceAccountAsync()` - Renew service account credentials
-  - `ListServiceAccountsAsync()` - List all service accounts
-  - `DestroyServiceAccountAsync()` - Delete service accounts
+- `CreateServiceAccountAsync()` - Create new service accounts
+- `RenewServiceAccountAsync()` - Renew service account credentials
+- `ListServiceAccountsAsync()` - List all service accounts
+- `DestroyServiceAccountAsync()` - Delete service accounts
 
 **Operational Tasks:**
 
-  - `StreamMachineLogsAsync()` - Stream logs from machines in real-time
-  - `ValidateConfigAsync()` - Validate configuration files
-  - `KubernetesUpgradePreChecksAsync()` - Check if K8s upgrade is safe
-  - `StreamKubernetesSyncManifestsAsync()` - Sync Kubernetes manifests
-  - `CreateSchematicAsync()` - Create schematics for machine provisioning
+- `StreamMachineLogsAsync()` - Stream logs from machines in real-time
+- `ValidateConfigAsync()` - Validate configuration files
+- `KubernetesUpgradePreChecksAsync()` - Check if K8s upgrade is safe
+- `StreamKubernetesSyncManifestsAsync()` - Sync Kubernetes manifests
+- `CreateSchematicAsync()` - Create schematics for machine provisioning
 
 ### 🛡️ **Enterprise Features**
 
-  - **Read-only mode** - Prevent accidental destructive operations
-  - **Comprehensive logging** - Structured logging with Microsoft.Extensions.Logging
-  - **Proper error handling** - gRPC status codes and meaningful error messages
-  - **Timeout management** - Configurable request timeouts
-  - **Connection pooling** - Efficient gRPC channel management
+- **Read-only mode** - Prevent accidental destructive operations
+- **Comprehensive logging** - Structured logging with Microsoft.Extensions.Logging
+- **Proper error handling** - gRPC status codes and meaningful error messages
+- **Timeout management** - Configurable request timeouts
+- **Connection pooling** - Efficient gRPC channel management
 
 ## Quick Start
 
@@ -247,17 +247,17 @@ OmniClient
 
 This .NET client is designed to be fully compatible with:
 
-  - **Official Omni instances** - Works with any Omni deployment
-  - **Authentication system** - Uses the same PGP signature mechanism as the Go client
-  - **gRPC protocol** - Based on the same `.proto` definitions
-  - **API versioning** - Stays in sync with Omni's API evolution
+- **Official Omni instances** - Works with any Omni deployment
+- **Authentication system** - Uses the same PGP signature mechanism as the Go client
+- **gRPC protocol** - Based on the same `.proto` definitions
+- **API versioning** - Stays in sync with Omni's API evolution
 
 ## Requirements
 
-  - **.NET 9.0** or later
-  - **gRPC support** (included)
-  - **Valid Omni instance** with gRPC endpoint
-  - **PGP key pair** for authentication
+- **.NET 9.0** or later
+- **gRPC support** (included)
+- **Valid Omni instance** with gRPC endpoint
+- **PGP key pair** for authentication
 
 ## Error Handling
 
@@ -316,30 +316,30 @@ The project includes an automated release and tagging script that handles versio
 
 **Setup for NuGet Publishing:**
 
-  1. Get your API key from [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
-  2. Create a file named `nuget_key.txt` in the solution root
-  3. Add your API key to the file (first line only)
-  4. Run `.\Tag.ps1` - it will prompt whether to publish if tests pass
+1. Get your API key from [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
+2. Create a file named `nuget_key.txt` in the solution root
+3. Add your API key to the file (first line only)
+4. Run `.\Tag.ps1` - it will prompt whether to publish if tests pass
 
 **The Tag.ps1 script will:**
 
-  - ✅ Validate prerequisites and git repository status
-  - ✅ Get version using NerdBank GitVersioning (nbgv)
-  - ✅ Restore NuGet packages
-  - ✅ Build solution in Release mode
-  - ✅ Run unit tests (unless `-SkipTests` is specified)
-  - ✅ Create Git tag with current version
-  - ✅ Push tag to origin
-  - ✅ Optionally pack and publish NuGet package
-  - ✅ Provide next steps for GitHub release creation
+- ✅ Validate prerequisites and git repository status
+- ✅ Get version using NerdBank GitVersioning (nbgv)
+- ✅ Restore NuGet packages
+- ✅ Build solution in Release mode
+- ✅ Run unit tests (unless `-SkipTests` is specified)
+- ✅ Create Git tag with current version
+- ✅ Push tag to origin
+- ✅ Optionally pack and publish NuGet package
+- ✅ Provide next steps for GitHub release creation
 
 **Version Management:**
 The script uses NerdBank GitVersioning to automatically determine the version. It will:
 
-  - Try to use global `nbgv` tool
-  - Fall back to local `nbgv` tool
-  - Attempt to install `nbgv` if not found
-  - Use fallback versioning from `version.json` if `nbgv` is unavailable
+- Try to use global `nbgv` tool
+- Fall back to local `nbgv` tool
+- Attempt to install `nbgv` if not found
+- Use fallback versioning from `version.json` if `nbgv` is unavailable
 
 **Example Usage:**
 
@@ -356,17 +356,17 @@ The script uses NerdBank GitVersioning to automatically determine the version. I
 
 ## Contributing
 
-  1. Fork the repository
-  2. Create a feature branch
-  3. Make your changes
-  4. Add tests
-  5. Submit a pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 **Development Guidelines:**
 
-  - Follow the patterns established in the [official Omni client](https://github.com/siderolabs/omni/tree/main/client)
-  - Keep the `.proto` definitions in sync with the [upstream source](https://github.com/siderolabs/omni/tree/main/client)
-  - Maintain compatibility with the official authentication mechanisms
+- Follow the patterns established in the [official Omni client](https://github.com/siderolabs/omni/tree/main/client)
+- Keep the `.proto` definitions in sync with the [upstream source](https://github.com/siderolabs/omni/tree/main/client)
+- Maintain compatibility with the official authentication mechanisms
 
 ## License
 
@@ -374,9 +374,9 @@ MIT License - see LICENSE file for details.
 
 ## Links
 
-  - **🏠 Official Omni Project**: https://github.com/siderolabs/omni
-  - **📋 Official Proto Definitions**: https://github.com/siderolabs/omni/tree/main/client
-  - **🔐 Go API Signature Library**: https://github.com/siderolabs/go-api-signature
-  - **📖 Omni Documentation**: https://omni.siderolabs.com/
-  - **🏢 SideroLabs**: https://www.siderolabs.com/
-  - **🐧 Talos Linux**: https://talos.dev/
+- **🏠 Official Omni Project**: https://github.com/siderolabs/omni
+- **📋 Official Proto Definitions**: https://github.com/siderolabs/omni/tree/main/client
+- **🔐 Go API Signature Library**: https://github.com/siderolabs/go-api-signature
+- **📖 Omni Documentation**: https://omni.siderolabs.com/
+- **🏢 SideroLabs**: https://www.siderolabs.com/
+- **🐧 Talos Linux**: https://talos.dev

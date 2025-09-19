@@ -16,54 +16,83 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 {
 	private OmniClientOptions GetClientOptions(bool? isReadOnlyOverride = null)
 	{
-		var configuration = new ConfigurationBuilder()
+		var configuration = LoadConfiguration();
+		var omniSection = configuration.GetSection("Omni");
+
+		var (identity, pgpPrivateKey) = ExtractCredentials(omniSection);
+
+		return CreateClientOptions(omniSection, identity, pgpPrivateKey, isReadOnlyOverride);
+	}
+
+	/// <summary>
+	/// Loads configuration from appsettings.json
+	/// </summary>
+	private static IConfiguration LoadConfiguration()
+	{
+		return new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile("appsettings.json", optional: false)
 			.Build();
+	}
 
-		var omniSection = configuration.GetSection("Omni");
-
-		// Decode the AuthToken if present
-		string? identity = null;
-		string? pgpPrivateKey = null;
-
+	/// <summary>
+	/// Extracts identity and PGP key from configuration
+	/// </summary>
+	private (string identity, string pgpPrivateKey) ExtractCredentials(IConfigurationSection omniSection)
+	{
 		var authToken = omniSection["AuthToken"];
 		if (!string.IsNullOrEmpty(authToken))
 		{
-			try
+			var (identity, pgpKey) = TryDecodeAuthToken(authToken);
+			if (!string.IsNullOrEmpty(identity) && !string.IsNullOrEmpty(pgpKey))
 			{
-				// Decode base64 token
-				var decodedBytes = Convert.FromBase64String(authToken);
-				var decodedJson = Encoding.UTF8.GetString(decodedBytes);
-
-				using var jsonDoc = JsonDocument.Parse(decodedJson);
-				var root = jsonDoc.RootElement;
-
-				if (root.TryGetProperty("name", out var nameElement))
-				{
-					identity = nameElement.GetString();
-				}
-
-				if (root.TryGetProperty("pgp_key", out var pgpKeyElement))
-				{
-					pgpPrivateKey = pgpKeyElement.GetString();
-				}
-
-				Logger.LogInformation("Successfully decoded AuthToken for identity: {Identity}", identity);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogWarning(ex, "Failed to decode AuthToken, falling back to placeholder credentials");
+				return (identity, pgpKey);
 			}
 		}
 
-		// Fallback to placeholder if decoding failed
-		if (string.IsNullOrEmpty(identity) || string.IsNullOrEmpty(pgpPrivateKey))
+		// Fallback to placeholder credentials
+		return GetFallbackCredentials();
+	}
+
+	/// <summary>
+	/// Attempts to decode the AuthToken
+	/// </summary>
+	private (string? identity, string? pgpKey) TryDecodeAuthToken(string authToken)
+	{
+		try
 		{
-			identity = "integration-test-user";
-			pgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest-key-placeholder\n-----END PGP PRIVATE KEY BLOCK-----";
-		}
+			var decodedBytes = Convert.FromBase64String(authToken);
+			var decodedJson = Encoding.UTF8.GetString(decodedBytes);
 
+			using var jsonDoc = JsonDocument.Parse(decodedJson);
+			var root = jsonDoc.RootElement;
+
+			var identity = root.TryGetProperty("name", out var nameElement) ? nameElement.GetString() : null;
+			var pgpKey = root.TryGetProperty("pgp_key", out var pgpKeyElement) ? pgpKeyElement.GetString() : null;
+
+			Logger.LogInformation("Successfully decoded AuthToken for identity: {Identity}", identity);
+			return (identity, pgpKey);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "Failed to decode AuthToken, falling back to placeholder credentials");
+			return (null, null);
+		}
+	}
+
+	/// <summary>
+	/// Gets fallback credentials when decoding fails
+	/// </summary>
+	private static (string identity, string pgpPrivateKey) GetFallbackCredentials()
+	{
+		return ("integration-test-user", "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest-key-placeholder\n-----END PGP PRIVATE KEY BLOCK-----");
+	}
+
+	/// <summary>
+	/// Creates the OmniClientOptions with the provided configuration
+	/// </summary>
+	private OmniClientOptions CreateClientOptions(IConfigurationSection omniSection, string identity, string pgpPrivateKey, bool? isReadOnlyOverride)
+	{
 		return new OmniClientOptions
 		{
 			Endpoint = omniSection["Endpoint"] ?? throw new InvalidOperationException("Omni:Endpoint not configured"),

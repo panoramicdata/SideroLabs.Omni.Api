@@ -1,5 +1,3 @@
-using SideroLabs.Omni.Api.Examples.Infrastructure;
-
 namespace SideroLabs.Omni.Api.Examples.Infrastructure;
 
 /// <summary>

@@ -11,6 +11,7 @@
     <File Path="Tag.ps1" />
     <File Path="version.json" />
   </Folder>
+  <Project Path="SideroLabs.Omni.Api.Examples/SideroLabs.Omni.Api.Examples.csproj" />
   <Project Path="SideroLabs.Omni.Api.Tests/SideroLabs.Omni.Api.Tests.csproj" />
   <Project Path="SideroLabs.Omni.Api/SideroLabs.Omni.Api.csproj" />
 </Solution>

@@ -369,3 +369,4 @@ FodyWeavers.xsd
 
 # Test data files with sensitive information
 /SideroLabs.Omni.Api.Tests/TestData/pgp-key-test.txt
+/SideroLabs.Omni.Api.Examples/appsettings.json
