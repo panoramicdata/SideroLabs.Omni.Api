@@ -362,7 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /SideroLabs.Omni.Api.Tests/appsettings.json
+
+# NuGet API Keys (sensitive)
 /nuget_key.txt
+/nuget-key.txt
 
 # Test data files with sensitive information
 /SideroLabs.Omni.Api.Tests/TestData/pgp-key-test.txt

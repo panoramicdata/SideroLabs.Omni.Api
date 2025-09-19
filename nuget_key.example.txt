@@ -1,0 +1,9 @@
+your-nuget-api-key-here
+
+# Instructions:
+# 1. Copy this file to "nuget_key.txt"
+# 2. Replace the content above with your actual NuGet API key
+# 3. The key should be on the first line with no extra spaces
+# 4. You can get your API key from: https://www.nuget.org/account/apikeys
+#
+# Note: This file will NOT be committed to version control, as it is .gitignored.

@@ -274,6 +274,55 @@ catch (ReadOnlyModeException ex)
 }
 ```
 
+## Development & Publishing
+
+### Building and Testing
+
+```bash
+# Build the solution
+dotnet build
+
+# Run unit tests
+dotnet test
+
+# Create NuGet package
+dotnet pack --configuration Release
+```
+
+### Automated Publishing
+
+The project includes automated publishing scripts:
+
+```bash
+# Using PowerShell (recommended)
+.\Publish.ps1
+
+# Using batch file (Windows)
+.\publish.bat
+
+# Common options
+.\Publish.ps1 -VersionBump Minor  # Increment minor version
+.\Publish.ps1 -SkipTests          # Skip unit tests
+.\Publish.ps1 -DryRun             # Test without actual publishing
+.\Publish.ps1 -Force              # Publish with uncommitted changes
+```
+
+**Setup for NuGet Publishing:**
+1. Get your API key from [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
+2. Create a file named `nuget-key.txt` in the solution root
+3. Add your API key to the file (first line only)
+4. Run `.\Publish.ps1` - it will automatically publish if tests pass
+
+The script will:
+- ✅ Validate prerequisites and working directory
+- ✅ Increment version (Major/Minor/Patch)
+- ✅ Build solution in Release mode
+- ✅ Run unit tests
+- ✅ Create Git tag
+- ✅ Pack NuGet package
+- ✅ Publish to NuGet.org (if `nuget-key.txt` exists)
+- ✅ Push changes and tags to Git remote
+
 ## Contributing
 
 1. Fork the repository
