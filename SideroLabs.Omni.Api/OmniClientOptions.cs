@@ -49,7 +49,7 @@ public class OmniClientOptions
 	/// Whether the client should operate in read-only mode
 	/// When true, write operations (create, update, delete) will throw ReadOnlyModeException
 	/// </summary>
-	public bool IsReadOnly { get; set; } = false;
+	public bool IsReadOnly { get; set; }
 
 	/// <summary>
 	/// The logger

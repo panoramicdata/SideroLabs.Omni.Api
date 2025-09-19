@@ -161,7 +161,9 @@ public static class OmniClientExample
 
 				// Break after 10 log entries for demo
 				if (logText.Contains("break-demo"))
+				{
 					break;
+				}
 			}
 
 			Console.WriteLine("\n=== Kubernetes Manifest Sync ===");
