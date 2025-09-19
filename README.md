@@ -302,7 +302,7 @@ dotnet pack --configuration Release
 
 ### Automated Release Process
 
-The project includes an automated release and tagging script that handles version management, testing, tagging, and optional NuGet publishing:
+The project includes an automated release and tagging script that handles version management, testing, tagging, and optional NuGet publishing with symbols:
 
 ```bash
 # Using PowerShell
@@ -311,7 +311,8 @@ The project includes an automated release and tagging script that handles versio
 # Common options
 .\Tag.ps1 -Force              # Force tagging with uncommitted changes
 .\Tag.ps1 -SkipTests          # Skip unit tests (not recommended)
-.\Tag.ps1 -Publish            # Automatically publish to NuGet without prompting
+.\Tag.ps1 -Publish            # Automatically publish to NuGet with symbols
+.\Tag.ps1 -Publish -SkipSymbols  # Publish without symbols
 ```
 
 **Setup for NuGet Publishing:**
@@ -330,7 +331,7 @@ The project includes an automated release and tagging script that handles versio
 - ✅ Run unit tests (unless `-SkipTests` is specified)
 - ✅ Create Git tag with current version
 - ✅ Push tag to origin
-- ✅ Optionally pack and publish NuGet package
+- ✅ Optionally pack and publish NuGet package with symbols
 - ✅ Provide next steps for GitHub release creation
 
 **Version Management:**
@@ -344,7 +345,7 @@ The script uses NerdBank GitVersioning to automatically determine the version. I
 **Example Usage:**
 
 ```bash
-# Standard release process
+# Standard release process with symbols
 .\Tag.ps1
 
 # Quick release with automatic publishing

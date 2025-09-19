@@ -7,7 +7,7 @@
 .DESCRIPTION
 	This script runs all unit tests in the SideroLabs.Omni.Api.Tests project and, if successful,
 	creates a git tag for the current version using NerdBank GitVersioning. Optionally publishes
-	the NuGet package if requested and nuget_key.txt file is available.
+	the NuGet package and symbols if requested and nuget_key.txt file is available.
 
 .PARAMETER Force
 	Forces the tagging even if there are uncommitted changes.
@@ -17,6 +17,9 @@
 
 .PARAMETER Publish
 	Automatically publishes to NuGet without prompting.
+
+.PARAMETER SkipSymbols
+	Skips publishing symbols package (not recommended).
 
 .EXAMPLE
 	.\Tag.ps1
@@ -28,14 +31,19 @@
 
 .EXAMPLE
 	.\Tag.ps1 -Publish
-	Runs tests, tags the current version, and publishes to NuGet.
+	Runs tests, tags the current version, and publishes to NuGet with symbols.
+
+.EXAMPLE
+	.\Tag.ps1 -Publish -SkipSymbols
+	Runs tests, tags the current version, and publishes to NuGet without symbols.
 #>
 
 [CmdletBinding()]
 param(
 	[switch]$Force,
 	[switch]$SkipTests,
-	[switch]$Publish
+	[switch]$Publish,
+	[switch]$SkipSymbols
 )
 
 Set-StrictMode -Version Latest
@@ -283,19 +291,23 @@ try {
 			New-Item -ItemType Directory -Path "nupkg" | Out-Null
 		}
 
-		# Build package
-		Write-Information "[*] Building NuGet package..." -InformationAction Continue
+		# Build package with symbols
+		Write-Information "[*] Building NuGet package with symbols..." -InformationAction Continue
 		dotnet pack SideroLabs.Omni.Api/SideroLabs.Omni.Api.csproj `
 			--configuration Release `
 			--no-build `
-			--output "nupkg"
+			--output "nupkg" `
+			--include-symbols `
+			--include-source
 
 		if ($LASTEXITCODE -ne 0) {
 			throw "Failed to create NuGet package"
 		}
 
-		# Find the package file
+		# Find the package files
 		$packageFile = Get-ChildItem "nupkg" -Filter "SideroLabs.Omni.Api.$version.nupkg" -ErrorAction SilentlyContinue | Select-Object -First 1
+		$symbolsFile = Get-ChildItem "nupkg" -Filter "SideroLabs.Omni.Api.$version.snupkg" -ErrorAction SilentlyContinue | Select-Object -First 1
+		
 		if (-not $packageFile) {
 			Write-Error "[!] Could not find package file for version $version in nupkg directory"
 			Write-Output "   Available files:"
@@ -303,6 +315,7 @@ try {
 			return
 		}
 
+		# Publish main package
 		Write-Information "[*] Publishing package to NuGet..." -InformationAction Continue
 		Write-Information "   Package: $($packageFile.Name)" -InformationAction Continue
 		
@@ -311,16 +324,52 @@ try {
 			--source https://api.nuget.org/v3/index.json `
 			--skip-duplicate
 
-		if ($LASTEXITCODE -ne 0) {
-			Write-Warning "[!] Failed to publish package. This might be due to:"
+		$packagePushSuccess = ($LASTEXITCODE -eq 0)
+		
+		if (-not $packagePushSuccess) {
+			Write-Warning "[!] Failed to publish main package. This might be due to:"
 			Write-Output "   - Package version already exists"
 			Write-Output "   - Invalid API key"
 			Write-Output "   - Network issues"
 			Write-Output "   You can manually publish later using:"
 			Write-Output "   dotnet nuget push $($packageFile.FullName) --api-key YOUR_KEY --source https://api.nuget.org/v3/index.json"
 		} else {
-			Write-Information "[+] Package published successfully!" -InformationAction Continue
+			Write-Information "[+] Main package published successfully!" -InformationAction Continue
+		}
+
+		# Publish symbols package if available and not skipped
+		if ($symbolsFile -and -not $SkipSymbols) {
+			Write-Information "[*] Publishing symbols package to NuGet..." -InformationAction Continue
+			Write-Information "   Symbols: $($symbolsFile.Name)" -InformationAction Continue
+			
+			dotnet nuget push $symbolsFile.FullName `
+				--api-key $apiKey `
+				--source https://api.nuget.org/v3/index.json `
+				--skip-duplicate
+
+			if ($LASTEXITCODE -ne 0) {
+				Write-Warning "[!] Failed to publish symbols package. This might be due to:"
+				Write-Output "   - Symbols package version already exists"
+				Write-Output "   - Invalid API key"
+				Write-Output "   - Network issues"
+				Write-Output "   You can manually publish symbols later using:"
+				Write-Output "   dotnet nuget push $($symbolsFile.FullName) --api-key YOUR_KEY --source https://api.nuget.org/v3/index.json"
+			} else {
+				Write-Information "[+] Symbols package published successfully!" -InformationAction Continue
+			}
+		} elseif (-not $symbolsFile) {
+			Write-Warning "[!] No symbols package found for version $version"
+			Write-Information "   Expected file: SideroLabs.Omni.Api.$version.snupkg" -InformationAction Continue
+		} elseif ($SkipSymbols) {
+			Write-Information "[*] Skipping symbols package publishing as requested." -InformationAction Continue
+		}
+
+		if ($packagePushSuccess) {
+			Write-Information "[+] Package publishing completed!" -InformationAction Continue
 			Write-Information "   Package will be available at: https://www.nuget.org/packages/SideroLabs.Omni.Api/$version" -InformationAction Continue
+			if ($symbolsFile -and -not $SkipSymbols) {
+				Write-Information "   Symbols will be available for debugging and source stepping" -InformationAction Continue
+			}
 		}
 	}
 
@@ -351,6 +400,9 @@ Write-Output "   1. Create a GitHub release: https://github.com/panoramicdata/Si
 if ($shouldPublish) {
 	Write-Output "   2. Monitor NuGet package: https://www.nuget.org/packages/SideroLabs.Omni.Api/"
 	Write-Output "   3. Update dependent projects to use the new version"
+	if (-not $SkipSymbols) {
+		Write-Output "   4. Symbols are available for enhanced debugging experience"
+	}
 } else {
 	Write-Output "   2. Publish to NuGet manually if needed"
 }
