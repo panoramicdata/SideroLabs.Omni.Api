@@ -2,15 +2,16 @@
 
 <#
 .SYNOPSIS
-	Tags a release for the SideroLabs.Omni.Api project after running all unit tests.
+	Creates a release for the SideroLabs.Omni.Api project after running all unit tests.
 
 .DESCRIPTION
 	This script runs all unit tests in the SideroLabs.Omni.Api.Tests project and, if successful,
 	creates a git tag for the current version using NerdBank GitVersioning. Optionally publishes
-	the NuGet package and symbols if requested and nuget_key.txt file is available.
+	the NuGet package and symbols if requested and nuget_key.txt file is available. Can also
+	create GitHub releases with automated changelog generation.
 
 .PARAMETER Force
-	Forces the tagging even if there are uncommitted changes.
+	Forces the release even if there are uncommitted changes.
 
 .PARAMETER SkipTests
 	Skips running unit tests (not recommended).
@@ -21,21 +22,27 @@
 .PARAMETER SkipSymbols
 	Skips publishing symbols package (not recommended).
 
-.EXAMPLE
-	.\Tag.ps1
-	Runs tests and tags the current version.
+.PARAMETER CreateGitHubRelease
+	Creates a GitHub release using gh CLI.
+
+.PARAMETER SkipGitHubRelease
+	Skips creating a GitHub release even if gh CLI is available.
 
 .EXAMPLE
-	.\Tag.ps1 -Force
-	Runs tests and tags the current version, ignoring uncommitted changes.
+	.\Release.ps1
+	Runs tests and creates a release.
 
 .EXAMPLE
-	.\Tag.ps1 -Publish
-	Runs tests, tags the current version, and publishes to NuGet with symbols.
+	.\Release.ps1 -Force
+	Runs tests and creates a release, ignoring uncommitted changes.
 
 .EXAMPLE
-	.\Tag.ps1 -Publish -SkipSymbols
-	Runs tests, tags the current version, and publishes to NuGet without symbols.
+	.\Release.ps1 -Publish -CreateGitHubRelease
+	Runs tests, creates a release, publishes to NuGet with symbols, and creates a GitHub release.
+
+.EXAMPLE
+	.\Release.ps1 -Publish -SkipSymbols
+	Runs tests, creates a release, and publishes to NuGet without symbols.
 #>
 
 [CmdletBinding()]
@@ -43,7 +50,9 @@ param(
 	[switch]$Force,
 	[switch]$SkipTests,
 	[switch]$Publish,
-	[switch]$SkipSymbols
+	[switch]$SkipSymbols,
+	[switch]$CreateGitHubRelease,
+	[switch]$SkipGitHubRelease
 )
 
 Set-StrictMode -Version Latest
@@ -52,8 +61,8 @@ $ErrorActionPreference = "Stop"
 # Ensure information messages are visible
 $InformationPreference = "Continue"
 
-Write-Information "[*] SideroLabs.Omni.Api Release Tagging Script" -InformationAction Continue
-Write-Information "=============================================" -InformationAction Continue
+Write-Information "[*] SideroLabs.Omni.Api Release Script" -InformationAction Continue
+Write-Information "=====================================" -InformationAction Continue
 
 try {
 	# Check if we're in a git repository
@@ -177,7 +186,7 @@ try {
 		Write-Warning "[!] Tag 'v$version' already exists."
 		$response = Read-Host "Do you want to delete the existing tag and create a new one? (y/N)"
 		if ($response -ne 'y' -and $response -ne 'Y') {
-			Write-Error "[!] Tagging cancelled."
+			Write-Error "[!] Release cancelled."
 			exit 1
 		}
 		
@@ -226,7 +235,7 @@ try {
 				--results-directory "TestResults"
 
 			if ($LASTEXITCODE -ne 0) {
-				Write-Error "[!] Unit tests failed! Cannot proceed with tagging."
+				Write-Error "[!] Unit tests failed! Cannot proceed with release."
 				Write-Output "   Please fix the failing tests before creating a release."
 				exit 1
 			}
@@ -373,10 +382,59 @@ try {
 		}
 	}
 
+	# Check for GitHub release creation
+	$shouldCreateGitHubRelease = $CreateGitHubRelease
+	if (-not $shouldCreateGitHubRelease -and -not $SkipGitHubRelease) {
+		# Check if gh CLI is available
+		$ghAvailable = $false
+		try {
+			gh --version | Out-Null
+			$ghAvailable = ($LASTEXITCODE -eq 0)
+		} catch {
+			$ghAvailable = $false
+		}
+
+		if ($ghAvailable) {
+			$response = Read-Host "Do you want to create a GitHub release? (y/N)"
+			$shouldCreateGitHubRelease = ($response -eq 'y' -or $response -eq 'Y')
+		} else {
+			Write-Information "[*] GitHub CLI (gh) not available. Skipping GitHub release creation." -InformationAction Continue
+		}
+	}
+
+	if ($shouldCreateGitHubRelease) {
+		Write-Information "[*] Creating GitHub release..." -InformationAction Continue
+		
+		# Generate changelog since last release
+		$changelog = Generate-Changelog -version $version
+		
+		# Create the GitHub release
+		try {
+			$releaseArgs = @(
+				"release", "create", "v$version",
+				"--title", "Release v$version",
+				"--notes", $changelog
+			)
+			
+			& gh @releaseArgs
+			
+			if ($LASTEXITCODE -eq 0) {
+				Write-Information "[+] GitHub release created successfully!" -InformationAction Continue
+				Write-Information "   Release URL: https://github.com/panoramicdata/SideroLabs.Omni.Api/releases/tag/v$version" -InformationAction Continue
+			} else {
+				Write-Warning "[!] Failed to create GitHub release using gh CLI"
+			}
+		} catch {
+			Write-Warning "[!] Error creating GitHub release: $_"
+		}
+	}
+
 	Write-Output ""
 	Write-Information "[+] Release process completed successfully!" -InformationAction Continue
 	Write-Information "   Tag: v$version" -InformationAction Continue
-	Write-Information "   You can now create a release on GitHub: https://github.com/panoramicdata/SideroLabs.Omni.Api/releases/new?tag=v$version" -InformationAction Continue
+	if (-not $shouldCreateGitHubRelease) {
+		Write-Information "   You can create a GitHub release manually at: https://github.com/panoramicdata/SideroLabs.Omni.Api/releases/new?tag=v$version" -InformationAction Continue
+	}
 
 } catch {
 	Write-Error "[!] Error during release process: $_"
@@ -396,7 +454,9 @@ try {
 
 Write-Output ""
 Write-Information "[*] Next steps:" -InformationAction Continue
-Write-Output "   1. Create a GitHub release: https://github.com/panoramicdata/SideroLabs.Omni.Api/releases/new?tag=v$version"
+if (-not $shouldCreateGitHubRelease) {
+	Write-Output "   1. Create a GitHub release: https://github.com/panoramicdata/SideroLabs.Omni.Api/releases/new?tag=v$version"
+}
 if ($shouldPublish) {
 	Write-Output "   2. Monitor NuGet package: https://www.nuget.org/packages/SideroLabs.Omni.Api/"
 	Write-Output "   3. Update dependent projects to use the new version"
@@ -406,4 +466,72 @@ if ($shouldPublish) {
 } else {
 	Write-Output "   2. Publish to NuGet manually if needed"
 }
-Write-Information "   [*] Don't forget to add release notes!" -InformationAction Continue
+Write-Information "   [*] Don't forget to add detailed release notes if you created a GitHub release!" -InformationAction Continue
+
+function Generate-Changelog {
+	param([string]$version)
+	
+	Write-Information "[*] Generating changelog for v$version..." -InformationAction Continue
+	
+	try {
+		# Get the previous tag
+		$previousTags = git tag --sort=-version:refname | Where-Object { $_ -ne "v$version" } | Select-Object -First 1
+		$previousTag = $previousTags
+		
+		if ($previousTag) {
+			Write-Information "   Comparing changes since $previousTag..." -InformationAction Continue
+			
+			# Get commits since the last tag
+			$commits = git log --pretty=format:"- %s (%h)" "$previousTag..HEAD" 2>$null
+			
+			if ($commits) {
+				$changelog = @"
+## What's Changed
+
+$($commits -join "`n")
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
+"@
+			} else {
+				$changelog = @"
+## What's Changed
+
+No significant changes since $previousTag.
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/compare/$previousTag...v$version
+"@
+			}
+		} else {
+			$changelog = @"
+## What's Changed
+
+This is the initial release of the SideroLabs Omni API Client.
+
+### Features
+- Native gRPC client for SideroLabs Omni Management API
+- PGP-based authentication compatible with go-api-signature
+- Streaming support for real-time log streaming and manifest synchronization
+- Type-safe operations generated from official Omni proto definitions
+- Read-only mode for safe production use
+- Comprehensive logging and error handling
+
+### Available Operations
+- Configuration Management (kubeconfig, talosconfig, omniconfig)
+- Service Account Management (create, renew, list, destroy)
+- Operational Tasks (streaming, validation, upgrade checks)
+- Machine Provisioning (schematics)
+
+**Full Changelog**: https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version
+"@
+		}
+		
+		return $changelog
+	} catch {
+		Write-Warning "[!] Error generating changelog: $_"
+		return @"
+## Release v$version
+
+See the [full changelog](https://github.com/panoramicdata/SideroLabs.Omni.Api/commits/v$version) for details.
+"@
+	}
+}

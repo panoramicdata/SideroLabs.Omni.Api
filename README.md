@@ -4,6 +4,9 @@
 [![NuGet](https://img.shields.io/nuget/v/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
 [![NuGet](https://img.shields.io/nuget/dt/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
 ![License](https://img.shields.io/github/license/panoramicdata/SideroLabs.Omni.Api.svg)
+![GitHub repo size](https://img.shields.io/github/repo-size/panoramicdata/SideroLabs.Omni.Api)
+![GitHub top language](https://img.shields.io/github/languages/top/panoramicdata/SideroLabs.Omni.Api)
+![GitHub last commit](https://img.shields.io/github/last-commit/panoramicdata/SideroLabs.Omni.Api)
 
 A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
@@ -302,17 +305,19 @@ dotnet pack --configuration Release
 
 ### Automated Release Process
 
-The project includes an automated release and tagging script that handles version management, testing, tagging, and optional NuGet publishing with symbols:
+The project includes an automated release script that handles version management, testing, tagging, NuGet publishing with symbols, and GitHub release creation:
 
 ```bash
 # Using PowerShell
-.\Tag.ps1
+.\Release.ps1
 
 # Common options
-.\Tag.ps1 -Force              # Force tagging with uncommitted changes
-.\Tag.ps1 -SkipTests          # Skip unit tests (not recommended)
-.\Tag.ps1 -Publish            # Automatically publish to NuGet with symbols
-.\Tag.ps1 -Publish -SkipSymbols  # Publish without symbols
+.\Release.ps1 -Force              # Force release with uncommitted changes
+.\Release.ps1 -SkipTests          # Skip unit tests (not recommended)
+.\Release.ps1 -Publish            # Automatically publish to NuGet with symbols
+.\Release.ps1 -Publish -SkipSymbols        # Publish without symbols
+.\Release.ps1 -CreateGitHubRelease         # Create GitHub release with changelog
+.\Release.ps1 -Publish -CreateGitHubRelease # Full release pipeline
 ```
 
 **Setup for NuGet Publishing:**
@@ -320,9 +325,15 @@ The project includes an automated release and tagging script that handles versio
 1. Get your API key from [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
 2. Create a file named `nuget_key.txt` in the solution root
 3. Add your API key to the file (first line only)
-4. Run `.\Tag.ps1` - it will prompt whether to publish if tests pass
+4. Run `.\Release.ps1` - it will prompt whether to publish if tests pass
 
-**The Tag.ps1 script will:**
+**Setup for GitHub Releases:**
+
+1. Install GitHub CLI: `winget install GitHub.cli` or visit [cli.github.com](https://cli.github.com)
+2. Authenticate: `gh auth login`
+3. Run `.\Release.ps1 -CreateGitHubRelease` to create releases with automated changelogs
+
+**The Release.ps1 script will:**
 
 - ✅ Validate prerequisites and git repository status
 - ✅ Get version using NerdBank GitVersioning (nbgv)
@@ -332,7 +343,9 @@ The project includes an automated release and tagging script that handles versio
 - ✅ Create Git tag with current version
 - ✅ Push tag to origin
 - ✅ Optionally pack and publish NuGet package with symbols
-- ✅ Provide next steps for GitHub release creation
+- ✅ Generate changelog from git commits since last release
+- ✅ Create GitHub release with automated release notes
+- ✅ Provide next steps for manual tasks
 
 **Version Management:**
 The script uses NerdBank GitVersioning to automatically determine the version. It will:
@@ -345,14 +358,14 @@ The script uses NerdBank GitVersioning to automatically determine the version. I
 **Example Usage:**
 
 ```bash
-# Standard release process with symbols
-.\Tag.ps1
+# Standard release process with symbols and GitHub release
+.\Release.ps1 -CreateGitHubRelease
 
-# Quick release with automatic publishing
-.\Tag.ps1 -Publish
+# Full automated release pipeline
+.\Release.ps1 -Publish -CreateGitHubRelease
 
 # Emergency release (skip tests and force with uncommitted changes)
-.\Tag.ps1 -Force -SkipTests -Publish
+.\Release.ps1 -Force -SkipTests -Publish
 ```
 
 ## Contributing
