@@ -1,11 +1,9 @@
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SideroLabs.Omni.Api.Extensions;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Security;
+using SideroLabs.Omni.Api.Tests.Infrastructure;
 using SideroLabs.Omni.Api.Tests.Logging;
 using Xunit;
 
@@ -40,103 +38,8 @@ public abstract class TestBase : IDisposable
 				.AddXUnit(testOutputHelper)
 				.CreateLogger<TestBase>();
 
-		// Build configuration from multiple sources
-		var configuration = new ConfigurationBuilder()
-			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-			.AddEnvironmentVariables("OMNI_")
-			.AddUserSecrets<TestBase>()
-			.Build();
-
-		// Set up dependency injection
-		var services = new ServiceCollection();
-
-		// Register configuration
-		services.AddSingleton<IConfiguration>(configuration);
-
-		// Configure OmniClientOptions from configuration and test PGP key
-		services.Configure<OmniClientOptions>(options =>
-		{
-			configuration.GetSection("Omni").Bind(options);
-
-			// Extract PGP key from test file for non-destructive testing
-			var testPgpKey = ExtractTestPgpKey();
-			if (testPgpKey.HasValue)
-			{
-				options.Identity = testPgpKey.Value.Identity;
-				options.PgpPrivateKey = testPgpKey.Value.PgpKey;
-				// Clear file path since we're using direct key content
-				options.PgpKeyFilePath = null;
-			}
-
-			// Set logger for OmniClient
-			options.Logger = Logger;
-		});
-
-		// Add the Omni client with the configured options
-		services.AddOmniClient(opts =>
-		{
-			configuration.GetSection("Omni").Bind(opts);
-
-			// Extract PGP key from test file for non-destructive testing
-			var testPgpKey = ExtractTestPgpKey();
-			if (testPgpKey.HasValue)
-			{
-				opts.Identity = testPgpKey.Value.Identity;
-				opts.PgpPrivateKey = testPgpKey.Value.PgpKey;
-				// Clear file path since we're using direct key content
-				opts.PgpKeyFilePath = null;
-			}
-
-			// Set logger for OmniClient
-			opts.Logger = Logger;
-		});
-
-		_serviceProvider = services.BuildServiceProvider();
-	}
-
-	/// <summary>
-	/// Extracts PGP key from test data file for safe testing
-	/// </summary>
-	private (string Identity, string PgpKey)? ExtractTestPgpKey()
-	{
-		try
-		{
-			var testDataDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
-			var testKeyFile = Path.Combine(testDataDirectory, "pgp-key-test.txt");
-
-			if (!File.Exists(testKeyFile))
-			{
-				Logger.LogWarning("Test PGP key file not found: {TestKeyFile}", testKeyFile);
-				return null;
-			}
-
-			var fileContents = File.ReadAllText(testKeyFile);
-			var decodedBytes = Convert.FromBase64String(fileContents);
-			var decodedString = Encoding.UTF8.GetString(decodedBytes);
-
-			using var jsonDoc = JsonDocument.Parse(decodedString);
-			var root = jsonDoc.RootElement;
-
-			if (root.TryGetProperty("name", out var nameElement) &&
-				root.TryGetProperty("pgp_key", out var pgpKeyElement))
-			{
-				var identity = nameElement.GetString();
-				var pgpKey = pgpKeyElement.GetString();
-
-				if (!string.IsNullOrEmpty(identity) && !string.IsNullOrEmpty(pgpKey))
-				{
-					Logger.LogInformation("Extracted test PGP key for identity: {Identity}", identity);
-					return (identity, pgpKey);
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(ex, "Failed to extract test PGP key, tests may not have authentication");
-		}
-
-		return null;
+		var serviceProviderFactory = new TestServiceProviderFactory(Logger);
+		_serviceProvider = serviceProviderFactory.CreateServiceProvider();
 	}
 
 	/// <summary>
