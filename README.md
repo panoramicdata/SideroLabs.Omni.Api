@@ -7,6 +7,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/panoramicdata/SideroLabs.Omni.Api)
 ![GitHub top language](https://img.shields.io/github/languages/top/panoramicdata/SideroLabs.Omni.Api)
 ![GitHub last commit](https://img.shields.io/github/last-commit/panoramicdata/SideroLabs.Omni.Api)
+![GitHub Release](https://img.shields.io/github/v/release/panoramicdata/SideroLabs.Omni.Api)
 
 A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
