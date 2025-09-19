@@ -57,46 +57,23 @@ public static class ServiceCollectionExtensions
 	/// <returns>The service collection for chaining</returns>
 	public static IServiceCollection AddOmniClient(
 		this IServiceCollection services,
-		OmniClientOptions options) => services.AddOmniClient(_ =>
-										   {
-											   _.Endpoint = options.Endpoint;
-											   _.Identity = options.Identity;
-											   _.PgpPrivateKey = options.PgpPrivateKey;
-											   _.PgpKeyFilePath = options.PgpKeyFilePath;
-											   _.TimeoutSeconds = options.TimeoutSeconds;
-											   _.UseTls = options.UseTls;
-											   _.ValidateCertificate = options.ValidateCertificate;
-											   _.IsReadOnly = options.IsReadOnly;
-										   });
-}
-
-/// <summary>
-/// Interface for the OmniClient to support dependency injection
-/// </summary>
-public interface IOmniClient : IDisposable
-{
-	/// <summary>
-	/// Gets the Management Service for administrative and operational tasks
-	/// </summary>
-	IManagementService Management { get; }
+		OmniClientOptions options) => services.AddOmniClient(target => CopyOptions(options, target));
 
 	/// <summary>
-	/// Gets the gRPC endpoint URL
+	/// Copies options from source to target to avoid duplication
 	/// </summary>
-	string Endpoint { get; }
-
-	/// <summary>
-	/// Gets whether TLS is enabled
-	/// </summary>
-	bool UseTls { get; }
-
-	/// <summary>
-	/// Gets whether the client is in read-only mode
-	/// </summary>
-	bool IsReadOnly { get; }
-
-	/// <summary>
-	/// Gets the authentication identity if available
-	/// </summary>
-	string? Identity { get; }
+	/// <param name="source">Source options</param>
+	/// <param name="target">Target options</param>
+	private static void CopyOptions(OmniClientOptions source, OmniClientOptions target)
+	{
+		target.Endpoint = source.Endpoint;
+		target.Identity = source.Identity;
+		target.PgpPrivateKey = source.PgpPrivateKey;
+		target.PgpKeyFilePath = source.PgpKeyFilePath;
+		target.TimeoutSeconds = source.TimeoutSeconds;
+		target.UseTls = source.UseTls;
+		target.ValidateCertificate = source.ValidateCertificate;
+		target.IsReadOnly = source.IsReadOnly;
+		target.Logger = source.Logger;
+	}
 }

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using SideroLabs.Omni.Api.Exceptions;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests;
@@ -42,7 +43,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 	}
 
 	[Fact]
-	public void Constructor_WithInvalidEndpoint_ThrowsArgumentException()
+	public void Constructor_WithInvalidEndpoint_ThrowsOmniConfigurationException()
 	{
 		// Arrange
 		var options = new OmniClientOptions
@@ -53,11 +54,12 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		};
 
 		// Act & Assert
-		((Action)(() => _ = new OmniClient(options))).Should().Throw<ArgumentException>();
+		var exception = ((Action)(() => _ = new OmniClient(options))).Should().Throw<OmniConfigurationException>();
+		exception.Which.ValidationErrors.Should().Contain("Endpoint is required");
 	}
 
 	[Fact]
-	public void Constructor_WithInvalidTimeoutSeconds_ThrowsArgumentException()
+	public void Constructor_WithInvalidTimeoutSeconds_ThrowsOmniConfigurationException()
 	{
 		// Arrange
 		var options = new OmniClientOptions
@@ -69,7 +71,8 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		};
 
 		// Act & Assert
-		((Action)(() => _ = new OmniClient(options))).Should().Throw<ArgumentException>();
+		var exception = ((Action)(() => _ = new OmniClient(options))).Should().Throw<OmniConfigurationException>();
+		exception.Which.ValidationErrors.Should().Contain("TimeoutSeconds must be positive");
 	}
 
 	[Fact]

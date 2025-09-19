@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Extensions;
+using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Security;
 using SideroLabs.Omni.Api.Tests.Logging;
 using Xunit;

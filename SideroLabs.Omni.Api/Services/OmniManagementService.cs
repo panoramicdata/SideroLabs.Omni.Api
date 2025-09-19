@@ -4,8 +4,10 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using Management;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Constants;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Security;
+using SideroLabs.Omni.Api.Utilities;
 
 namespace SideroLabs.Omni.Api.Services;
 
@@ -13,18 +15,25 @@ namespace SideroLabs.Omni.Api.Services;
 /// Implementation of Omni Management Service using real gRPC calls
 /// This implements the actual ManagementService from the management.proto file
 /// </summary>
-/// <remarks>
-/// Initializes a new instance of the OmniManagementService class
-/// </remarks>
-/// <param name="options">Client options</param>
-/// <param name="channel">gRPC channel</param>
-/// <param name="authenticator">Authentication provider</param>
-internal class OmniManagementService(
-	OmniClientOptions options,
-	GrpcChannel channel,
-	OmniAuthenticator? authenticator) : OmniServiceBase(options, channel, authenticator), IManagementService, IDisposable
+internal class OmniManagementService : OmniServiceBase, IManagementService, IDisposable
 {
-	private readonly ManagementService.ManagementServiceClient _grpcClient = new(channel);
+	private readonly ManagementService.ManagementServiceClient _grpcClient;
+	private readonly GrpcCallHelper _callHelper;
+
+	/// <summary>
+	/// Initializes a new instance of the OmniManagementService class
+	/// </summary>
+	/// <param name="options">Client options</param>
+	/// <param name="channel">gRPC channel</param>
+	/// <param name="authenticator">Authentication provider</param>
+	public OmniManagementService(
+		OmniClientOptions options,
+		GrpcChannel channel,
+		OmniAuthenticator? authenticator) : base(options, channel, authenticator)
+	{
+		_grpcClient = new ManagementService.ManagementServiceClient(channel);
+		_callHelper = new GrpcCallHelper(options.Logger, CreateCallOptions);
+	}
 
 	/// <inheritdoc />
 	public async Task<string> GetKubeConfigAsync(
@@ -34,8 +43,6 @@ internal class OmniManagementService(
 		string[]? serviceAccountGroups = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Getting kubeconfig (serviceAccount: {ServiceAccount})", serviceAccount);
-
 		var request = new Management.KubeconfigRequest
 		{
 			ServiceAccount = serviceAccount,
@@ -52,50 +59,47 @@ internal class OmniManagementService(
 			request.ServiceAccountGroups.AddRange(serviceAccountGroups);
 		}
 
-		var callOptions = CreateCallOptions("/management.ManagementService/Kubeconfig");
-		var response = await _grpcClient.KubeconfigAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.KubeconfigAsync,
+			GrpcMethods.Kubeconfig,
+			"kubeconfig retrieval",
+			cancellationToken);
 
-		// Decode the Base64-encoded byte array to string
-		var decodedConfig = Encoding.UTF8.GetString(response.Kubeconfig.ToByteArray());
-
-		Logger.LogDebug("Retrieved kubeconfig ({Size} bytes)", response.Kubeconfig.Length);
-		return decodedConfig;
+		return ResponseDecoder.DecodeConfigResponse(response.Kubeconfig);
 	}
 
 	/// <inheritdoc />
 	public async Task<string> GetTalosConfigAsync(bool admin = false, CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Getting talosconfig (raw: {Admin})", admin);
-
 		var request = new Management.TalosconfigRequest
 		{
 			Raw = admin  // The proto uses 'raw' instead of 'admin'
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/Talosconfig");
-		var response = await _grpcClient.TalosconfigAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.TalosconfigAsync,
+			GrpcMethods.Talosconfig,
+			"talosconfig retrieval",
+			cancellationToken);
 
-		// Decode the Base64-encoded byte array to string
-		var decodedConfig = Encoding.UTF8.GetString(response.Talosconfig.ToByteArray());
-
-		Logger.LogDebug("Retrieved talosconfig ({Size} bytes)", response.Talosconfig.Length);
-		return decodedConfig;
+		return ResponseDecoder.DecodeConfigResponse(response.Talosconfig);
 	}
 
 	/// <inheritdoc />
 	public async Task<string> GetOmniConfigAsync(CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Getting omniconfig");
-
 		var request = new Empty();
-		var callOptions = CreateCallOptions("/management.ManagementService/Omniconfig");
-		var response = await _grpcClient.OmniconfigAsync(request, callOptions);
 
-		// Decode the Base64-encoded byte array to string
-		var decodedConfig = Encoding.UTF8.GetString(response.Omniconfig.ToByteArray());
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.OmniconfigAsync,
+			GrpcMethods.Omniconfig,
+			"omniconfig retrieval",
+			cancellationToken);
 
-		Logger.LogDebug("Retrieved omniconfig ({Size} bytes)", response.Omniconfig.Length);
-		return decodedConfig;
+		return ResponseDecoder.DecodeConfigResponse(response.Omniconfig);
 	}
 
 	/// <inheritdoc />
@@ -105,8 +109,6 @@ internal class OmniManagementService(
 		string? role = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Creating service account (useUserRole: {UseUserRole}, role: {Role})", useUserRole, role);
-
 		var request = new Management.CreateServiceAccountRequest
 		{
 			ArmoredPgpPublicKey = armoredPgpPublicKey,
@@ -115,21 +117,27 @@ internal class OmniManagementService(
 			Name = $"service-account-{DateTime.UtcNow:yyyyMMdd-HHmmss}" // Generate a name if not provided
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/CreateServiceAccount");
-		var response = await _grpcClient.CreateServiceAccountAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.CreateServiceAccountAsync,
+			GrpcMethods.CreateServiceAccount,
+			"service account creation",
+			cancellationToken);
 
-		Logger.LogDebug("Created service account with public key ID: {PublicKeyId}", response.PublicKeyId);
 		return response.PublicKeyId;
 	}
 
 	/// <inheritdoc />
 	public async Task<IReadOnlyList<Interfaces.ServiceAccountInfo>> ListServiceAccountsAsync(CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Listing service accounts");
-
 		var request = new Empty();
-		var callOptions = CreateCallOptions("/management.ManagementService/ListServiceAccounts");
-		var response = await _grpcClient.ListServiceAccountsAsync(request, callOptions);
+
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.ListServiceAccountsAsync,
+			GrpcMethods.ListServiceAccounts,
+			"service accounts listing",
+			cancellationToken);
 
 		var serviceAccounts = response.ServiceAccounts.Select(sa => new Interfaces.ServiceAccountInfo
 		{
@@ -143,7 +151,6 @@ internal class OmniManagementService(
 			})]
 		}).ToList();
 
-		Logger.LogDebug("Listed {Count} service accounts", serviceAccounts.Count);
 		return serviceAccounts;
 	}
 
@@ -153,51 +160,52 @@ internal class OmniManagementService(
 		string armoredPgpPublicKey,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Renewing service account: {Name}", name);
-
 		var request = new Management.RenewServiceAccountRequest
 		{
 			Name = name,
 			ArmoredPgpPublicKey = armoredPgpPublicKey
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/RenewServiceAccount");
-		var response = await _grpcClient.RenewServiceAccountAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.RenewServiceAccountAsync,
+			GrpcMethods.RenewServiceAccount,
+			"service account renewal",
+			cancellationToken);
 
-		Logger.LogDebug("Renewed service account {Name} with public key ID: {PublicKeyId}", name, response.PublicKeyId);
 		return response.PublicKeyId;
 	}
 
 	/// <inheritdoc />
 	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Destroying service account: {Name}", name);
-
 		var request = new Management.DestroyServiceAccountRequest
 		{
 			Name = name
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/DestroyServiceAccount");
-		await _grpcClient.DestroyServiceAccountAsync(request, callOptions);
-
-		Logger.LogDebug("Destroyed service account: {Name}", name);
+		await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.DestroyServiceAccountAsync,
+			GrpcMethods.DestroyServiceAccount,
+			"service account destruction",
+			cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public async Task ValidateConfigAsync(string config, CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Validating configuration ({Length} characters)", config.Length);
-
 		var request = new Management.ValidateConfigRequest
 		{
 			Config = config
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/ValidateConfig");
-		await _grpcClient.ValidateConfigAsync(request, callOptions);
-
-		Logger.LogDebug("Configuration validation successful");
+		await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.ValidateConfigAsync,
+			GrpcMethods.ValidateConfig,
+			"configuration validation",
+			cancellationToken);
 	}
 
 	/// <inheritdoc />
@@ -205,17 +213,18 @@ internal class OmniManagementService(
 		string newVersion,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Running Kubernetes upgrade pre-checks for version: {Version}", newVersion);
-
 		var request = new Management.KubernetesUpgradePreChecksRequest
 		{
 			NewVersion = newVersion
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/KubernetesUpgradePreChecks");
-		var response = await _grpcClient.KubernetesUpgradePreChecksAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.KubernetesUpgradePreChecksAsync,
+			GrpcMethods.KubernetesUpgradePreChecks,
+			"Kubernetes upgrade pre-checks",
+			cancellationToken);
 
-		Logger.LogDebug("Kubernetes upgrade pre-checks completed: {Ok} - {Reason}", response.Ok, response.Reason);
 		return (response.Ok, response.Reason);
 	}
 
@@ -226,9 +235,6 @@ internal class OmniManagementService(
 		Dictionary<uint, string>? metaValues = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Creating schematic with {ExtensionCount} extensions and {KernelArgCount} kernel args",
-			extensions?.Length ?? 0, extraKernelArgs?.Length ?? 0);
-
 		var request = new Management.CreateSchematicRequest();
 
 		if (extensions != null)
@@ -249,11 +255,13 @@ internal class OmniManagementService(
 			}
 		}
 
-		var callOptions = CreateCallOptions("/management.ManagementService/CreateSchematic");
-		var response = await _grpcClient.CreateSchematicAsync(request, callOptions);
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.CreateSchematicAsync,
+			GrpcMethods.CreateSchematic,
+			"schematic creation",
+			cancellationToken);
 
-		Logger.LogDebug("Created schematic: {SchematicId}, PXE URL: {PxeUrl}",
-			response.SchematicId, response.PxeUrl);
 		return (response.SchematicId, response.PxeUrl);
 	}
 
@@ -264,9 +272,6 @@ internal class OmniManagementService(
 		int tailLines = 100,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Streaming machine logs for {MachineId} (follow: {Follow}, tail: {TailLines})",
-			machineId, follow, tailLines);
-
 		var request = new Management.MachineLogsRequest
 		{
 			MachineId = machineId,
@@ -274,9 +279,11 @@ internal class OmniManagementService(
 			TailLines = tailLines
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/MachineLogs");
-
-		using var call = _grpcClient.MachineLogs(request, callOptions);
+		using var call = _callHelper.ExecuteStreamingCall(
+			request,
+			_grpcClient.MachineLogs,
+			GrpcMethods.MachineLogs,
+			"machine logs streaming");
 
 		await foreach (var logData in call.ResponseStream.ReadAllAsync(cancellationToken))
 		{
@@ -291,16 +298,16 @@ internal class OmniManagementService(
 		bool dryRun = false,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		Logger.LogDebug("Streaming Kubernetes manifest sync (dryRun: {DryRun})", dryRun);
-
 		var request = new Management.KubernetesSyncManifestRequest
 		{
 			DryRun = dryRun
 		};
 
-		var callOptions = CreateCallOptions("/management.ManagementService/KubernetesSyncManifests");
-
-		using var call = _grpcClient.KubernetesSyncManifests(request, callOptions);
+		using var call = _callHelper.ExecuteStreamingCall(
+			request,
+			_grpcClient.KubernetesSyncManifests,
+			GrpcMethods.KubernetesSyncManifests,
+			"Kubernetes manifest sync streaming");
 
 		await foreach (var syncResult in call.ResponseStream.ReadAllAsync(cancellationToken))
 		{
