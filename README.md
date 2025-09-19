@@ -4,21 +4,25 @@ A **.NET gRPC client library** for interacting with the **SideroLabs Omni Manage
 
 This client provides strongly-typed C# interfaces for the Omni gRPC services, with built-in PGP-based authentication and enterprise-ready features.
 
+> **🏗️ Inspired by**: This project is inspired by the official [SideroLabs Omni client](https://github.com/siderolabs/omni/tree/main/client) and follows the same patterns and authentication mechanisms.
+>
+> **📋 Proto Definitions**: The gRPC service definitions are based on the official [.proto files from the Omni project](https://github.com/siderolabs/omni/tree/main/client), which are the definitive source for the Omni API specification.
+
 ## Features
 
 ### 🔐 **Authentic gRPC Implementation**
 - **Native gRPC client** - Direct implementation of Omni's actual gRPC services
-- **PGP-based authentication** - Uses Omni's standard PGP signature authentication
+- **PGP-based authentication** - Uses Omni's standard PGP signature authentication (compatible with [go-api-signature](https://github.com/siderolabs/go-api-signature))
 - **Streaming support** - Real-time log streaming and manifest synchronization
 - **Type-safe operations** - Generated from official Omni proto definitions
 
 ### 🛠️ **Omni ManagementService Operations**
-Based on the actual `management.proto` from the Omni project:
+Based on the actual `management.proto` from the [Omni project](https://github.com/siderolabs/omni/tree/main/client):
 
 **Configuration Management:**
-- `GetKubeconfigAsync()` - Retrieve kubeconfig for clusters
-- `GetTalosconfigAsync()` - Retrieve talosconfig for Talos clusters  
-- `GetOmniconfigAsync()` - Retrieve omnictl client configuration
+- `GetKubeConfigAsync()` - Retrieve kubeconfig for clusters
+- `GetTalosConfigAsync()` - Retrieve talosconfig for Talos clusters  
+- `GetOmniConfigAsync()` - Retrieve omnictl client configuration
 
 **Service Account Management:**
 - `CreateServiceAccountAsync()` - Create new service accounts
@@ -67,7 +71,7 @@ var options = new OmniClientOptions
 using var client = new OmniClient(options);
 
 // Get kubeconfig for a cluster
-var kubeconfig = await client.Management.GetKubeconfigAsync(
+var kubeconfig = await client.Management.GetKubeConfigAsync(
     serviceAccount: true,
     serviceAccountTtl: TimeSpan.FromHours(24),
     cancellationToken: cancellationToken);
@@ -88,7 +92,7 @@ await foreach (var logEntry in client.Management.StreamMachineLogsAsync(
 
 ### Authentication Setup
 
-The client uses **PGP-based authentication** as required by Omni:
+The client uses **PGP-based authentication** as required by Omni, implementing the same signature mechanism as the [official Go client](https://github.com/siderolabs/go-api-signature):
 
 ```csharp
 var options = new OmniClientOptions
@@ -100,7 +104,7 @@ var options = new OmniClientOptions
 };
 ```
 
-Or load from a base64-encoded key file:
+Or load from a base64-encoded key file (compatible with Omni's key format):
 
 ```csharp
 var options = new OmniClientOptions
@@ -206,16 +210,16 @@ public class MyService
         _omniClient = omniClient;
     }
 
-    public async Task<byte[]> GetKubeconfigAsync()
+    public async Task<string> GetKubeConfigAsync()
     {
-        return await _omniClient.Management.GetKubeconfigAsync();
+        return await _omniClient.Management.GetKubeConfigAsync();
     }
 }
 ```
 
 ## Architecture
 
-This client is built around the **actual Omni gRPC services**:
+This client is built around the **actual Omni gRPC services** as defined in the [official Omni proto files](https://github.com/siderolabs/omni/tree/main/client):
 
 ```
 OmniClient
@@ -228,6 +232,14 @@ OmniClient
 ```
 
 **Note**: This client implements **only the gRPC services that Omni actually provides**. It does not include cluster CRUD operations, as these are handled through different mechanisms in the Omni architecture.
+
+## Compatibility
+
+This .NET client is designed to be fully compatible with:
+- **Official Omni instances** - Works with any Omni deployment
+- **Authentication system** - Uses the same PGP signature mechanism as the Go client
+- **gRPC protocol** - Based on the same `.proto` definitions
+- **API versioning** - Stays in sync with Omni's API evolution
 
 ## Requirements
 
@@ -243,7 +255,7 @@ The client provides comprehensive error handling:
 ```csharp
 try
 {
-    var result = await client.Management.GetKubeconfigAsync();
+    var result = await client.Management.GetKubeConfigAsync();
 }
 catch (RpcException ex) when (ex.StatusCode == StatusCode.Unauthenticated)
 {
@@ -270,12 +282,20 @@ catch (ReadOnlyModeException ex)
 4. Add tests
 5. Submit a pull request
 
+**Development Guidelines:**
+- Follow the patterns established in the [official Omni client](https://github.com/siderolabs/omni/tree/main/client)
+- Keep the `.proto` definitions in sync with the [upstream source](https://github.com/siderolabs/omni/tree/main/client)
+- Maintain compatibility with the official authentication mechanisms
+
 ## License
 
 MIT License - see LICENSE file for details.
 
 ## Links
 
-- **Omni Documentation**: https://omni.siderolabs.com/
-- **SideroLabs**: https://www.siderolabs.com/
-- **Talos Linux**: https://talos.dev/
+- **🏠 Official Omni Project**: https://github.com/siderolabs/omni
+- **📋 Official Proto Definitions**: https://github.com/siderolabs/omni/tree/main/client
+- **🔐 Go API Signature Library**: https://github.com/siderolabs/go-api-signature
+- **📖 Omni Documentation**: https://omni.siderolabs.com/
+- **🏢 SideroLabs**: https://www.siderolabs.com/
+- **🐧 Talos Linux**: https://talos.dev/
