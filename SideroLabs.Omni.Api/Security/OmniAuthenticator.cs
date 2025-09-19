@@ -64,7 +64,7 @@ public class OmniAuthenticator
 
 		(_secretKey, KeyFingerprint) = ParsePgpKey(pgpPrivateKey);
 
-		_logger.LogInformation("Initialized Omni authenticator with identity: {Identity}, key fingerprint: {Fingerprint}",
+		_logger.LogDebug("Initialized Omni authenticator with identity: {Identity}, key fingerprint: {Fingerprint}",
 			Identity, KeyFingerprint);
 	}
 
@@ -156,7 +156,7 @@ public class OmniAuthenticator
 		metadata.Add(PayloadHeaderKey, payloadJson);
 		metadata.Add(SignatureHeaderKey, $"{SignatureVersion} {Identity} {KeyFingerprint} {signatureBase64}");
 
-		_logger.LogInformation("Successfully signed gRPC request for method: {Method}", method);
+		_logger.LogDebug("Signed gRPC request for method: {Method}", method);
 	}
 
 	/// <summary>

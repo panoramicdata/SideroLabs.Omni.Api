@@ -34,7 +34,7 @@ internal class OmniManagementService(
 		string[]? serviceAccountGroups = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting kubeconfig (serviceAccount: {ServiceAccount})", serviceAccount);
+		Logger.LogDebug("Getting kubeconfig (serviceAccount: {ServiceAccount})", serviceAccount);
 
 		var request = new Management.KubeconfigRequest
 		{
@@ -58,14 +58,14 @@ internal class OmniManagementService(
 		// Decode the Base64-encoded byte array to string
 		var decodedConfig = Encoding.UTF8.GetString(response.Kubeconfig.ToByteArray());
 
-		Logger.LogInformation("Successfully retrieved kubeconfig ({Size} bytes)", response.Kubeconfig.Length);
+		Logger.LogDebug("Retrieved kubeconfig ({Size} bytes)", response.Kubeconfig.Length);
 		return decodedConfig;
 	}
 
 	/// <inheritdoc />
 	public async Task<string> GetTalosConfigAsync(bool admin = false, CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting talosconfig (raw: {Admin})", admin);
+		Logger.LogDebug("Getting talosconfig (raw: {Admin})", admin);
 
 		var request = new Management.TalosconfigRequest
 		{
@@ -78,14 +78,14 @@ internal class OmniManagementService(
 		// Decode the Base64-encoded byte array to string
 		var decodedConfig = Encoding.UTF8.GetString(response.Talosconfig.ToByteArray());
 
-		Logger.LogInformation("Successfully retrieved talosconfig ({Size} bytes)", response.Talosconfig.Length);
+		Logger.LogDebug("Retrieved talosconfig ({Size} bytes)", response.Talosconfig.Length);
 		return decodedConfig;
 	}
 
 	/// <inheritdoc />
 	public async Task<string> GetOmniConfigAsync(CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Getting omniconfig");
+		Logger.LogDebug("Getting omniconfig");
 
 		var request = new Empty();
 		var callOptions = CreateCallOptions("/management.ManagementService/Omniconfig");
@@ -94,7 +94,7 @@ internal class OmniManagementService(
 		// Decode the Base64-encoded byte array to string
 		var decodedConfig = Encoding.UTF8.GetString(response.Omniconfig.ToByteArray());
 
-		Logger.LogInformation("Successfully retrieved omniconfig ({Size} bytes)", response.Omniconfig.Length);
+		Logger.LogDebug("Retrieved omniconfig ({Size} bytes)", response.Omniconfig.Length);
 		return decodedConfig;
 	}
 
@@ -105,7 +105,7 @@ internal class OmniManagementService(
 		string? role = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Creating service account (useUserRole: {UseUserRole}, role: {Role})", useUserRole, role);
+		Logger.LogDebug("Creating service account (useUserRole: {UseUserRole}, role: {Role})", useUserRole, role);
 
 		var request = new Management.CreateServiceAccountRequest
 		{
@@ -118,14 +118,14 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/CreateServiceAccount");
 		var response = await _grpcClient.CreateServiceAccountAsync(request, callOptions);
 
-		Logger.LogInformation("Successfully created service account with public key ID: {PublicKeyId}", response.PublicKeyId);
+		Logger.LogDebug("Created service account with public key ID: {PublicKeyId}", response.PublicKeyId);
 		return response.PublicKeyId;
 	}
 
 	/// <inheritdoc />
 	public async Task<IReadOnlyList<Interfaces.ServiceAccountInfo>> ListServiceAccountsAsync(CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Listing service accounts");
+		Logger.LogDebug("Listing service accounts");
 
 		var request = new Empty();
 		var callOptions = CreateCallOptions("/management.ManagementService/ListServiceAccounts");
@@ -143,7 +143,7 @@ internal class OmniManagementService(
 			})]
 		}).ToList();
 
-		Logger.LogInformation("Successfully listed {Count} service accounts", serviceAccounts.Count);
+		Logger.LogDebug("Listed {Count} service accounts", serviceAccounts.Count);
 		return serviceAccounts;
 	}
 
@@ -153,7 +153,7 @@ internal class OmniManagementService(
 		string armoredPgpPublicKey,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Renewing service account: {Name}", name);
+		Logger.LogDebug("Renewing service account: {Name}", name);
 
 		var request = new Management.RenewServiceAccountRequest
 		{
@@ -164,14 +164,14 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/RenewServiceAccount");
 		var response = await _grpcClient.RenewServiceAccountAsync(request, callOptions);
 
-		Logger.LogInformation("Successfully renewed service account {Name} with public key ID: {PublicKeyId}", name, response.PublicKeyId);
+		Logger.LogDebug("Renewed service account {Name} with public key ID: {PublicKeyId}", name, response.PublicKeyId);
 		return response.PublicKeyId;
 	}
 
 	/// <inheritdoc />
 	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Destroying service account: {Name}", name);
+		Logger.LogDebug("Destroying service account: {Name}", name);
 
 		var request = new Management.DestroyServiceAccountRequest
 		{
@@ -181,13 +181,13 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/DestroyServiceAccount");
 		await _grpcClient.DestroyServiceAccountAsync(request, callOptions);
 
-		Logger.LogInformation("Successfully destroyed service account: {Name}", name);
+		Logger.LogDebug("Destroyed service account: {Name}", name);
 	}
 
 	/// <inheritdoc />
 	public async Task ValidateConfigAsync(string config, CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Validating configuration ({Length} characters)", config.Length);
+		Logger.LogDebug("Validating configuration ({Length} characters)", config.Length);
 
 		var request = new Management.ValidateConfigRequest
 		{
@@ -197,7 +197,7 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/ValidateConfig");
 		await _grpcClient.ValidateConfigAsync(request, callOptions);
 
-		Logger.LogInformation("Configuration validation successful");
+		Logger.LogDebug("Configuration validation successful");
 	}
 
 	/// <inheritdoc />
@@ -205,7 +205,7 @@ internal class OmniManagementService(
 		string newVersion,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Running Kubernetes upgrade pre-checks for version: {Version}", newVersion);
+		Logger.LogDebug("Running Kubernetes upgrade pre-checks for version: {Version}", newVersion);
 
 		var request = new Management.KubernetesUpgradePreChecksRequest
 		{
@@ -215,7 +215,7 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/KubernetesUpgradePreChecks");
 		var response = await _grpcClient.KubernetesUpgradePreChecksAsync(request, callOptions);
 
-		Logger.LogInformation("Kubernetes upgrade pre-checks completed: {Ok} - {Reason}", response.Ok, response.Reason);
+		Logger.LogDebug("Kubernetes upgrade pre-checks completed: {Ok} - {Reason}", response.Ok, response.Reason);
 		return (response.Ok, response.Reason);
 	}
 
@@ -226,7 +226,7 @@ internal class OmniManagementService(
 		Dictionary<uint, string>? metaValues = null,
 		CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Creating schematic with {ExtensionCount} extensions and {KernelArgCount} kernel args",
+		Logger.LogDebug("Creating schematic with {ExtensionCount} extensions and {KernelArgCount} kernel args",
 			extensions?.Length ?? 0, extraKernelArgs?.Length ?? 0);
 
 		var request = new Management.CreateSchematicRequest();
@@ -252,7 +252,7 @@ internal class OmniManagementService(
 		var callOptions = CreateCallOptions("/management.ManagementService/CreateSchematic");
 		var response = await _grpcClient.CreateSchematicAsync(request, callOptions);
 
-		Logger.LogInformation("Successfully created schematic: {SchematicId}, PXE URL: {PxeUrl}",
+		Logger.LogDebug("Created schematic: {SchematicId}, PXE URL: {PxeUrl}",
 			response.SchematicId, response.PxeUrl);
 		return (response.SchematicId, response.PxeUrl);
 	}
@@ -264,7 +264,7 @@ internal class OmniManagementService(
 		int tailLines = 100,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Streaming machine logs for {MachineId} (follow: {Follow}, tail: {TailLines})",
+		Logger.LogDebug("Streaming machine logs for {MachineId} (follow: {Follow}, tail: {TailLines})",
 			machineId, follow, tailLines);
 
 		var request = new Management.MachineLogsRequest
@@ -283,7 +283,7 @@ internal class OmniManagementService(
 			yield return logData.Bytes.ToByteArray();
 		}
 
-		Logger.LogInformation("Machine log streaming completed for {MachineId}", machineId);
+		Logger.LogDebug("Machine log streaming completed for {MachineId}", machineId);
 	}
 
 	/// <inheritdoc />
@@ -291,7 +291,7 @@ internal class OmniManagementService(
 		bool dryRun = false,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		Logger.LogInformation("Streaming Kubernetes manifest sync (dryRun: {DryRun})", dryRun);
+		Logger.LogDebug("Streaming Kubernetes manifest sync (dryRun: {DryRun})", dryRun);
 
 		var request = new Management.KubernetesSyncManifestRequest
 		{
@@ -314,7 +314,7 @@ internal class OmniManagementService(
 			};
 		}
 
-		Logger.LogInformation("Kubernetes manifest sync streaming completed");
+		Logger.LogDebug("Kubernetes manifest sync streaming completed");
 	}
 
 	public void Dispose() =>

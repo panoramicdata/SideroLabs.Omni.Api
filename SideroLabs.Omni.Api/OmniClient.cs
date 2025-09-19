@@ -38,7 +38,7 @@ public class OmniClient : IOmniClient
 		// Initialize authenticator if credentials are provided
 		_authenticator = CreateAuthenticator();
 
-		_logger.LogInformation("Initialized Omni gRPC client for endpoint: {Endpoint}", _options.Endpoint);
+		_logger.LogDebug("Initialized Omni gRPC client for endpoint: {Endpoint}", _options.Endpoint);
 	}
 
 	/// <summary>
