@@ -1,3 +1,5 @@
+using SideroLabs.Omni.Api.Models;
+
 namespace SideroLabs.Omni.Api.Interfaces;
 
 /// <summary>
@@ -9,6 +11,49 @@ public interface IManagementService
 	/// <summary>
 	/// Gets the kubeconfig for a cluster
 	/// </summary>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Kubeconfig as decoded string</returns>
+	Task<string> GetKubeConfigAsync(CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets the kubeconfig for a cluster
+	/// </summary>
+	/// <param name="serviceAccount">Whether to create a service account</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Kubeconfig as decoded string</returns>
+	Task<string> GetKubeConfigAsync(
+		bool serviceAccount,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets the kubeconfig for a cluster
+	/// </summary>
+	/// <param name="serviceAccount">Whether to create a service account</param>
+	/// <param name="serviceAccountTtl">TTL for service account</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Kubeconfig as decoded string</returns>
+	Task<string> GetKubeConfigAsync(
+		bool serviceAccount,
+		TimeSpan? serviceAccountTtl,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets the kubeconfig for a cluster
+	/// </summary>
+	/// <param name="serviceAccount">Whether to create a service account</param>
+	/// <param name="serviceAccountTtl">TTL for service account</param>
+	/// <param name="serviceAccountUser">Service account user name</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Kubeconfig as decoded string</returns>
+	Task<string> GetKubeConfigAsync(
+		bool serviceAccount,
+		TimeSpan? serviceAccountTtl,
+		string? serviceAccountUser,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets the kubeconfig for a cluster
+	/// </summary>
 	/// <param name="serviceAccount">Whether to create a service account</param>
 	/// <param name="serviceAccountTtl">TTL for service account</param>
 	/// <param name="serviceAccountUser">Service account user name</param>
@@ -16,11 +61,19 @@ public interface IManagementService
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Kubeconfig as decoded string</returns>
 	Task<string> GetKubeConfigAsync(
-		bool serviceAccount = false,
-		TimeSpan? serviceAccountTtl = null,
-		string? serviceAccountUser = null,
-		string[]? serviceAccountGroups = null,
-		CancellationToken cancellationToken = default);
+		bool serviceAccount,
+		TimeSpan? serviceAccountTtl,
+		string? serviceAccountUser,
+		string[]? serviceAccountGroups,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets the talosconfig for cluster access
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Talosconfig as decoded string</returns>
+	Task<string> GetTalosConfigAsync(
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets the talosconfig for cluster access
@@ -28,14 +81,39 @@ public interface IManagementService
 	/// <param name="admin">Whether to get admin talosconfig</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Talosconfig as decoded string</returns>
-	Task<string> GetTalosConfigAsync(bool admin = false, CancellationToken cancellationToken = default);
+	Task<string> GetTalosConfigAsync(
+		bool admin,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets the omniconfig for omnictl client
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Omniconfig as decoded string</returns>
-	Task<string> GetOmniConfigAsync(CancellationToken cancellationToken = default);
+	Task<string> GetOmniConfigAsync(
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates a service account
+	/// </summary>
+	/// <param name="armoredPgpPublicKey">PGP public key in armored format</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Public key ID of created service account</returns>
+	Task<string> CreateServiceAccountAsync(
+		string armoredPgpPublicKey,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates a service account
+	/// </summary>
+	/// <param name="armoredPgpPublicKey">PGP public key in armored format</param>
+	/// <param name="useUserRole">Whether to use the creating user's role</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Public key ID of created service account</returns>
+	Task<string> CreateServiceAccountAsync(
+		string armoredPgpPublicKey,
+		bool useUserRole,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a service account
@@ -47,16 +125,17 @@ public interface IManagementService
 	/// <returns>Public key ID of created service account</returns>
 	Task<string> CreateServiceAccountAsync(
 		string armoredPgpPublicKey,
-		bool useUserRole = false,
-		string? role = null,
-		CancellationToken cancellationToken = default);
+		bool useUserRole,
+		string? role,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Lists all service accounts
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>List of service account information</returns>
-	Task<IReadOnlyList<ServiceAccountInfo>> ListServiceAccountsAsync(CancellationToken cancellationToken = default);
+	Task<IReadOnlyList<ServiceAccountInfo>> ListServiceAccountsAsync(
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Renews a service account
@@ -68,21 +147,25 @@ public interface IManagementService
 	Task<string> RenewServiceAccountAsync(
 		string name,
 		string armoredPgpPublicKey,
-		CancellationToken cancellationToken = default);
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Destroys a service account
 	/// </summary>
 	/// <param name="name">Service account name to destroy</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken = default);
+	Task DestroyServiceAccountAsync(
+		string name,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Validates a configuration
 	/// </summary>
 	/// <param name="config">Configuration string to validate</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	Task ValidateConfigAsync(string config, CancellationToken cancellationToken = default);
+	Task ValidateConfigAsync(
+		string config,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Performs Kubernetes upgrade pre-checks
@@ -92,7 +175,37 @@ public interface IManagementService
 	/// <returns>Pre-check results</returns>
 	Task<(bool Ok, string Reason)> KubernetesUpgradePreChecksAsync(
 		string newVersion,
-		CancellationToken cancellationToken = default);
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates a schematic for machine provisioning
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Schematic ID and PXE URL</returns>
+	Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates a schematic for machine provisioning
+	/// </summary>
+	/// <param name="extensions">Extensions to include</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Schematic ID and PXE URL</returns>
+	Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
+		string[]? extensions,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates a schematic for machine provisioning
+	/// </summary>
+	/// <param name="extensions">Extensions to include</param>
+	/// <param name="extraKernelArgs">Extra kernel arguments</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Schematic ID and PXE URL</returns>
+	Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
+		string[]? extensions,
+		string[]? extraKernelArgs,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a schematic for machine provisioning
@@ -103,10 +216,31 @@ public interface IManagementService
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Schematic ID and PXE URL</returns>
 	Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
-		string[]? extensions = null,
-		string[]? extraKernelArgs = null,
-		Dictionary<uint, string>? metaValues = null,
-		CancellationToken cancellationToken = default);
+		string[]? extensions,
+		string[]? extraKernelArgs,
+		Dictionary<uint, string>? metaValues, CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Streams machine logs
+	/// </summary>
+	/// <param name="machineId">Machine ID to get logs from</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Async enumerable of log data</returns>
+	IAsyncEnumerable<byte[]> StreamMachineLogsAsync(
+		string machineId,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Streams machine logs
+	/// </summary>
+	/// <param name="machineId">Machine ID to get logs from</param>
+	/// <param name="follow">Whether to follow the logs</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Async enumerable of log data</returns>
+	IAsyncEnumerable<byte[]> StreamMachineLogsAsync(
+		string machineId,
+		bool follow,
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Streams machine logs
@@ -118,9 +252,17 @@ public interface IManagementService
 	/// <returns>Async enumerable of log data</returns>
 	IAsyncEnumerable<byte[]> StreamMachineLogsAsync(
 		string machineId,
-		bool follow = false,
-		int tailLines = 100,
-		CancellationToken cancellationToken = default);
+		bool follow,
+		int tailLines,
+		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Streams Kubernetes manifest synchronization results
+	/// </summary>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Async enumerable of sync results</returns>
+	IAsyncEnumerable<KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(
+		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Streams Kubernetes manifest synchronization results
@@ -129,45 +271,6 @@ public interface IManagementService
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Async enumerable of sync results</returns>
 	IAsyncEnumerable<KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(
-		bool dryRun = false,
-		CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Service account information
-/// </summary>
-public class ServiceAccountInfo
-{
-	public string Name { get; set; } = "";
-	public IReadOnlyList<PgpPublicKeyInfo> PgpPublicKeys { get; set; } = [];
-	public string Role { get; set; } = "";
-}
-
-/// <summary>
-/// PGP public key information
-/// </summary>
-public class PgpPublicKeyInfo
-{
-	public string Id { get; set; } = "";
-	public string Armored { get; set; } = "";
-	public DateTimeOffset Expiration { get; set; }
-}
-
-/// <summary>
-/// Kubernetes manifest sync result
-/// </summary>
-public class KubernetesSyncResult
-{
-	public enum SyncType
-	{
-		Unknown = 0,
-		Manifest = 1,
-		Rollout = 2
-	}
-
-	public SyncType ResponseType { get; set; }
-	public string Path { get; set; } = "";
-	public byte[] Object { get; set; } = [];
-	public string Diff { get; set; } = "";
-	public bool Skipped { get; set; }
+		bool dryRun,
+		CancellationToken cancellationToken);
 }

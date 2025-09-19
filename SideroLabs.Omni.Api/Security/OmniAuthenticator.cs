@@ -74,7 +74,16 @@ public class OmniAuthenticator
 	/// <param name="pgpKeyFile">File containing base64-encoded JSON with name and pgp_key</param>
 	/// <param name="logger">Logger instance</param>
 	/// <returns>Configured OmniAuthenticator</returns>
-	public static async Task<OmniAuthenticator> FromFileAsync(FileInfo pgpKeyFile, ILogger logger, CancellationToken cancellationToken = default)
+	public static Task<OmniAuthenticator> FromFileAsync(FileInfo pgpKeyFile, ILogger logger) => FromFileAsync(pgpKeyFile, logger, CancellationToken.None);
+
+	/// <summary>
+	/// Creates a new OmniAuthenticator from a PGP key file
+	/// </summary>
+	/// <param name="pgpKeyFile">File containing base64-encoded JSON with name and pgp_key</param>
+	/// <param name="logger">Logger instance</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Configured OmniAuthenticator</returns>
+	public static async Task<OmniAuthenticator> FromFileAsync(FileInfo pgpKeyFile, ILogger logger, CancellationToken cancellationToken)
 	{
 		if (!pgpKeyFile.Exists)
 		{

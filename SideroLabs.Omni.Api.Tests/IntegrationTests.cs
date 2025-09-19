@@ -400,132 +400,173 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("🚀 Starting comprehensive gRPC ManagementService test");
 		Logger.LogInformation("This test demonstrates all available real gRPC operations");
 
-		var successCount = 0;
-		var totalOperations = 0;
+		var testResults = new TestOperationResults();
 
-		// 1. Configuration Management
+		// Execute all test categories
+		await TestConfigurationManagement(client, testResults);
+		await TestServiceAccountManagement(client, testResults);
+		await TestConfigurationValidation(client, testResults);
+		await TestKubernetesOperations(client, testResults);
+
+		// Validate overall results
+		ValidateOverallTestResults(testResults);
+
+		Logger.LogInformation("✅ Comprehensive gRPC ManagementService test completed!");
+	}
+
+	private async Task TestConfigurationManagement(OmniClient client, TestOperationResults results)
+	{
 		Logger.LogInformation("\n1️⃣ Configuration Management:");
 
+		await TestOmniConfigOperation(client, results);
+		await TestKubeConfigOperation(client, results);
+		await TestTalosConfigOperation(client, results);
+	}
+
+	private async Task TestOmniConfigOperation(OmniClient client, TestOperationResults results)
+	{
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			var omniconfig = await client.Management.GetOmniConfigAsync(CancellationToken);
 			omniconfig.Should().NotBeNull();
 			omniconfig.Should().NotBeEmpty();
 			Logger.LogInformation("   ✅ Omniconfig: {Length} characters", omniconfig.Length);
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Omniconfig failed: {Message}", ex.Message);
 		}
+	}
 
+	private async Task TestKubeConfigOperation(OmniClient client, TestOperationResults results)
+	{
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			var kubeconfig = await client.Management.GetKubeConfigAsync(cancellationToken: CancellationToken);
 			kubeconfig.Should().NotBeNull();
 			kubeconfig.Should().NotBeEmpty();
 			Logger.LogInformation("   ✅ Kubeconfig: {Length} characters", kubeconfig.Length);
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
 			Logger.LogInformation("   🔒 Kubeconfig access denied (Reader role) - this counts as success for auth testing");
-			successCount++; // Permission check working is a success
+			results.SuccessCount++; // Permission check working is a success
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Kubeconfig failed: {Message}", ex.Message);
 		}
+	}
 
+	private async Task TestTalosConfigOperation(OmniClient client, TestOperationResults results)
+	{
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			var talosconfig = await client.Management.GetTalosConfigAsync(cancellationToken: CancellationToken);
 			talosconfig.Should().NotBeNull();
 			talosconfig.Should().NotBeEmpty();
 			Logger.LogInformation("   ✅ Talosconfig: {Length} characters", talosconfig.Length);
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
 			Logger.LogInformation("   🔒 Talosconfig access denied (Reader role) - this counts as success for auth testing");
-			successCount++; // Permission check working is a success
+			results.SuccessCount++; // Permission check working is a success
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Talosconfig failed: {Message}", ex.Message);
 		}
+	}
 
-		// 2. Service Account Management
+	private async Task TestServiceAccountManagement(OmniClient client, TestOperationResults results)
+	{
 		Logger.LogInformation("\n2️⃣ Service Account Management:");
 
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			var accounts = await client.Management.ListServiceAccountsAsync(CancellationToken);
 			accounts.Should().NotBeNull();
 			Logger.LogInformation("   ✅ Service Accounts: {Count} found", accounts.Count);
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
 			Logger.LogInformation("   🔒 Service account listing denied (Reader role) - this counts as success for auth testing");
-			successCount++; // Permission check working is a success
+			results.SuccessCount++; // Permission check working is a success
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Service account listing failed: {Message}", ex.Message);
 		}
+	}
 
-		// 3. Validation
+	private async Task TestConfigurationValidation(OmniClient client, TestOperationResults results)
+	{
 		Logger.LogInformation("\n3️⃣ Configuration Validation:");
 
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			await client.Management.ValidateConfigAsync("machine:\n  network:\n    hostname: test-node", CancellationToken);
 			Logger.LogInformation("   ✅ Configuration validation successful");
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Configuration validation failed: {Message}", ex.Message);
 		}
+	}
 
-		// 4. Kubernetes Operations
+	private async Task TestKubernetesOperations(OmniClient client, TestOperationResults results)
+	{
 		Logger.LogInformation("\n4️⃣ Kubernetes Operations:");
 
 		try
 		{
-			totalOperations++;
+			results.TotalOperations++;
 			var (upgradeOk, upgradeReason) = await client.Management.KubernetesUpgradePreChecksAsync(
 				"v1.29.0", CancellationToken);
 			upgradeReason.Should().NotBeNull();
 			Logger.LogInformation("   ✅ Upgrade check: {Status} - {Reason}",
 				upgradeOk ? "Ready" : "Not ready", upgradeReason);
-			successCount++;
+			results.SuccessCount++;
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
 			Logger.LogInformation("   🔒 Kubernetes upgrade pre-checks denied (Reader role) - this counts as success for auth testing");
-			successCount++; // Permission check working is a success
+			results.SuccessCount++; // Permission check working is a success
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning("   ⚠️ Kubernetes upgrade pre-checks failed: {Message}", ex.Message);
 		}
+	}
 
+	private void ValidateOverallTestResults(TestOperationResults results)
+	{
 		Logger.LogInformation("\n📊 Test Results:");
-		Logger.LogInformation("  Successful operations: {SuccessCount}/{TotalOperations}", successCount, totalOperations);
-		Logger.LogInformation("  Success rate: {SuccessRate:P0}", (double)successCount / totalOperations);
+		Logger.LogInformation("  Successful operations: {SuccessCount}/{TotalOperations}", results.SuccessCount, results.TotalOperations);
+		Logger.LogInformation("  Success rate: {SuccessRate:P0}", results.SuccessRate);
 
 		// Assert that at least 50% of operations succeeded (reasonable threshold for external dependencies)
-		var successRate = (double)successCount / totalOperations;
-		successRate.Should().BeGreaterThan(0.5, "At least 50% of gRPC operations should succeed with valid credentials");
+		results.SuccessRate.Should().BeGreaterThan(0.5, "At least 50% of gRPC operations should succeed with valid credentials");
+	}
 
-		Logger.LogInformation("✅ Comprehensive gRPC ManagementService test completed!");
+	/// <summary>
+	/// Helper class to track test operation results
+	/// </summary>
+	private sealed class TestOperationResults
+	{
+		public int SuccessCount { get; set; }
+		public int TotalOperations { get; set; }
+		public double SuccessRate => TotalOperations > 0 ? (double)SuccessCount / TotalOperations : 0.0;
 	}
 
 	[Fact]

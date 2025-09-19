@@ -8,10 +8,23 @@ public static class ExampleConfigurationFactory
 	/// <summary>
 	/// Creates standard configuration for examples
 	/// </summary>
+	/// <returns>Configured options with default settings</returns>
+	public static OmniClientOptions CreateStandardOptions() => CreateStandardOptions("your-username", 30);
+
+	/// <summary>
+	/// Creates standard configuration for examples
+	/// </summary>
+	/// <param name="identity">User identity</param>
+	/// <returns>Configured options with default timeout</returns>
+	public static OmniClientOptions CreateStandardOptions(string identity) => CreateStandardOptions(identity, 30);
+
+	/// <summary>
+	/// Creates standard configuration for examples
+	/// </summary>
 	/// <param name="identity">User identity</param>
 	/// <param name="timeoutSeconds">Timeout in seconds</param>
 	/// <returns>Configured options</returns>
-	public static OmniClientOptions CreateStandardOptions(string identity = "your-username", int timeoutSeconds = 30) => new()
+	public static OmniClientOptions CreateStandardOptions(string identity, int timeoutSeconds) => new()
 	{
 		Endpoint = "https://your-omni-instance.example.com",
 		Identity = identity,
@@ -24,9 +37,15 @@ public static class ExampleConfigurationFactory
 	/// <summary>
 	/// Creates read-only configuration for examples
 	/// </summary>
+	/// <returns>Configured read-only options with default identity</returns>
+	public static OmniClientOptions CreateReadOnlyOptions() => CreateReadOnlyOptions("readonly-user");
+
+	/// <summary>
+	/// Creates read-only configuration for examples
+	/// </summary>
 	/// <param name="identity">User identity</param>
 	/// <returns>Configured read-only options</returns>
-	public static OmniClientOptions CreateReadOnlyOptions(string identity = "readonly-user") => new()
+	public static OmniClientOptions CreateReadOnlyOptions(string identity) => new()
 	{
 		Endpoint = "https://your-omni-instance.example.com",
 		Identity = identity,
@@ -40,9 +59,15 @@ public static class ExampleConfigurationFactory
 	/// <summary>
 	/// Creates configuration for streaming operations
 	/// </summary>
+	/// <returns>Configured options with longer timeout and default identity</returns>
+	public static OmniClientOptions CreateStreamingOptions() => CreateStreamingOptions("streaming-user");
+
+	/// <summary>
+	/// Creates configuration for streaming operations
+	/// </summary>
 	/// <param name="identity">User identity</param>
 	/// <returns>Configured options with longer timeout</returns>
-	public static OmniClientOptions CreateStreamingOptions(string identity = "streaming-user") => new()
+	public static OmniClientOptions CreateStreamingOptions(string identity) => new()
 	{
 		Endpoint = "https://your-omni-instance.example.com",
 		Identity = identity,

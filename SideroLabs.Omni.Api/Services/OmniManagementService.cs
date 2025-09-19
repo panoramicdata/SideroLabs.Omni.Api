@@ -6,6 +6,7 @@ using Management;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Constants;
 using SideroLabs.Omni.Api.Interfaces;
+using SideroLabs.Omni.Api.Models;
 using SideroLabs.Omni.Api.Security;
 using SideroLabs.Omni.Api.Utilities;
 
@@ -36,12 +37,28 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	public Task<string> GetKubeConfigAsync(CancellationToken cancellationToken) =>
+		GetKubeConfigAsync(false, null, null, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<string> GetKubeConfigAsync(bool serviceAccount, CancellationToken cancellationToken) =>
+		GetKubeConfigAsync(serviceAccount, null, null, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<string> GetKubeConfigAsync(bool serviceAccount, TimeSpan? serviceAccountTtl, CancellationToken cancellationToken) =>
+		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, null, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<string> GetKubeConfigAsync(bool serviceAccount, TimeSpan? serviceAccountTtl, string? serviceAccountUser, CancellationToken cancellationToken) =>
+		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, serviceAccountUser, null, cancellationToken);
+
+	/// <inheritdoc />
 	public async Task<string> GetKubeConfigAsync(
-		bool serviceAccount = false,
-		TimeSpan? serviceAccountTtl = null,
-		string? serviceAccountUser = null,
-		string[]? serviceAccountGroups = null,
-		CancellationToken cancellationToken = default)
+		bool serviceAccount,
+		TimeSpan? serviceAccountTtl,
+		string? serviceAccountUser,
+		string[]? serviceAccountGroups,
+		CancellationToken cancellationToken)
 	{
 		var request = new Management.KubeconfigRequest
 		{
@@ -70,7 +87,11 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task<string> GetTalosConfigAsync(bool admin = false, CancellationToken cancellationToken = default)
+	public Task<string> GetTalosConfigAsync(CancellationToken cancellationToken) =>
+		GetTalosConfigAsync(false, cancellationToken);
+
+	/// <inheritdoc />
+	public async Task<string> GetTalosConfigAsync(bool admin, CancellationToken cancellationToken)
 	{
 		var request = new Management.TalosconfigRequest
 		{
@@ -88,7 +109,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task<string> GetOmniConfigAsync(CancellationToken cancellationToken = default)
+	public async Task<string> GetOmniConfigAsync(CancellationToken cancellationToken)
 	{
 		var request = new Empty();
 
@@ -103,11 +124,19 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	public Task<string> CreateServiceAccountAsync(string armoredPgpPublicKey, CancellationToken cancellationToken) =>
+		CreateServiceAccountAsync(armoredPgpPublicKey, false, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<string> CreateServiceAccountAsync(string armoredPgpPublicKey, bool useUserRole, CancellationToken cancellationToken) =>
+		CreateServiceAccountAsync(armoredPgpPublicKey, useUserRole, null, cancellationToken);
+
+	/// <inheritdoc />
 	public async Task<string> CreateServiceAccountAsync(
 		string armoredPgpPublicKey,
-		bool useUserRole = false,
-		string? role = null,
-		CancellationToken cancellationToken = default)
+		bool useUserRole,
+		string? role,
+		CancellationToken cancellationToken)
 	{
 		var request = new Management.CreateServiceAccountRequest
 		{
@@ -128,7 +157,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task<IReadOnlyList<Interfaces.ServiceAccountInfo>> ListServiceAccountsAsync(CancellationToken cancellationToken = default)
+	public async Task<IReadOnlyList<ServiceAccountInfo>> ListServiceAccountsAsync(CancellationToken cancellationToken)
 	{
 		var request = new Empty();
 
@@ -139,11 +168,11 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			"service accounts listing",
 			cancellationToken);
 
-		var serviceAccounts = response.ServiceAccounts.Select(sa => new Interfaces.ServiceAccountInfo
+		var serviceAccounts = response.ServiceAccounts.Select(sa => new ServiceAccountInfo
 		{
 			Name = sa.Name,
 			Role = sa.Role,
-			PgpPublicKeys = [.. sa.PgpPublicKeys.Select(key => new Interfaces.PgpPublicKeyInfo
+			PgpPublicKeys = [.. sa.PgpPublicKeys.Select(key => new PgpPublicKeyInfo
 			{
 				Id = key.Id,
 				Armored = key.Armored,
@@ -158,7 +187,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	public async Task<string> RenewServiceAccountAsync(
 		string name,
 		string armoredPgpPublicKey,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		var request = new Management.RenewServiceAccountRequest
 		{
@@ -177,7 +206,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken = default)
+	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken)
 	{
 		var request = new Management.DestroyServiceAccountRequest
 		{
@@ -193,7 +222,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task ValidateConfigAsync(string config, CancellationToken cancellationToken = default)
+	public async Task ValidateConfigAsync(string config, CancellationToken cancellationToken)
 	{
 		var request = new Management.ValidateConfigRequest
 		{
@@ -211,7 +240,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	/// <inheritdoc />
 	public async Task<(bool Ok, string Reason)> KubernetesUpgradePreChecksAsync(
 		string newVersion,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		var request = new Management.KubernetesUpgradePreChecksRequest
 		{
@@ -229,11 +258,23 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(CancellationToken cancellationToken) =>
+		CreateSchematicAsync(null, null, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
+		CreateSchematicAsync(extensions, null, null, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
+		CreateSchematicAsync(extensions, extraKernelArgs, null, cancellationToken);
+
+	/// <inheritdoc />
 	public async Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
-		string[]? extensions = null,
-		string[]? extraKernelArgs = null,
-		Dictionary<uint, string>? metaValues = null,
-		CancellationToken cancellationToken = default)
+		string[]? extensions,
+		string[]? extraKernelArgs,
+		Dictionary<uint, string>? metaValues,
+		CancellationToken cancellationToken)
 	{
 		var request = new Management.CreateSchematicRequest();
 
@@ -266,11 +307,19 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	public IAsyncEnumerable<byte[]> StreamMachineLogsAsync(string machineId, CancellationToken cancellationToken) =>
+		StreamMachineLogsAsync(machineId, false, 100, cancellationToken);
+
+	/// <inheritdoc />
+	public IAsyncEnumerable<byte[]> StreamMachineLogsAsync(string machineId, bool follow, CancellationToken cancellationToken) =>
+		StreamMachineLogsAsync(machineId, follow, 100, cancellationToken);
+
+	/// <inheritdoc />
 	public async IAsyncEnumerable<byte[]> StreamMachineLogsAsync(
 		string machineId,
-		bool follow = false,
-		int tailLines = 100,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+		bool follow,
+		int tailLines,
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		var request = new Management.MachineLogsRequest
 		{
@@ -294,9 +343,13 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async IAsyncEnumerable<Interfaces.KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(
-		bool dryRun = false,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+	public IAsyncEnumerable<KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(CancellationToken cancellationToken) =>
+		StreamKubernetesSyncManifestsAsync(false, cancellationToken);
+
+	/// <inheritdoc />
+	public async IAsyncEnumerable<KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(
+		bool dryRun,
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		var request = new Management.KubernetesSyncManifestRequest
 		{
@@ -311,9 +364,9 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 		await foreach (var syncResult in call.ResponseStream.ReadAllAsync(cancellationToken))
 		{
-			yield return new Interfaces.KubernetesSyncResult
+			yield return new KubernetesSyncResult
 			{
-				ResponseType = (Interfaces.KubernetesSyncResult.SyncType)(int)syncResult.ResponseType,
+				ResponseType = (KubernetesSyncResult.SyncType)(int)syncResult.ResponseType,
 				Path = syncResult.Path,
 				Object = syncResult.Object.ToByteArray(),
 				Diff = syncResult.Diff,

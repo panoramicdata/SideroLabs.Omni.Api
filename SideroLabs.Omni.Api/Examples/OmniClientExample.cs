@@ -6,7 +6,7 @@ namespace SideroLabs.Omni.Api.Examples;
 /// Examples of the gRPC-only OmniClient API
 /// Demonstrates the actual ManagementService operations available in Omni
 /// </summary>
-public class OmniClientExample
+public static class OmniClientExample
 {
 	/// <summary>
 	/// Basic example of how to use the OmniClient to interact with the Omni Management gRPC API

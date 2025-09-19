@@ -94,9 +94,15 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	/// <summary>
 	/// Demonstrates the basic usage example
 	/// </summary>
+	/// <returns>Task representing the example execution</returns>
+	public static Task DemonstrateAsync() => DemonstrateAsync(CancellationToken.None);
+
+	/// <summary>
+	/// Demonstrates the basic usage example
+	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Task representing the example execution</returns>
-	public static async Task DemonstrateAsync(CancellationToken cancellationToken = default)
+	public static async Task DemonstrateAsync(CancellationToken cancellationToken)
 	{
 		var output = new ConsoleExampleOutput();
 		var example = new BasicUsageExample(output);

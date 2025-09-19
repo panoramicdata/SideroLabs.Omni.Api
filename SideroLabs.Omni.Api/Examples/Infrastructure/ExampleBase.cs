@@ -13,9 +13,15 @@ public abstract class ExampleBase(IExampleOutput output)
 	/// <summary>
 	/// Executes the example with standard error handling
 	/// </summary>
+	/// <returns>Task representing the example execution</returns>
+	public Task RunAsync() => RunAsync(CancellationToken.None);
+
+	/// <summary>
+	/// Executes the example with standard error handling
+	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Task representing the example execution</returns>
-	public async Task RunAsync(CancellationToken cancellationToken = default)
+	public async Task RunAsync(CancellationToken cancellationToken)
 	{
 		try
 		{

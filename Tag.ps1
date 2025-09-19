@@ -82,7 +82,8 @@ try {
 			Write-Information "   Using global dotnet nbgv tool" -InformationAction Continue
 		}
 	} catch {
-		# Ignore and try next approach
+		# Intentionally ignore errors and try next approach
+		Write-Verbose "Global nbgv tool not available, trying next approach"
 	}
 	
 	# Second try: dotnet tool run nbgv (local tool)
@@ -94,7 +95,8 @@ try {
 				Write-Information "   Using local dotnet tool nbgv" -InformationAction Continue
 			}
 		} catch {
-			# Ignore and try next approach
+			# Intentionally ignore errors and try next approach
+			Write-Verbose "Local nbgv tool not available, trying next approach"
 		}
 	}
 	

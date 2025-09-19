@@ -15,6 +15,7 @@ namespace
 kubernetes
 NuGet
 nuget
+omnictl
 Codacy
 xunit
 FluentAssertions
