@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE.txt" />
+    <File Path="management.proto" />
+    <File Path="nuget_key.txt" />
+    <File Path="README.md" />
+    <File Path="SideroLabs.Omni.Api.dic" />
+    <File Path="Tag.ps1" />
+    <File Path="version.json" />
+  </Folder>
+  <Project Path="SideroLabs.Omni.Api.Tests/SideroLabs.Omni.Api.Tests.csproj" />
+  <Project Path="SideroLabs.Omni.Api/SideroLabs.Omni.Api.csproj" />
+</Solution>

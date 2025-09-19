@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors />
+		<MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
 
 		<!-- Package Information -->
 		<PackageId>SideroLabs.Omni.Api</PackageId>

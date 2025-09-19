@@ -8,6 +8,7 @@
 		<IsTestProject>true</IsTestProject>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors />
+		<MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>

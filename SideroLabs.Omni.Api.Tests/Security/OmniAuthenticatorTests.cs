@@ -25,7 +25,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 
 		testKeyFile.Exists.Should().BeTrue("Test PGP key file should exist for this test");
 
-		var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
+		using var loggerFactory = new LoggerFactory();
+		var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
 
 		// Act
 		Logger.LogInformation("Calling FromFileAsync...");
@@ -50,7 +51,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 	{
 		// Arrange
 		var nonExistentFile = new FileInfo("non-existent-file.txt");
-		var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
+		using var loggerFactory = new LoggerFactory();
+		var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
 
 		// Act & Assert
 		var action = () => OmniAuthenticator.FromFileAsync(nonExistentFile, logger, CancellationToken);
@@ -67,7 +69,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 			await File.WriteAllTextAsync(tempFile, "invalid-base64-content!", CancellationToken);
 			var testKeyFile = new FileInfo(tempFile);
 
-			var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
+			using var loggerFactory = new LoggerFactory();
+			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
 
 			// Act & Assert
 			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
@@ -93,7 +96,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 			await File.WriteAllTextAsync(tempFile, base64Content, CancellationToken);
 			var testKeyFile = new FileInfo(tempFile);
 
-			var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
+			using var loggerFactory = new LoggerFactory();
+			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
 
 			// Act & Assert
 			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
@@ -119,7 +123,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 			await File.WriteAllTextAsync(tempFile, base64Content, CancellationToken);
 			var testKeyFile = new FileInfo(tempFile);
 
-			var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
+			using var loggerFactory = new LoggerFactory();
+			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
 
 			// Act & Assert
 			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
@@ -153,15 +158,15 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		// Check that all required headers are present
 		var timestampHeader = metadata.FirstOrDefault(m => m.Key == "x-sidero-timestamp");
 		timestampHeader.Should().NotBeNull("Timestamp header should be present");
-		timestampHeader.Value.Should().NotBeNullOrEmpty("Timestamp should not be empty");
+		timestampHeader!.Value.Should().NotBeNullOrEmpty("Timestamp should not be empty");
 
 		var payloadHeader = metadata.FirstOrDefault(m => m.Key == "x-sidero-payload");
 		payloadHeader.Should().NotBeNull("Payload header should be present");
-		payloadHeader.Value.Should().NotBeNullOrEmpty("Payload should not be empty");
+		payloadHeader!.Value.Should().NotBeNullOrEmpty("Payload should not be empty");
 
 		var signatureHeader = metadata.FirstOrDefault(m => m.Key == "x-sidero-signature");
 		signatureHeader.Should().NotBeNull("Signature header should be present");
-		signatureHeader.Value.Should().NotBeNullOrEmpty("Signature should not be empty");
+		signatureHeader!.Value.Should().NotBeNullOrEmpty("Signature should not be empty");
 
 		// Verify signature format: "siderov1 {identity} {fingerprint} {base64_signature}"
 		var signatureParts = signatureHeader.Value.Split(' ');
