@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace SideroLabs.Omni.Api.Extensions;
 
@@ -8,6 +9,23 @@ namespace SideroLabs.Omni.Api.Extensions;
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
+	/// Adds the Omni Client to the service collection using IOptions pattern
+	/// </summary>
+	/// <param name="services">The service collection</param>
+	/// <returns>The service collection for chaining</returns>
+	public static IServiceCollection AddOmniClient(this IServiceCollection services)
+	{
+		services.AddSingleton(provider =>
+		{
+			var options = provider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
+			var logger = provider.GetService<Microsoft.Extensions.Logging.ILogger<OmniClient>>();
+			return new OmniClient(options);
+		});
+
+		return services;
+	}
+
+	/// <summary>
 	/// Adds the Omni Client to the service collection
 	/// </summary>
 	/// <param name="services">The service collection</param>
@@ -15,13 +33,8 @@ public static class ServiceCollectionExtensions
 	/// <returns>The service collection for chaining</returns>
 	public static IServiceCollection AddOmniClient(this IServiceCollection services, Action<OmniClientOptions> configure)
 	{
-		var options = new OmniClientOptions();
-		configure(options);
-
-		services.AddSingleton(options);
-		services.AddSingleton<OmniClient>();
-
-		return services;
+		services.Configure(configure);
+		return services.AddOmniClient();
 	}
 
 	/// <summary>
@@ -32,9 +45,18 @@ public static class ServiceCollectionExtensions
 	/// <returns>The service collection for chaining</returns>
 	public static IServiceCollection AddOmniClient(this IServiceCollection services, OmniClientOptions options)
 	{
-		services.AddSingleton(options);
-		services.AddSingleton<OmniClient>();
-
-		return services;
+		services.Configure<OmniClientOptions>(opts =>
+		{
+			opts.Endpoint = options.Endpoint;
+			opts.Identity = options.Identity;
+			opts.PgpPrivateKey = options.PgpPrivateKey;
+			opts.PgpKeyFilePath = options.PgpKeyFilePath;
+			opts.TimeoutSeconds = options.TimeoutSeconds;
+			opts.UseTls = options.UseTls;
+			opts.ValidateCertificate = options.ValidateCertificate;
+			opts.IsReadOnly = options.IsReadOnly;
+			opts.Logger = options.Logger;
+		});
+		return services.AddOmniClient();
 	}
 }

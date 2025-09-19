@@ -54,7 +54,7 @@ public class MachineSpec
 	/// <summary>
 	/// Custom labels assigned to the machine
 	/// </summary>
-	public Dictionary<string, string> Labels { get; set; } = new();
+	public Dictionary<string, string> Labels { get; set; } = [];
 }
 
 /// <summary>

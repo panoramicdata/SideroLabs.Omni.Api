@@ -10,7 +10,7 @@ public class ListClustersResponse
 	/// <summary>
 	/// List of clusters
 	/// </summary>
-	public List<Cluster> Clusters { get; set; } = new();
+	public List<Cluster> Clusters { get; set; } = [];
 }
 
 /// <summary>

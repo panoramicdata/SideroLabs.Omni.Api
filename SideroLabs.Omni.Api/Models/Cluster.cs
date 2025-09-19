@@ -54,7 +54,7 @@ public class ClusterSpec
 	/// <summary>
 	/// List of enabled features for the cluster
 	/// </summary>
-	public List<string> Features { get; set; } = new();
+	public List<string> Features { get; set; } = [];
 }
 
 /// <summary>
@@ -75,5 +75,5 @@ public class ClusterStatus
 	/// <summary>
 	/// List of current conditions affecting the cluster
 	/// </summary>
-	public List<string> Conditions { get; set; } = new();
+	public List<string> Conditions { get; set; } = [];
 }

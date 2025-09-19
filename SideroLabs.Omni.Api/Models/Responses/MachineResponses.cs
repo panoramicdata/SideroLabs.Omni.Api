@@ -10,7 +10,7 @@ public class ListMachinesResponse
 	/// <summary>
 	/// List of machines
 	/// </summary>
-	public List<Machine> Machines { get; set; } = new();
+	public List<Machine> Machines { get; set; } = [];
 }
 
 /// <summary>

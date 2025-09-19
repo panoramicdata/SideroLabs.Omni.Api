@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SideroLabs.Omni.Api.Extensions;
 using Xunit;
 
@@ -20,16 +21,18 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		services.AddOmniClient(options =>
 		{
 			options.Endpoint = "https://test.example.com:8443";
-			options.AuthToken = "test-token";
+			options.Identity = "test-user";
+			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
 		});
 
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		var omniClientOptions = serviceProvider.GetService<OmniClientOptions>();
+		var omniClientOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
 		omniClientOptions.Should().NotBeNull();
-		omniClientOptions!.Endpoint.Should().Be("https://test.example.com:8443");
-		omniClientOptions.AuthToken.Should().Be("test-token");
+		omniClientOptions.Endpoint.Should().Be("https://test.example.com:8443");
+		omniClientOptions.Identity.Should().Be("test-user");
+		omniClientOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 
 		var omniClient = serviceProvider.GetService<OmniClient>();
 		omniClient.Should().NotBeNull();
@@ -43,7 +46,8 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		var options = new OmniClientOptions
 		{
 			Endpoint = "https://test.example.com:8443",
-			AuthToken = "test-token",
+			Identity = "test-user",
+			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60
 		};
 
@@ -53,13 +57,37 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		var registeredOptions = serviceProvider.GetService<OmniClientOptions>();
+		var registeredOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
 		registeredOptions.Should().NotBeNull();
-		registeredOptions!.Endpoint.Should().Be("https://test.example.com:8443");
-		registeredOptions.AuthToken.Should().Be("test-token");
+		registeredOptions.Endpoint.Should().Be("https://test.example.com:8443");
+		registeredOptions.Identity.Should().Be("test-user");
+		registeredOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 		registeredOptions.TimeoutSeconds.Should().Be(60);
 
 		var omniClient = serviceProvider.GetService<OmniClient>();
 		omniClient.Should().NotBeNull();
+	}
+
+	[Fact]
+	public void AddOmniClient_WithAction_ConfiguresOptions()
+	{
+		// Arrange
+		var services = new ServiceCollection();
+
+		// Act
+		services.AddOmniClient(options =>
+		{
+			options.Endpoint = "https://test.example.com";
+			options.Identity = "test-user";
+			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
+		});
+
+		var serviceProvider = services.BuildServiceProvider();
+		var omniClientOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
+
+		// Assert
+		omniClientOptions.Endpoint.Should().Be("https://test.example.com");
+		omniClientOptions.Identity.Should().Be("test-user");
+		omniClientOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 	}
 }
