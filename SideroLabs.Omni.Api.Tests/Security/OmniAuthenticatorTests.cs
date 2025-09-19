@@ -1,9 +1,9 @@
+using System.Text.Json;
 using AwesomeAssertions;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Security;
 using Xunit;
-using Grpc.Core;
-using System.Text.Json;
 
 namespace SideroLabs.Omni.Api.Tests.Security;
 
@@ -15,14 +15,14 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		// Arrange
 		var currentDirectory = Directory.GetCurrentDirectory();
 		Logger.LogInformation("Current Directory: {CurrentDirectory}", currentDirectory);
-		
+
 		var testDataDirectory = Path.Combine(currentDirectory, "TestData");
 		Logger.LogInformation("Test Data Directory: {TestDataDirectory}", testDataDirectory);
-		
+
 		var testKeyFile = new FileInfo(Path.Combine(testDataDirectory, "pgp-key-test.txt"));
 		Logger.LogInformation("Test Key File Path: {TestKeyFilePath}", testKeyFile.FullName);
 		Logger.LogInformation("Test Key File Exists: {TestKeyFileExists}", testKeyFile.Exists);
-		
+
 		testKeyFile.Exists.Should().BeTrue("Test PGP key file should exist for this test");
 
 		var logger = new LoggerFactory().CreateLogger<OmniAuthenticator>();
@@ -136,7 +136,7 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 	public async Task SignRequest_WithValidPgpKeyFile_SignsGrpcRequest()
 	{
 		// Arrange
-		var authenticator = await base.CreateTestAuthenticatorAsync();
+		var authenticator = await CreateTestAuthenticatorAsync();
 
 		// Create sample gRPC metadata and method
 		var metadata = new Metadata();

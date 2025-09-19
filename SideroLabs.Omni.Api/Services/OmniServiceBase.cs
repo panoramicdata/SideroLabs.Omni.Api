@@ -10,30 +10,22 @@ namespace SideroLabs.Omni.Api.Services;
 /// <summary>
 /// Base class for all Omni service implementations
 /// </summary>
-public abstract class OmniServiceBase
+/// <remarks>
+/// Initializes a new instance of the OmniServiceBase class
+/// </remarks>
+/// <param name="options">Client options</param>
+/// <param name="logger">Logger instance</param>
+/// <param name="channel">gRPC channel</param>
+/// <param name="authenticator">Authentication provider</param>
+public abstract class OmniServiceBase(
+	OmniClientOptions options,
+	GrpcChannel channel,
+	OmniAuthenticator? authenticator)
 {
-	protected readonly OmniClientOptions Options;
-	protected readonly ILogger Logger;
-	protected readonly GrpcChannel Channel;
-	protected readonly OmniAuthenticator? Authenticator;
-
-	/// <summary>
-	/// Initializes a new instance of the OmniServiceBase class
-	/// </summary>
-	/// <param name="options">Client options</param>
-	/// <param name="logger">Logger instance</param>
-	/// <param name="channel">gRPC channel</param>
-	/// <param name="authenticator">Authentication provider</param>
-	protected OmniServiceBase(
-		OmniClientOptions options,
-		GrpcChannel channel,
-		OmniAuthenticator? authenticator)
-	{
-		Options = options ?? throw new ArgumentNullException(nameof(options));
-		Logger = options.Logger;
-		Channel = channel ?? throw new ArgumentNullException(nameof(channel));
-		Authenticator = authenticator;
-	}
+	protected readonly OmniClientOptions Options = options ?? throw new ArgumentNullException(nameof(options));
+	protected readonly ILogger Logger = options.Logger;
+	protected readonly GrpcChannel Channel = channel ?? throw new ArgumentNullException(nameof(channel));
+	protected readonly OmniAuthenticator? Authenticator = authenticator;
 
 	/// <summary>
 	/// Creates call options with authentication and timeout

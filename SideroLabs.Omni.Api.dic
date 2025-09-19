@@ -19,10 +19,13 @@ Codacy
 xunit
 FluentAssertions
 GitVersioning
+Omniconfig
 nupkg
 snupkg
+Talosconfig
 TestResults
 TLS
+TTL
 AppSettings
 cancellationToken
 CancellationTokenSource

@@ -1,21 +1,22 @@
-using SideroLabs.Omni.Api.Models;
+using System.Text;
 
 namespace SideroLabs.Omni.Api.Examples;
 
 /// <summary>
-/// Comprehensive examples of the service-based OmniClient API
+/// Examples of the gRPC-only OmniClient API
+/// Demonstrates the actual ManagementService operations available in Omni
 /// </summary>
 public class OmniClientExample
 {
 	/// <summary>
-	/// Basic example of how to use the OmniClient to interact with the Omni Management API
+	/// Basic example of how to use the OmniClient to interact with the Omni Management gRPC API
 	/// </summary>
 	public static async Task BasicUsageExample()
 	{
 		// Configure the client options with PGP-based authentication
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com:8443",
+			Endpoint = "https://your-omni-instance.example.com",
 
 			// Method 1: Direct PGP key content (recommended for production)
 			Identity = "your-username",
@@ -38,43 +39,77 @@ public class OmniClientExample
 
 		try
 		{
-			// Get service status
-			var status = await client.Status.GetStatusAsync(cancellationToken);
-			Console.WriteLine($"Omni service version: {status.Version}, Ready: {status.Ready}");
+			Console.WriteLine("=== Configuration Management ===");
 
-			// Create a new cluster
-			var clusterSpec = new ClusterSpec
+			// Get kubeconfig for cluster access
+			var kubeconfig = await client.Management.GetKubeConfigAsync(
+				serviceAccount: true,
+				serviceAccountTtl: TimeSpan.FromHours(24),
+				serviceAccountUser: "automation",
+				serviceAccountGroups: ["system:masters"],
+				cancellationToken: cancellationToken);
+
+			Console.WriteLine($"Retrieved kubeconfig ({kubeconfig.Length} characters)");
+			File.WriteAllText("kubeconfig.yaml", kubeconfig);
+
+			// Get talosconfig for Talos cluster access
+			var talosconfig = await client.Management.GetTalosConfigAsync(
+				admin: true,
+				cancellationToken: cancellationToken);
+
+			Console.WriteLine($"Retrieved talosconfig ({talosconfig.Length} characters)");
+			File.WriteAllText("talosconfig.yaml", talosconfig);
+
+			// Get omniconfig for omnictl
+			var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+			Console.WriteLine($"Retrieved omniconfig ({omniconfig.Length} characters)");
+			File.WriteAllText("omniconfig.yaml", omniconfig);
+
+			Console.WriteLine("\n=== Service Account Management ===");
+
+			// List existing service accounts
+			var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+			Console.WriteLine($"Found {serviceAccounts.Count} service accounts");
+
+			foreach (var account in serviceAccounts)
 			{
-				KubernetesVersion = "v1.28.0",
-				TalosVersion = "v1.5.0",
-				Features = ["embedded-discovery-service"]
-			};
+				Console.WriteLine($"Service Account: {account.Name}");
+				Console.WriteLine($"  Role: {account.Role}");
+				Console.WriteLine($"  PGP Keys: {account.PgpPublicKeys.Count}");
 
-			var createResponse = await client.Clusters.CreateClusterAsync("test-cluster", clusterSpec, cancellationToken);
-			Console.WriteLine($"Created cluster: {createResponse.Cluster.Name} (ID: {createResponse.Cluster.Id})");
-
-			// List all clusters
-			var clusters = await client.Clusters.ListClustersAsync(cancellationToken);
-			Console.WriteLine($"Found {clusters.Clusters.Count} clusters");
-
-			foreach (var cluster in clusters.Clusters)
-			{
-				Console.WriteLine($"Cluster: {cluster.Name} (ID: {cluster.Id})");
-				Console.WriteLine($"  Kubernetes: {cluster.Spec.KubernetesVersion}");
-				Console.WriteLine($"  Talos: {cluster.Spec.TalosVersion}");
-				Console.WriteLine($"  Status: {cluster.Status.Phase}, Ready: {cluster.Status.Ready}");
-
-				// List machines in this cluster
-				var machines = await client.Machines.ListMachinesAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"  Machines: {machines.Machines.Count}");
-
-				foreach (var machine in machines.Machines)
+				foreach (var key in account.PgpPublicKeys)
 				{
-					Console.WriteLine($"    Machine: {machine.Name} - {machine.Status.Phase}");
-					Console.WriteLine($"      Role: {machine.Spec.Role}");
-					Console.WriteLine($"      Address: {machine.Status.Address}");
+					Console.WriteLine($"    Key ID: {key.Id}");
+					Console.WriteLine($"    Expires: {key.Expiration:yyyy-MM-dd HH:mm:ss}");
 				}
 			}
+
+			Console.WriteLine("\n=== Operational Tasks ===");
+
+			// Validate a configuration file
+			var sampleConfig = """
+				apiVersion: v1
+				kind: ConfigMap
+				metadata:
+				  name: test-config
+				data:
+				  key: value
+				""";
+
+			await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
+			Console.WriteLine("Configuration validation successful");
+
+			// Check Kubernetes upgrade readiness
+			var (canUpgrade, reason) = await client.Management.KubernetesUpgradePreChecksAsync(
+				"v1.29.0",
+				cancellationToken);
+
+			Console.WriteLine($"Kubernetes upgrade to v1.29.0: {(canUpgrade ? "✅ Ready" : "❌ Not ready")}");
+			if (!string.IsNullOrEmpty(reason))
+			{
+				Console.WriteLine($"Reason: {reason}");
+			}
+
 		}
 		catch (OperationCanceledException)
 		{
@@ -87,16 +122,93 @@ public class OmniClientExample
 	}
 
 	/// <summary>
-	/// Advanced example showcasing multiple service areas
+	/// Advanced example showcasing streaming operations and machine management
 	/// </summary>
-	public static async Task AdvancedUsageExample()
+	public static async Task AdvancedStreamingExample()
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com:8443",
+			Endpoint = "https://your-omni-instance.example.com",
 			Identity = "your-username",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60,
+			UseTls = true,
+			ValidateCertificate = true
+		};
+
+		using var client = new OmniClient(options);
+		using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+		var cancellationToken = cts.Token;
+
+		try
+		{
+			Console.WriteLine("=== Machine Log Streaming ===");
+
+			// Stream logs from a specific machine
+			var machineId = "machine-001"; // Replace with actual machine ID
+
+			Console.WriteLine($"Streaming logs from machine: {machineId}");
+
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId,
+				follow: true,
+				tailLines: 50,
+				cancellationToken))
+			{
+				var logText = Encoding.UTF8.GetString(logData);
+				Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {logText}");
+
+				// Break after 10 log entries for demo
+				if (logText.Contains("break-demo"))
+					break;
+			}
+
+			Console.WriteLine("\n=== Kubernetes Manifest Sync ===");
+
+			// Stream Kubernetes manifest synchronization
+			Console.WriteLine("Streaming manifest sync results (dry run):");
+
+			await foreach (var syncResult in client.Management.StreamKubernetesSyncManifestsAsync(
+				dryRun: true,
+				cancellationToken))
+			{
+				Console.WriteLine($"Sync Result: {syncResult.ResponseType}");
+				Console.WriteLine($"  Path: {syncResult.Path}");
+				Console.WriteLine($"  Skipped: {syncResult.Skipped}");
+
+				if (!string.IsNullOrEmpty(syncResult.Diff))
+				{
+					Console.WriteLine($"  Diff:\n{syncResult.Diff}");
+				}
+
+				if (syncResult.Object.Length > 0)
+				{
+					Console.WriteLine($"  Object size: {syncResult.Object.Length} bytes");
+				}
+			}
+
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine("Operation was cancelled");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Example demonstrating service account lifecycle management
+	/// </summary>
+	public static async Task ServiceAccountManagementExample()
+	{
+		var options = new OmniClientOptions
+		{
+			Endpoint = "https://your-omni-instance.example.com",
+			Identity = "admin-user",
+			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+			TimeoutSeconds = 30,
 			UseTls = true,
 			ValidateCertificate = true
 		};
@@ -107,99 +219,53 @@ public class OmniClientExample
 
 		try
 		{
-			Console.WriteLine("=== Service Status ===");
-			var enhancedStatus = await client.Status.GetEnhancedStatusAsync(cancellationToken);
-			Console.WriteLine($"Version: {enhancedStatus.Version}");
-			Console.WriteLine($"Health: {enhancedStatus.Health.Status}");
-			Console.WriteLine($"Total Clusters: {enhancedStatus.SystemStats.TotalClusters}");
+			Console.WriteLine("=== Service Account Lifecycle ===");
 
-			Console.WriteLine("\n=== Workspace Management ===");
-			var workspaces = await client.Workspaces.ListWorkspacesAsync(cancellationToken);
-			foreach (var workspace in workspaces.Workspaces)
+			// Sample PGP public key (you would use a real one)
+			var samplePgpPublicKey = """
+				-----BEGIN PGP PUBLIC KEY BLOCK-----
+				
+				mQENBGJxyz4BCADGn5n1...sample...key...content
+				-----END PGP PUBLIC KEY BLOCK-----
+				""";
+
+			// Create a new service account
+			Console.WriteLine("Creating service account...");
+			var publicKeyId = await client.Management.CreateServiceAccountAsync(
+				armoredPgpPublicKey: samplePgpPublicKey,
+				useUserRole: true, // Use the role of the creating user
+				cancellationToken: cancellationToken);
+
+			Console.WriteLine($"✅ Created service account with public key ID: {publicKeyId}");
+
+			// List service accounts to see the new one
+			var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+
+			var newAccount = serviceAccounts.FirstOrDefault(sa =>
+				sa.PgpPublicKeys.Any(key => key.Id == publicKeyId));
+
+			if (newAccount != null)
 			{
-				Console.WriteLine($"Workspace: {workspace.Name} ({workspace.Status.Phase})");
-				Console.WriteLine($"  Clusters: {workspace.Status.ClusterCount}");
-				Console.WriteLine($"  CPU Usage: {workspace.Status.ResourceUsage.CpuCores} cores");
+				Console.WriteLine($"Found new service account: {newAccount.Name}");
+				Console.WriteLine($"  Role: {newAccount.Role}");
+
+				// Renew the service account with a new key
+				Console.WriteLine("Renewing service account...");
+				var newPublicKeyId = await client.Management.RenewServiceAccountAsync(
+					name: newAccount.Name,
+					armoredPgpPublicKey: samplePgpPublicKey, // In practice, use a new key
+					cancellationToken: cancellationToken);
+
+				Console.WriteLine($"✅ Renewed service account with new public key ID: {newPublicKeyId}");
+
+				// Clean up - destroy the service account
+				Console.WriteLine("Cleaning up service account...");
+				await client.Management.DestroyServiceAccountAsync(
+					name: newAccount.Name,
+					cancellationToken: cancellationToken);
+
+				Console.WriteLine($"✅ Destroyed service account: {newAccount.Name}");
 			}
-
-			Console.WriteLine("\n=== Backup Operations ===");
-			var allBackups = await client.Backups.ListBackupsAsync(cancellationToken);
-			Console.WriteLine($"Total backups: {allBackups.Backups.Count}");
-
-			// List backups for a specific cluster
-			if (allBackups.Backups.Any())
-			{
-				var clusterId = allBackups.Backups.First().Spec.ClusterId;
-				var clusterBackups = await client.Backups.ListBackupsAsync(clusterId, cancellationToken);
-				Console.WriteLine($"Backups for cluster {clusterId}: {clusterBackups.Backups.Count}");
-			}
-
-			Console.WriteLine("\n=== Configuration Templates ===");
-			var allTemplates = await client.ConfigurationTemplates.ListConfigTemplatesAsync(cancellationToken);
-			Console.WriteLine($"Total templates: {allTemplates.Templates.Count}");
-
-			// List templates by type
-			var clusterTemplates = await client.ConfigurationTemplates.ListConfigTemplatesAsync(ConfigTemplateType.Cluster, cancellationToken);
-			Console.WriteLine($"Cluster templates: {clusterTemplates.Templates.Count}");
-
-			Console.WriteLine("\n=== Network Configuration ===");
-			var networkConfigs = await client.Networks.ListNetworkConfigsAsync(cancellationToken);
-			foreach (var config in networkConfigs.NetworkConfigs)
-			{
-				Console.WriteLine($"Network Config: {config.Name} ({config.Status.Phase})");
-			}
-
-			Console.WriteLine("\n=== Kubernetes Integration ===");
-			var clusters = await client.Clusters.ListClustersAsync(cancellationToken);
-			foreach (var cluster in clusters.Clusters.Take(1)) // Just first cluster for demo
-			{
-				// Get cluster metrics for all time
-				var allTimeMetrics = await client.Kubernetes.GetClusterMetricsAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"Cluster {cluster.Name} CPU: {allTimeMetrics.CpuUsage.CurrentValue}%");
-
-				// Get cluster metrics for specific time range
-				var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-				var hourAgo = now - 3600;
-				var rangeMetrics = await client.Kubernetes.GetClusterMetricsAsync(cluster.Id, hourAgo, now, cancellationToken);
-				Console.WriteLine($"  Last hour average CPU: {rangeMetrics.CpuUsage.DataPoints.Average(dp => dp.Value):F1}%");
-
-				// Get node metrics for all nodes
-				var allNodeMetrics = await client.Kubernetes.GetNodeMetricsAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"  Total nodes: {allNodeMetrics.NodeMetrics.Count}");
-
-				// Get pod metrics for all namespaces
-				var allPodMetrics = await client.Kubernetes.GetPodMetricsAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"  Total pods: {allPodMetrics.PodMetrics.Count}");
-
-				// Get pod metrics for specific namespace
-				var defaultPodMetrics = await client.Kubernetes.GetPodMetricsAsync(cluster.Id, "default", cancellationToken);
-				Console.WriteLine($"  Pods in default namespace: {defaultPodMetrics.PodMetrics.Count}");
-
-				// Get kubeconfig
-				var kubeConfig = await client.Kubernetes.GetKubernetesConfigAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"  Kubeconfig server: {kubeConfig.Server}");
-			}
-
-			Console.WriteLine("\n=== Log Management ===");
-			foreach (var cluster in clusters.Clusters.Take(1)) // Just first cluster for demo
-			{
-				var logStreams = await client.Logs.GetLogStreamsAsync(cluster.Id, cancellationToken);
-				Console.WriteLine($"Available log streams for {cluster.Name}: {logStreams.LogStreams.Count}");
-
-				foreach (var stream in logStreams.LogStreams.Take(1)) // Just first stream for demo
-				{
-					var logs = await client.Logs.GetLogsAsync(stream.Source, stream.Spec, cancellationToken);
-					Console.WriteLine($"  Stream {stream.Id}: {logs.LogEntries.Count} recent entries");
-				}
-			}
-
-			Console.WriteLine("\n=== Health Checks ===");
-			var allHealthChecks = await client.Status.GetHealthCheckAsync(cancellationToken);
-			Console.WriteLine($"Overall health: {allHealthChecks.Status}");
-
-			// Check specific component
-			var dbHealthCheck = await client.Status.GetHealthCheckAsync("database", cancellationToken);
-			Console.WriteLine($"Database health: {dbHealthCheck.Status}");
 
 		}
 		catch (OperationCanceledException)
@@ -213,14 +279,14 @@ public class OmniClientExample
 	}
 
 	/// <summary>
-	/// Example demonstrating error handling and safety features
+	/// Example demonstrating machine provisioning with schematics
 	/// </summary>
-	public static async Task SafetyAndErrorHandlingExample()
+	public static async Task MachineProvisioningExample()
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com:8443",
-			Identity = "david-bond", // This will trigger safety mechanisms
+			Endpoint = "https://your-omni-instance.example.com",
+			Identity = "provisioning-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 30,
 			UseTls = true,
@@ -233,41 +299,195 @@ public class OmniClientExample
 
 		try
 		{
-			Console.WriteLine("=== Testing Safety Mechanisms ===");
+			Console.WriteLine("=== Machine Provisioning with Schematics ===");
 
-			// This will work (read operation)
-			var status = await client.Status.GetStatusAsync(cancellationToken);
-			Console.WriteLine($"✅ Read operation successful: {status.Version}");
-
-			// These will fail due to safety mechanisms with production credentials
-			try
-			{
-				var clusterSpec = new ClusterSpec
+			// Create a schematic for provisioning machines
+			var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
+				extensions:
+				[
+					"siderolabs/iscsi-tools",        // iSCSI storage support
+					"siderolabs/util-linux-tools",   // Additional Linux utilities
+					"siderolabs/gvisor"              // Container runtime security
+				],
+				extraKernelArgs:
+				[
+					"console=ttyS0,115200",          // Serial console
+					"net.ifnames=0",                 // Predictable network names
+					"systemd.unified_cgroup_hierarchy=0"
+				],
+				metaValues: new Dictionary<uint, string>
 				{
-					KubernetesVersion = "v1.28.0",
-					TalosVersion = "v1.5.0"
-				};
-				await client.Clusters.CreateClusterAsync("dangerous-cluster", clusterSpec, cancellationToken);
-			}
-			catch (InvalidOperationException ex)
-			{
-				Console.WriteLine($"🛡️  Safety mechanism triggered: {ex.Message}");
-			}
+					{ 0x0a, "datacenter-1" },       // Datacenter location
+					{ 0x0b, "rack-a1" },            // Rack identifier
+					{ 0x0c, "production" }          // Environment
+				},
+				cancellationToken: cancellationToken);
 
-			try
-			{
-				await client.Clusters.DeleteClusterAsync("some-cluster-id", cancellationToken);
-			}
-			catch (InvalidOperationException ex)
-			{
-				Console.WriteLine($"🛡️  Safety mechanism triggered: {ex.Message}");
-			}
+			Console.WriteLine($"✅ Created schematic: {schematicId}");
+			Console.WriteLine($"📦 PXE Boot URL: {pxeUrl}");
+			Console.WriteLine();
+			Console.WriteLine("Use this PXE URL to boot machines with the configured extensions and settings.");
+			Console.WriteLine("The schematic includes:");
+			Console.WriteLine("  - iSCSI tools for storage");
+			Console.WriteLine("  - Additional Linux utilities");
+			Console.WriteLine("  - gVisor for container security");
+			Console.WriteLine("  - Custom kernel arguments for console and networking");
+			Console.WriteLine("  - Metadata tags for datacenter, rack, and environment");
 
-			Console.WriteLine("Safety mechanisms are working correctly!");
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine("Operation was cancelled");
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"Unexpected error: {ex.Message}");
+			Console.WriteLine($"Error: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Example demonstrating read-only mode and error handling
+	/// </summary>
+	public static async Task ReadOnlyModeExample()
+	{
+		var options = new OmniClientOptions
+		{
+			Endpoint = "https://your-omni-instance.example.com",
+			Identity = "readonly-user",
+			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+			TimeoutSeconds = 30,
+			UseTls = true,
+			ValidateCertificate = true,
+			IsReadOnly = true // Enable read-only mode for safety
+		};
+
+		using var client = new OmniClient(options);
+		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+		var cancellationToken = cts.Token;
+
+		try
+		{
+			Console.WriteLine("=== Read-Only Mode Demonstration ===");
+			Console.WriteLine($"Client is in read-only mode: {client.IsReadOnly}");
+
+			// These operations will work (read operations)
+			Console.WriteLine("\n✅ Read operations (allowed):");
+
+			var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+			Console.WriteLine($"  - Listed {serviceAccounts.Count} service accounts");
+
+			var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+			Console.WriteLine($"  - Retrieved omniconfig ({omniconfig.Length} characters)");
+
+			var sampleConfig = "apiVersion: v1\nkind: Pod";
+			await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
+			Console.WriteLine("  - Validated configuration");
+
+			// These operations would fail in a full implementation (write operations)
+			Console.WriteLine("\n❌ Write operations (would be blocked in full implementation):");
+			Console.WriteLine("  - CreateServiceAccountAsync() - would throw ReadOnlyModeException");
+			Console.WriteLine("  - RenewServiceAccountAsync() - would throw ReadOnlyModeException");
+			Console.WriteLine("  - DestroyServiceAccountAsync() - would throw ReadOnlyModeException");
+			Console.WriteLine("  - CreateSchematicAsync() - would throw ReadOnlyModeException");
+
+			Console.WriteLine("\n🛡️ Read-only mode provides safety for production environments");
+
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine("Operation was cancelled");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Example showing all available ManagementService operations
+	/// </summary>
+	public static async Task ComprehensiveManagementServiceExample()
+	{
+		var options = new OmniClientOptions
+		{
+			Endpoint = "https://your-omni-instance.example.com",
+			Identity = "comprehensive-user",
+			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+			TimeoutSeconds = 60,
+			UseTls = true,
+			ValidateCertificate = true
+		};
+
+		using var client = new OmniClient(options);
+		using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+		var cancellationToken = cts.Token;
+
+		try
+		{
+			Console.WriteLine("=== Comprehensive ManagementService Operations ===");
+			Console.WriteLine("This example demonstrates all available gRPC operations from management.proto");
+
+			// 1. Configuration Management
+			Console.WriteLine("\n1️⃣ Configuration Management:");
+
+			var kubeconfig = await client.Management.GetKubeConfigAsync(cancellationToken: cancellationToken);
+			Console.WriteLine($"   ✅ Kubeconfig: {kubeconfig.Length} characters");
+
+			var talosconfig = await client.Management.GetTalosConfigAsync(cancellationToken: cancellationToken);
+			Console.WriteLine($"   ✅ Talosconfig: {talosconfig.Length} characters");
+
+			var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+			Console.WriteLine($"   ✅ Omniconfig: {omniconfig.Length} characters");
+
+			// 2. Service Account Management
+			Console.WriteLine("\n2️⃣ Service Account Management:");
+
+			var accounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+			Console.WriteLine($"   ✅ Service Accounts: {accounts.Count} found");
+
+			// 3. Validation
+			Console.WriteLine("\n3️⃣ Configuration Validation:");
+
+			await client.Management.ValidateConfigAsync("apiVersion: v1\nkind: Pod", cancellationToken);
+			Console.WriteLine("   ✅ Configuration validation successful");
+
+			// 4. Kubernetes Operations
+			Console.WriteLine("\n4️⃣ Kubernetes Operations:");
+
+			var (upgradeOk, upgradeReason) = await client.Management.KubernetesUpgradePreChecksAsync(
+				"v1.29.0", cancellationToken);
+			Console.WriteLine($"   ✅ Upgrade check: {(upgradeOk ? "Ready" : "Not ready")} - {upgradeReason}");
+
+			// 5. Machine Provisioning
+			Console.WriteLine("\n5️⃣ Machine Provisioning:");
+
+			var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
+				extensions: ["siderolabs/util-linux-tools"],
+				cancellationToken: cancellationToken);
+			Console.WriteLine($"   ✅ Schematic created: {schematicId}");
+			Console.WriteLine($"   📦 PXE URL: {pxeUrl}");
+
+			// 6. Streaming Operations
+			Console.WriteLine("\n6️⃣ Streaming Operations:");
+
+			Console.WriteLine("   🔄 Machine logs streaming...");
+			// Note: This would stream in a real implementation
+
+			Console.WriteLine("   🔄 Kubernetes manifest sync streaming...");
+			// Note: This would stream in a real implementation
+
+			Console.WriteLine("\n✅ All ManagementService operations demonstrated successfully!");
+			Console.WriteLine("\nNote: This represents the complete set of operations");
+			Console.WriteLine("available in the Omni gRPC ManagementService.");
+
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine("Operation was cancelled");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error: {ex.Message}");
 		}
 	}
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package common;
 
-option go_package = "github.com/siderolabs/omni-client/api/common";
+option go_package = "github.com/siderolabs/omni/client/api/common";
 
 // Data source.
 enum Runtime {

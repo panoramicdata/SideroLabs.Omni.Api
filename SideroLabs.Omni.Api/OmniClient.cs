@@ -1,5 +1,6 @@
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Extensions;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Security;
 using SideroLabs.Omni.Api.Services;
@@ -7,31 +8,47 @@ using SideroLabs.Omni.Api.Services;
 namespace SideroLabs.Omni.Api;
 
 /// <summary>
-/// An Omni Client for interacting with the Sidero Labs Omni Management API
+/// Client for interacting with the SideroLabs Omni gRPC API
+/// This is a gRPC-only client that implements the actual Omni services
 /// </summary>
-/// <param name="omniClientOptions">Configuration options for the client</param>
-/// <param name="logger">Logger instance</param>
-public class OmniClient(OmniClientOptions omniClientOptions) : IDisposable
+public class OmniClient : IOmniClient
 {
-	private readonly OmniClientOptions _options = omniClientOptions ?? throw new ArgumentNullException(nameof(omniClientOptions));
-	private readonly GrpcChannel _channel = CreateChannel(omniClientOptions);
-	private readonly OmniAuthenticator? _authenticator = CreateAuthenticator(omniClientOptions);
-	private bool _disposed;
+	private readonly OmniClientOptions _options;
+	private readonly ILogger _logger;
+	private readonly GrpcChannel _channel;
+	private readonly OmniAuthenticator? _authenticator;
 
-	// Service instances - lazy initialization
-	private IClusterManagement? _clusterManagement;
-	private IMachineManagement? _machineManagement;
-	private IWorkspaceManagement? _workspaceManagement;
-	private IBackupOperations? _backupOperations;
-	private IRestoreOperations? _restoreOperations;
-	private ILogManagement? _logManagement;
-	private INetworkManagement? _networkManagement;
-	private IConfigurationTemplateManagement? _configurationTemplateManagement;
-	private IKubernetesIntegration? _kubernetesIntegration;
-	private IServiceStatus? _serviceStatus;
+	// Lazy-loaded services
+	private IManagementService? _managementService;
 
 	/// <summary>
-	/// Gets the configured endpoint
+	/// Initializes a new instance of the OmniClient class
+	/// </summary>
+	/// <param name="options">Configuration options for the client</param>
+	public OmniClient(OmniClientOptions options)
+	{
+		_options = options ?? throw new ArgumentNullException(nameof(options));
+		_logger = _options.Logger;
+
+		ValidateOptions();
+
+		// Create gRPC channel
+		_channel = CreateGrpcChannel();
+
+		// Initialize authenticator if credentials are provided
+		_authenticator = CreateAuthenticator();
+
+		_logger.LogInformation("Initialized Omni gRPC client for endpoint: {Endpoint}", _options.Endpoint);
+	}
+
+	/// <summary>
+	/// Gets the Management Service for administrative and operational tasks
+	/// This is the primary service interface provided by Omni
+	/// </summary>
+	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
+
+	/// <summary>
+	/// Gets the gRPC endpoint URL
 	/// </summary>
 	public string Endpoint => _options.Endpoint;
 
@@ -41,131 +58,104 @@ public class OmniClient(OmniClientOptions omniClientOptions) : IDisposable
 	public bool UseTls => _options.UseTls;
 
 	/// <summary>
-	/// Gets the cluster management service
+	/// Gets whether the client is in read-only mode
 	/// </summary>
-	public IClusterManagement Clusters => _clusterManagement ??= new ClusterManagement(_options, _channel, _authenticator);
+	public bool IsReadOnly => _options.IsReadOnly;
 
 	/// <summary>
-	/// Gets the machine management service
+	/// Gets the authentication identity if available
 	/// </summary>
-	public IMachineManagement Machines => _machineManagement ??= new MachineManagement(_options, _channel, _authenticator);
+	public string? Identity => _authenticator?.Identity;
 
-	/// <summary>
-	/// Gets the workspace management service
-	/// </summary>
-	public IWorkspaceManagement Workspaces => _workspaceManagement ??= new WorkspaceManagement(_options, _channel, _authenticator);
+	private void ValidateOptions()
+	{
+		if (string.IsNullOrWhiteSpace(_options.Endpoint))
+		{
+			throw new ArgumentException("Endpoint is required", nameof(_options.Endpoint));
+		}
 
-	/// <summary>
-	/// Gets the backup operations service
-	/// </summary>
-	public IBackupOperations Backups => _backupOperations ??= new BackupOperations(_options, _channel, _authenticator);
+		if (!Uri.TryCreate(_options.Endpoint, UriKind.Absolute, out _))
+		{
+			throw new ArgumentException("Endpoint must be a valid URI", nameof(_options.Endpoint));
+		}
 
-	/// <summary>
-	/// Gets the restore operations service
-	/// </summary>
-	public IRestoreOperations RestoreOperations => _restoreOperations ??= new RestoreOperations(_options, _channel, _authenticator);
+		if (_options.TimeoutSeconds <= 0)
+		{
+			throw new ArgumentException("TimeoutSeconds must be positive", nameof(_options.TimeoutSeconds));
+		}
 
-	/// <summary>
-	/// Gets the log management service
-	/// </summary>
-	public ILogManagement Logs => _logManagement ??= new LogManagement(_options, _channel, _authenticator);
+		_logger.LogDebug("OmniClient options validated successfully");
+	}
 
-	/// <summary>
-	/// Gets the network management service
-	/// </summary>
-	public INetworkManagement Networks => _networkManagement ??= new NetworkManagement(_options, _channel, _authenticator);
-
-	/// <summary>
-	/// Gets the configuration template management service
-	/// </summary>
-	public IConfigurationTemplateManagement ConfigurationTemplates => _configurationTemplateManagement ??= new ConfigurationTemplateManagement(_options, _channel, _authenticator);
-
-	/// <summary>
-	/// Gets the Kubernetes integration service
-	/// </summary>
-	public IKubernetesIntegration Kubernetes => _kubernetesIntegration ??= new KubernetesIntegration(_options, _channel, _authenticator);
-
-	/// <summary>
-	/// Gets the service status service
-	/// </summary>
-	public IServiceStatus Status => _serviceStatus ??= new ServiceStatus(_options, _channel, _authenticator);
-
-	/// <summary>
-	/// Creates a gRPC channel with the specified options
-	/// </summary>
-	private static GrpcChannel CreateChannel(OmniClientOptions options)
+	private GrpcChannel CreateGrpcChannel()
 	{
 		var channelOptions = new GrpcChannelOptions
 		{
-			HttpHandler = CreateHttpHandler(options)
+			MaxReceiveMessageSize = 64 * 1024 * 1024, // 64MB for large responses
+			MaxSendMessageSize = 16 * 1024 * 1024,    // 16MB for large requests
 		};
 
-		return GrpcChannel.ForAddress(options.Endpoint, channelOptions);
-	}
-
-	/// <summary>
-	/// Creates an HTTP handler with the specified security options
-	/// </summary>
-	private static HttpClientHandler CreateHttpHandler(OmniClientOptions options)
-	{
-		var handler = new HttpClientHandler();
-
-		if (!options.ValidateCertificate)
+		// Configure HTTP handler for certificate validation
+		if (!_options.ValidateCertificate)
 		{
-			handler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+			var httpHandler = new HttpClientHandler
+			{
+				ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+			};
+
+			channelOptions.HttpHandler = httpHandler;
+			_logger.LogWarning("Certificate validation is disabled");
 		}
 
-		return handler;
+		var channel = GrpcChannel.ForAddress(_options.Endpoint, channelOptions);
+		_logger.LogDebug("Created gRPC channel for {Endpoint}", _options.Endpoint);
+
+		return channel;
 	}
 
-	/// <summary>
-	/// Creates an authenticator based on the options
-	/// </summary>
-	private static OmniAuthenticator? CreateAuthenticator(OmniClientOptions options)
+	private OmniAuthenticator? CreateAuthenticator()
 	{
+		// Try to create authenticator from provided credentials
 		try
 		{
-			// Prioritize direct PGP key content
-			if (!string.IsNullOrEmpty(options.Identity) && !string.IsNullOrEmpty(options.PgpPrivateKey))
+			if (!string.IsNullOrEmpty(_options.Identity) && !string.IsNullOrEmpty(_options.PgpPrivateKey))
 			{
-				return new OmniAuthenticator(options.Identity, options.PgpPrivateKey, options.Logger);
+				return new OmniAuthenticator(_options.Identity, _options.PgpPrivateKey, _logger);
 			}
 
-			// Fallback to file path
-			if (!string.IsNullOrEmpty(options.PgpKeyFilePath))
+			if (!string.IsNullOrEmpty(_options.PgpKeyFilePath))
 			{
-				var keyFile = new FileInfo(options.PgpKeyFilePath);
-				// Note: This will be async in real usage, but for now we'll return null
-				// and handle authentication setup later
-				options.Logger.LogWarning("PGP key file path specified but async initialization not yet implemented: {FilePath}", options.PgpKeyFilePath);
-				return null;
+				var keyFile = new FileInfo(_options.PgpKeyFilePath);
+				return OmniAuthenticator.FromFileAsync(keyFile, _logger).GetAwaiter().GetResult();
 			}
 
-			options.Logger.LogWarning("No PGP authentication configured. Some operations may fail.");
+			_logger.LogWarning("No authentication credentials provided - operating in unauthenticated mode");
 			return null;
 		}
 		catch (Exception ex)
 		{
-			options.Logger.LogWarning(ex, "Failed to initialize PGP authenticator. Operations will continue without authentication.");
+			_logger.LogError(ex, "Failed to initialize authenticator - continuing without authentication");
 			return null;
 		}
 	}
 
-	#region IDisposable
-
 	/// <summary>
-	/// Disposes the client and releases resources
+	/// Disposes the OmniClient and releases all resources
 	/// </summary>
 	public void Dispose()
 	{
-		if (!_disposed)
+		_logger.LogDebug("Disposing OmniClient");
+
+		try
 		{
+			(_managementService as IDisposable)?.Dispose();
 			_channel?.Dispose();
-			_disposed = true;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error disposing OmniClient resources");
 		}
 
 		GC.SuppressFinalize(this);
 	}
-
-	#endregion
 }

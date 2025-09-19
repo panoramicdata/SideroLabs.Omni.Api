@@ -1,279 +1,281 @@
-# SideroLabs.Omni.Api
+# SideroLabs Omni API Client
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/YOUR_PROJECT_ID_HERE)](https://app.codacy.com/gh/panoramicdata/SideroLabs.Omni.Api/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/YOUR_PROJECT_ID_HERE)](https://app.codacy.com/gh/panoramicdata/SideroLabs.Omni.Api/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
-[![NuGet](https://img.shields.io/nuget/v/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
-[![NuGet](https://img.shields.io/nuget/dt/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
-A .NET client library for interacting with the [SideroLabs Omni](https://omni.siderolabs.com/) Management API using gRPC with proper PGP-based authentication.
+This client provides strongly-typed C# interfaces for the Omni gRPC services, with built-in PGP-based authentication and enterprise-ready features.
 
 ## Features
 
-- **Complete API Coverage** - Support for all cluster and machine management operations
-- **gRPC-based** - High-performance communication with the Omni Management API
-- **PGP Authentication** - Implements Sidero Labs' official gRPC request signing mechanism
-- **Async/Await** - Modern asynchronous programming patterns throughout
-- **Cancellation Support** - Proper cancellation token support for all operations
-- **Dependency Injection** - Built-in support for .NET dependency injection
-- **Type Safety** - Strongly typed models for all API operations
-- **TLS Configuration** - Flexible TLS and certificate validation options
-- **Safety Features** - Built-in safeguards against accidental destructive operations
+### 🔐 **Authentic gRPC Implementation**
+- **Native gRPC client** - Direct implementation of Omni's actual gRPC services
+- **PGP-based authentication** - Uses Omni's standard PGP signature authentication
+- **Streaming support** - Real-time log streaming and manifest synchronization
+- **Type-safe operations** - Generated from official Omni proto definitions
 
-## Installation
+### 🛠️ **Omni ManagementService Operations**
+Based on the actual `management.proto` from the Omni project:
 
-Install the package via NuGet:
+**Configuration Management:**
+- `GetKubeconfigAsync()` - Retrieve kubeconfig for clusters
+- `GetTalosconfigAsync()` - Retrieve talosconfig for Talos clusters  
+- `GetOmniconfigAsync()` - Retrieve omnictl client configuration
+
+**Service Account Management:**
+- `CreateServiceAccountAsync()` - Create new service accounts
+- `RenewServiceAccountAsync()` - Renew service account credentials
+- `ListServiceAccountsAsync()` - List all service accounts
+- `DestroyServiceAccountAsync()` - Delete service accounts
+
+**Operational Tasks:**
+- `StreamMachineLogsAsync()` - Stream logs from machines in real-time
+- `ValidateConfigAsync()` - Validate configuration files
+- `KubernetesUpgradePreChecksAsync()` - Check if K8s upgrade is safe
+- `StreamKubernetesSyncManifestsAsync()` - Sync Kubernetes manifests
+- `CreateSchematicAsync()` - Create schematics for machine provisioning
+
+### 🛡️ **Enterprise Features**
+- **Read-only mode** - Prevent accidental destructive operations
+- **Comprehensive logging** - Structured logging with Microsoft.Extensions.Logging
+- **Proper error handling** - gRPC status codes and meaningful error messages
+- **Timeout management** - Configurable request timeouts
+- **Connection pooling** - Efficient gRPC channel management
+
+## Quick Start
+
+### Installation
 
 ```bash
 dotnet add package SideroLabs.Omni.Api
 ```
 
-Or via the Package Manager Console:
-
-```powershell
-Install-Package SideroLabs.Omni.Api
-```
-
-## Authentication
-
-Omni uses a custom PGP-based authentication mechanism that signs each gRPC request. This library implements the official [go-api-signature](https://github.com/siderolabs/go-api-signature) specification.
-
-### PGP Key Requirements
-
-You need a PGP private key from Sidero Labs in one of these formats:
-- **Ed25519** (recommended)
-- **RSA**
-- **ECDSA**
-
-### Authentication Format
-
-The authentication is handled automatically by signing each gRPC request with three headers:
-- `x-sidero-timestamp`: Request timestamp
-- `x-sidero-payload`: JSON payload containing method and selected headers
-- `x-sidero-signature`: `siderov1 {identity} {fingerprint} {base64_signature}`
-
-## Quick Start
-
-### Method 1: Direct PGP Key Content (Recommended)
+### Basic Usage
 
 ```csharp
 using SideroLabs.Omni.Api;
-using SideroLabs.Omni.Api.Models;
 
-// Configure the client with PGP authentication
+// Configure the client
 var options = new OmniClientOptions
 {
-    Endpoint = "https://your-omni-instance.com:8443",
+    Endpoint = "https://your-omni-instance.com",
     Identity = "your-username",
-    PgpPrivateKey = @"-----BEGIN PGP PRIVATE KEY BLOCK-----
-lQHYBGU7... your PGP private key content ...
------END PGP PRIVATE KEY BLOCK-----",
-    TimeoutSeconds = 30
+    PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...",
+    UseTls = true,
+    ValidateCertificate = true
 };
 
 // Create the client
 using var client = new OmniClient(options);
-using var cts = new CancellationTokenSource();
 
-// Get service status
-var status = await client.GetStatusAsync(cts.Token);
-Console.WriteLine($"Omni v{status.Version} - Ready: {status.Ready}");
+// Get kubeconfig for a cluster
+var kubeconfig = await client.Management.GetKubeconfigAsync(
+    serviceAccount: true,
+    serviceAccountTtl: TimeSpan.FromHours(24),
+    cancellationToken: cancellationToken);
 
-// List clusters
-var clusters = await client.ListClustersAsync(cts.Token);
-foreach (var cluster in clusters.Clusters)
+// List service accounts
+var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+
+// Stream machine logs
+await foreach (var logEntry in client.Management.StreamMachineLogsAsync(
+    "machine-id", 
+    follow: true, 
+    tailLines: 100, 
+    cancellationToken))
 {
-    Console.WriteLine($"Cluster: {cluster.Name} ({cluster.Status.Phase})");
+    Console.WriteLine(Encoding.UTF8.GetString(logEntry));
 }
 ```
 
-### Method 2: PGP Key File
+### Authentication Setup
 
-If you have a PGP key file from Sidero Labs (base64-encoded JSON format):
+The client uses **PGP-based authentication** as required by Omni:
 
 ```csharp
 var options = new OmniClientOptions
 {
-    Endpoint = "https://your-omni-instance.com:8443",
-    PgpKeyFilePath = "/path/to/your/pgp-key-file.txt",
-    TimeoutSeconds = 30
+    Endpoint = "https://omni.example.com",
+    Identity = "your-omni-username",
+    PgpPrivateKey = File.ReadAllText("path/to/private-key.asc"),
+    Logger = logger
 };
 ```
 
-### Dependency Injection
-
-In your `Program.cs` or `Startup.cs`:
+Or load from a base64-encoded key file:
 
 ```csharp
-using SideroLabs.Omni.Api.Extensions;
-
-// Configure from appsettings.json
-builder.Services.Configure<OmniClientOptions>(
-    builder.Configuration.GetSection("Omni"));
-
-// Add the Omni client to DI
-builder.Services.AddOmniClient();
-
-// Or configure directly
-builder.Services.AddOmniClient(options =>
+var options = new OmniClientOptions
 {
-    options.Endpoint = builder.Configuration["Omni:Endpoint"];
-    options.Identity = builder.Configuration["Omni:Identity"];
-    options.PgpPrivateKey = builder.Configuration["Omni:PgpPrivateKey"];
-    options.TimeoutSeconds = 30;
-});
+    Endpoint = "https://omni.example.com",
+    PgpKeyFilePath = "path/to/key-file.json" // Contains base64-encoded JSON
+};
 ```
 
-Configuration in `appsettings.json`:
+### Read-Only Mode
 
-```json
+Enable read-only mode for safe production use:
+
+```csharp
+var options = new OmniClientOptions
 {
-  "Omni": {
-    "Endpoint": "https://your-omni-instance.com:8443",
-    "Identity": "your-username",
-    "PgpPrivateKey": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
-    "TimeoutSeconds": 30,
-    "UseTls": true,
-    "ValidateCertificate": true
-  }
+    Endpoint = "https://omni.example.com",
+    Identity = "readonly-user", 
+    PgpPrivateKey = "...",
+    IsReadOnly = true // Prevents destructive operations
+};
+```
+
+## Advanced Usage
+
+### Service Account Management
+
+```csharp
+// Create a service account
+var publicKeyId = await client.Management.CreateServiceAccountAsync(
+    armoredPgpPublicKey: pgpPublicKey,
+    useUserRole: true,
+    cancellationToken: cancellationToken);
+
+// Renew service account
+await client.Management.RenewServiceAccountAsync(
+    name: "service-account-name",
+    armoredPgpPublicKey: newPgpPublicKey,
+    cancellationToken: cancellationToken);
+```
+
+### Kubernetes Operations
+
+```csharp
+// Check if Kubernetes upgrade is safe
+var (canUpgrade, reason) = await client.Management.KubernetesUpgradePreChecksAsync(
+    newVersion: "v1.29.0",
+    cancellationToken: cancellationToken);
+
+// Sync Kubernetes manifests
+await foreach (var syncResult in client.Management.StreamKubernetesSyncManifestsAsync(
+    dryRun: true,
+    cancellationToken: cancellationToken))
+{
+    Console.WriteLine($"Synced: {syncResult.Path}");
 }
 ```
 
-## API Operations
-
-### Cluster Management
+### Machine Provisioning
 
 ```csharp
-// Create a cluster
-var spec = new ClusterSpec
-{
-    KubernetesVersion = "v1.28.0",
-    TalosVersion = "v1.5.0",
-    Features = new List<string> { "embedded-discovery-service" }
-};
-
-var createResponse = await client.CreateClusterAsync("my-cluster", spec, cancellationToken);
-
-// Get a specific cluster
-var cluster = await client.GetClusterAsync("cluster-id", cancellationToken);
-
-// Update a cluster
-var updateResponse = await client.UpdateClusterAsync("cluster-id", updatedSpec, cancellationToken);
-
-// Delete a cluster
-await client.DeleteClusterAsync("cluster-id", cancellationToken);
+// Create a schematic for machine provisioning
+var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
+    extensions: new[] { "siderolabs/iscsi-tools", "siderolabs/util-linux-tools" },
+    extraKernelArgs: new[] { "console=ttyS0" },
+    metaValues: new Dictionary<uint, string> { { 0x0a, "rack-1" } },
+    cancellationToken: cancellationToken);
 ```
 
-### Machine Management
+## Configuration
+
+### OmniClientOptions
+
+| Property | Description | Default |
+|----------|-------------|---------|
+| `Endpoint` | Omni gRPC endpoint URL | *Required* |
+| `Identity` | Username for PGP authentication | *Required* |
+| `PgpPrivateKey` | PGP private key (armored format) | *Optional* |
+| `PgpKeyFilePath` | Path to PGP key file | *Optional* |
+| `TimeoutSeconds` | Request timeout in seconds | `30` |
+| `UseTls` | Enable TLS encryption | `true` |
+| `ValidateCertificate` | Validate server certificates | `true` |
+| `IsReadOnly` | Enable read-only mode | `false` |
+| `Logger` | Microsoft.Extensions.Logging logger | `NullLogger` |
+
+### Dependency Injection
 
 ```csharp
-// List machines in a cluster
-var machines = await client.ListMachinesAsync("cluster-id", cancellationToken);
-
-// Get a specific machine
-var machine = await client.GetMachineAsync("machine-id", cancellationToken);
-
-// Update machine labels
-var machineSpec = new MachineSpec
+services.AddOmniClient(options =>
 {
-    Role = "worker",
-    Labels = new Dictionary<string, string>
+    options.Endpoint = "https://omni.example.com";
+    options.Identity = "api-user";
+    options.PgpPrivateKey = Environment.GetEnvironmentVariable("OMNI_PGP_KEY");
+});
+
+// Inject and use
+public class MyService
+{
+    private readonly IOmniClient _omniClient;
+
+    public MyService(IOmniClient omniClient)
     {
-        { "environment", "production" },
-        { "zone", "us-west-2a" }
+        _omniClient = omniClient;
     }
-};
 
-await client.UpdateMachineAsync("machine-id", machineSpec, cancellationToken);
+    public async Task<byte[]> GetKubeconfigAsync()
+    {
+        return await _omniClient.Management.GetKubeconfigAsync();
+    }
+}
 ```
 
-## Configuration Options
+## Architecture
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `Endpoint` | `string` | Required | The gRPC endpoint URL for the Omni Management API |
-| `Identity` | `string?` | `null` | Your username/identity for PGP authentication |
-| `PgpPrivateKey` | `string?` | `null` | PGP private key content (armored format) |
-| `PgpKeyFilePath` | `string?` | `null` | Alternative: path to PGP key file |
-| `TimeoutSeconds` | `int` | `30` | Timeout for gRPC calls in seconds |
-| `UseTls` | `bool` | `true` | Whether to use Transport Layer Security for the connection |
-| `ValidateCertificate` | `bool` | `true` | Whether to validate the server certificate |
+This client is built around the **actual Omni gRPC services**:
 
-## Safety Features
+```
+OmniClient
+└── Management (IManagementService)
+    ├── Configuration Operations (kubeconfig, talosconfig, omniconfig)
+    ├── Service Account Management (create, renew, list, destroy)
+    ├── Machine Operations (logs streaming)
+    ├── Kubernetes Operations (upgrade checks, manifest sync)
+    └── Provisioning (schematic creation)
+```
 
-The library includes built-in safety features to prevent accidental destructive operations:
+**Note**: This client implements **only the gRPC services that Omni actually provides**. It does not include cluster CRUD operations, as these are handled through different mechanisms in the Omni architecture.
 
-- **Production Credential Protection**: Destructive operations (create, update, delete) are blocked when using production credentials during development
-- **Non-destructive Testing**: Read operations (list, get, status) work safely with any credentials
-- **Graceful Authentication Failures**: Invalid PGP keys don't crash the client but log warnings
+## Requirements
 
-## Authentication Technical Details
-
-This library implements the Sidero Labs authentication mechanism exactly as specified in [go-api-signature](https://github.com/siderolabs/go-api-signature):
-
-1. **Request Timestamping**: Each request gets a Unix timestamp
-2. **Payload Construction**: Creates a JSON payload with the gRPC method and selected headers
-3. **PGP Signing**: Signs the payload using your PGP private key
-4. **Header Injection**: Adds authentication headers to the gRPC metadata
-
-### Supported PGP Key Types
-
-- **Ed25519**: Modern elliptic curve (recommended by Sidero Labs)
-- **RSA**: Traditional RSA keys (RSA-SHA256 signature)
-- **ECDSA**: Elliptic Curve DSA (ES256 signature)
+- **.NET 9.0** or later
+- **gRPC support** (included)
+- **Valid Omni instance** with gRPC endpoint
+- **PGP key pair** for authentication
 
 ## Error Handling
 
-The client throws standard .NET exceptions for error conditions:
+The client provides comprehensive error handling:
 
 ```csharp
 try
 {
-    var clusters = await client.ListClustersAsync(cancellationToken);
+    var result = await client.Management.GetKubeconfigAsync();
 }
-catch (OperationCanceledException)
+catch (RpcException ex) when (ex.StatusCode == StatusCode.Unauthenticated)
 {
-    // Handle cancellation
+    // Handle authentication errors
+    logger.LogError("Authentication failed: {Message}", ex.Message);
 }
-catch (RpcException ex)
+catch (RpcException ex) when (ex.StatusCode == StatusCode.PermissionDenied)
 {
-    // Handle gRPC-specific errors
-    Console.WriteLine($"gRPC Error: {ex.Status.Detail}");
+    // Handle authorization errors
+    logger.LogError("Permission denied: {Message}", ex.Message);
 }
-catch (InvalidOperationException ex) when (ex.Message.Contains("PGP"))
+catch (ReadOnlyModeException ex)
 {
-    // Handle PGP authentication errors
-    Console.WriteLine($"Authentication Error: {ex.Message}");
-}
-catch (Exception ex)
-{
-    // Handle other errors
-    Console.WriteLine($"Error: {ex.Message}");
+    // Handle read-only mode violations
+    logger.LogWarning("Operation blocked in read-only mode: {Operation}", ex.Operation);
 }
 ```
 
-## Development Status
-
-This library is currently in active development:
-
-- ✅ **Phase 1 Complete**: PGP-based authentication mechanism
-- 🔄 **Phase 2 In Progress**: gRPC client integration
-- 📋 **Phase 3 Planned**: Complete API implementation with real gRPC calls
-
-The authentication mechanism is production-ready and follows Sidero Labs' official specification.
-
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details.
 
-## Support
+## Links
 
-For questions and support, please open an issue on the [GitHub repository](https://github.com/panoramicdata/SideroLabs.Omni.Api/issues).
-
----
-
-**Copyright © Panoramic Data Limited 2025**
+- **Omni Documentation**: https://omni.siderolabs.com/
+- **SideroLabs**: https://www.siderolabs.com/
+- **Talos Linux**: https://talos.dev/

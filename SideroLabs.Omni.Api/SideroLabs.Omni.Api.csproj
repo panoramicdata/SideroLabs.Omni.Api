@@ -6,21 +6,21 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<WarningsAsErrors />
-		
+
 		<!-- Package Information -->
 		<PackageId>SideroLabs.Omni.Api</PackageId>
-		<Title>SideroLabs Omni API Client</Title>
+		<Title>SideroLabs Omni gRPC API Client</Title>
 		<Authors>Panoramic Data Limited</Authors>
 		<Company>Panoramic Data Limited</Company>
 		<Product>SideroLabs.Omni.Api</Product>
-		<Description>A .NET client library for interacting with the SideroLabs Omni Management API using gRPC</Description>
+		<Description>A .NET gRPC client library for the SideroLabs Omni Management API. Provides native gRPC implementations of Omni services with PGP authentication.</Description>
 		<Copyright>Panoramic Data Limited 2025</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>siderolabs;omni;api;grpc;kubernetes;talos;cluster;management</PackageTags>
-		<PackageReleaseNotes>Initial release of the SideroLabs Omni API client library</PackageReleaseNotes>
+		<PackageTags>siderolabs;omni;grpc;api;kubernetes;talos;management;pgp</PackageTags>
+		<PackageReleaseNotes>Client implementation for SideroLabs Omni Management API via gRPC</PackageReleaseNotes>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeSymbols>true</IncludeSymbols>
@@ -51,6 +51,7 @@
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.66.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.66.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -58,11 +59,16 @@
 		<None Include="Logo.png" Pack="true" PackagePath="" />
 	</ItemGroup>
 
-	<!-- Protobuf compilation ready for when needed -->
-	<!--
+	<!-- Enable protobuf compilation with proper include paths -->
 	<ItemGroup>
-		<Protobuf Include="Protos\management.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\management.proto" GrpcServices="Client" ProtoRoot="Protos" />
+		<Protobuf Include="Protos\common\common.proto" GrpcServices="None" ProtoRoot="Protos" />
+		<Protobuf Include="Protos\omni.proto" GrpcServices="None" ProtoRoot="Protos" />
+		<Protobuf Include="Protos\google\rpc\status.proto" GrpcServices="None" ProtoRoot="Protos" />
 	</ItemGroup>
-	-->
+	<ItemGroup>
+		<Folder Include="Models\Requests\" />
+		<Folder Include="Models\Responses\" />
+	</ItemGroup>
 
 </Project>

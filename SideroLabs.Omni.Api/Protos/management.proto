@@ -1,7 +1,7 @@
 syntax = "proto3";
 package management;
 
-option go_package = "github.com/siderolabs/omni-client/api/omni/management";
+option go_package = "github.com/siderolabs/omni/client/api/omni/management";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -38,8 +38,10 @@ message ValidateConfigRequest {
 }
 
 message TalosconfigRequest {
-  // Admin indicates whether to generate an admin talosconfig or a regular one.
-  bool admin = 1;
+  // Raw indicates whether to generate an raw talosconfig or a regular one.
+  bool raw = 1;
+  // BreakGlass indicates whether to generate an operator break glass talosconfig or a regular one.
+  bool break_glass = 2;
 }
 
 message CreateServiceAccountRequest {
@@ -49,6 +51,7 @@ message CreateServiceAccountRequest {
   // When true, role will be ignored and the service account will be created with the role of the creating user.
   bool use_user_role = 3;
   string role = 4;
+  string name = 5;
 }
 
 message CreateServiceAccountResponse {
@@ -90,6 +93,8 @@ message KubeconfigRequest {
   google.protobuf.Duration service_account_ttl = 2;
   string service_account_user = 3;
   repeated string service_account_groups = 4;
+  string grant_type = 5;
+  bool break_glass = 6;
 }
 
 message KubernetesUpgradePreChecksRequest {
@@ -120,14 +125,109 @@ message KubernetesSyncManifestResponse {
 }
 
 message CreateSchematicRequest {
+  enum SiderolinkGRPCTunnelMode {
+    AUTO = 0;
+    DISABLED = 1;
+    ENABLED = 2;
+  }
+
   repeated string extensions = 1;
   repeated string extra_kernel_args = 2;
   map<uint32, string> meta_values = 3;
+  string talos_version = 4;
+  string media_id = 5;
+  bool secure_boot = 6;
+  SiderolinkGRPCTunnelMode siderolink_grpc_tunnel_mode = 7;
+  string join_token = 8;
 }
 
 message CreateSchematicResponse {
   string schematic_id = 1;
   string pxe_url = 2;
+  bool grpc_tunnel_enabled = 3;
+}
+
+message GetSupportBundleRequest {
+  string cluster = 1;
+}
+
+message GetSupportBundleResponse {
+  message Progress {
+    string source = 1;
+    string error = 2;
+    string state = 3;
+    int32 total = 4;
+    int32 value = 5;
+  }
+
+  Progress progress = 1;
+  bytes bundle_data = 2;
+}
+
+// specifies start and end time (inclusive range) in <year>-<month>-<day> format. We pass time as string to avoid timezone issues.
+message ReadAuditLogRequest {
+  string start_time = 1;
+  string end_time = 2;
+}
+
+message ReadAuditLogResponse {
+  bytes audit_log = 1;
+}
+
+message ValidateJsonSchemaRequest {
+  string data = 1;
+  string schema = 2;
+}
+
+message ValidateJsonSchemaResponse {
+  message Error {
+    repeated Error errors = 1;
+
+    string schema_path = 2;
+    string data_path = 3;
+    string cause = 4;
+  }
+
+  repeated Error errors = 1;
+}
+
+message MaintenanceUpgradeRequest {
+  string machine_id = 1;
+  string version = 2;
+}
+
+message MaintenanceUpgradeResponse {
+}
+
+message GetMachineJoinConfigRequest {
+  bool use_grpc_tunnel = 1;
+  string join_token = 2;
+}
+
+message GetMachineJoinConfigResponse {
+  repeated string kernel_args = 1;
+  string config = 2;
+}
+
+message GenJoinTokenResponse {
+  string token = 1;
+}
+
+message CreateJoinTokenRequest {
+  string name = 1;
+  google.protobuf.Timestamp expiration_time = 2;
+}
+
+message CreateJoinTokenResponse {
+  string id = 1;
+}
+
+message TearDownLockedClusterRequest {
+  string cluster_id = 1;
+}
+
+message TearDownLockedClusterResponse {
+
 }
 
 service ManagementService {
@@ -136,6 +236,7 @@ service ManagementService {
   rpc Omniconfig(google.protobuf.Empty) returns (OmniconfigResponse);
   rpc MachineLogs(MachineLogsRequest) returns (stream common.Data);
   rpc ValidateConfig(ValidateConfigRequest) returns (google.protobuf.Empty);
+  rpc ValidateJSONSchema(ValidateJsonSchemaRequest) returns (ValidateJsonSchemaResponse);
   rpc CreateServiceAccount(CreateServiceAccountRequest) returns (CreateServiceAccountResponse);
   rpc RenewServiceAccount(RenewServiceAccountRequest) returns (RenewServiceAccountResponse);
   rpc ListServiceAccounts(google.protobuf.Empty) returns (ListServiceAccountsResponse);
@@ -143,4 +244,10 @@ service ManagementService {
   rpc KubernetesUpgradePreChecks(KubernetesUpgradePreChecksRequest) returns (KubernetesUpgradePreChecksResponse);
   rpc KubernetesSyncManifests(KubernetesSyncManifestRequest) returns (stream KubernetesSyncManifestResponse);
   rpc CreateSchematic(CreateSchematicRequest) returns (CreateSchematicResponse);
+  rpc GetSupportBundle(GetSupportBundleRequest) returns (stream GetSupportBundleResponse);
+  rpc ReadAuditLog(ReadAuditLogRequest) returns (stream ReadAuditLogResponse);
+  rpc MaintenanceUpgrade(MaintenanceUpgradeRequest) returns (MaintenanceUpgradeResponse);
+  rpc GetMachineJoinConfig(GetMachineJoinConfigRequest) returns (GetMachineJoinConfigResponse);
+  rpc CreateJoinToken(CreateJoinTokenRequest) returns (CreateJoinTokenResponse);
+  rpc TearDownLockedCluster(TearDownLockedClusterRequest) returns (TearDownLockedClusterResponse);
 }

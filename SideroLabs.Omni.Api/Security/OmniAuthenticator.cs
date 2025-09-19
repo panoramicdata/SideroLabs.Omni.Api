@@ -20,6 +20,11 @@ public class OmniAuthenticator
 	private const string PayloadHeaderKey = "x-sidero-payload";
 	private const string SignatureHeaderKey = "x-sidero-signature";
 
+	private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+	{
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+	};
+
 	// Headers that are included in the signed payload (from go-api-signature)
 	private static readonly string[] IncludedHeaders = [
 		TimestampHeaderKey,
@@ -35,9 +40,7 @@ public class OmniAuthenticator
 	];
 
 	private readonly ILogger _logger;
-	private readonly string _identity;
 	private readonly PgpSecretKey _secretKey;
-	private readonly string _keyFingerprint;
 
 	/// <summary>
 	/// Creates a new OmniAuthenticator with PGP key content
@@ -47,18 +50,22 @@ public class OmniAuthenticator
 	/// <param name="logger">Logger instance</param>
 	public OmniAuthenticator(string identity, string pgpPrivateKey, ILogger logger)
 	{
-		_identity = identity ?? throw new ArgumentNullException(nameof(identity));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		ArgumentNullException.ThrowIfNull(identity, nameof(identity));
+		ArgumentNullException.ThrowIfNull(pgpPrivateKey, nameof(pgpPrivateKey));
+		ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
+		Identity = identity;
+		_logger = logger;
 
 		if (string.IsNullOrEmpty(pgpPrivateKey))
 		{
 			throw new ArgumentException("PGP private key cannot be null or empty", nameof(pgpPrivateKey));
 		}
 
-		(_secretKey, _keyFingerprint) = ParsePgpKey(pgpPrivateKey);
+		(_secretKey, KeyFingerprint) = ParsePgpKey(pgpPrivateKey);
 
 		_logger.LogInformation("Initialized Omni authenticator with identity: {Identity}, key fingerprint: {Fingerprint}",
-			_identity, _keyFingerprint);
+			Identity, KeyFingerprint);
 	}
 
 	/// <summary>
@@ -111,12 +118,12 @@ public class OmniAuthenticator
 	/// <summary>
 	/// Gets the identity from the PGP key
 	/// </summary>
-	public string Identity => _identity;
+	public string Identity { get; }
 
 	/// <summary>
 	/// Gets the PGP key fingerprint
 	/// </summary>
-	public string KeyFingerprint => _keyFingerprint;
+	public string KeyFingerprint { get; }
 
 	/// <summary>
 	/// Signs a gRPC request by adding authentication headers to the metadata
@@ -136,10 +143,7 @@ public class OmniAuthenticator
 
 		// Build payload from metadata and method
 		var payload = BuildPayload(metadata, method);
-		var payloadJson = JsonSerializer.Serialize(payload, new JsonSerializerOptions
-		{
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-		});
+		var payloadJson = JsonSerializer.Serialize(payload, _jsonSerializerOptions);
 
 		_logger.LogDebug("Signing payload: {Payload}", payloadJson);
 
@@ -150,7 +154,7 @@ public class OmniAuthenticator
 
 		// Add payload and signature headers
 		metadata.Add(PayloadHeaderKey, payloadJson);
-		metadata.Add(SignatureHeaderKey, $"{SignatureVersion} {_identity} {_keyFingerprint} {signatureBase64}");
+		metadata.Add(SignatureHeaderKey, $"{SignatureVersion} {Identity} {KeyFingerprint} {signatureBase64}");
 
 		_logger.LogInformation("Successfully signed gRPC request for method: {Method}", method);
 	}
@@ -160,10 +164,7 @@ public class OmniAuthenticator
 	/// Used for testing and debugging purposes
 	/// </summary>
 	/// <returns>A string containing identity and fingerprint info</returns>
-	public string GetAuthenticationInfo()
-	{
-		return $"Identity: {_identity}, Fingerprint: {_keyFingerprint}";
-	}
+	public string GetAuthenticationInfo() => $"Identity: {Identity}, Fingerprint: {KeyFingerprint}";
 
 	private (PgpSecretKey secretKey, string fingerprint) ParsePgpKey(string pgpPrivateKeyContent)
 	{
@@ -195,11 +196,8 @@ public class OmniAuthenticator
 	private byte[] SignData(byte[] data)
 	{
 		// Extract the private key (assuming no passphrase)
-		var privateKey = _secretKey.ExtractPrivateKey(null);
-		if (privateKey == null)
-		{
-			throw new InvalidOperationException("Failed to extract private key from PGP secret key");
-		}
+		var privateKey = _secretKey.ExtractPrivateKey(null)
+			?? throw new InvalidOperationException("Failed to extract private key from PGP secret key");
 
 		// Create PGP signature
 		var signatureGenerator = new PgpSignatureGenerator(_secretKey.PublicKey.Algorithm, HashAlgorithmTag.Sha256);
@@ -235,8 +233,8 @@ public class OmniAuthenticator
 
 		return new
 		{
-			headers = headers,
-			method = method
+			headers,
+			method
 		};
 	}
 
