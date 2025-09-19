@@ -147,7 +147,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		string? role,
 		CancellationToken cancellationToken)
 	{
-		EnsureWriteActionAllowed("service account");
+		EnsureWriteOperationAllowed("create", "service account");
 
 		var request = new Management.CreateServiceAccountRequest
 		{
@@ -201,7 +201,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		string armoredPgpPublicKey,
 		CancellationToken cancellationToken)
 	{
-		EnsureWriteActionAllowed("service account");
+		EnsureWriteOperationAllowed("update", "service account");
 
 		var request = new Management.RenewServiceAccountRequest
 		{
@@ -223,7 +223,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	[IsWriteAction(WriteActionType.Delete, Description = "Destroys a service account")]
 	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken)
 	{
-		EnsureWriteActionAllowed("service account");
+		EnsureWriteOperationAllowed("delete", "service account");
 
 		var request = new Management.DestroyServiceAccountRequest
 		{
@@ -294,7 +294,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		Dictionary<uint, string>? metaValues,
 		CancellationToken cancellationToken)
 	{
-		EnsureWriteActionAllowed("schematic");
+		EnsureWriteOperationAllowed("create", "schematic");
 
 		var request = new Management.CreateSchematicRequest();
 
@@ -375,7 +375,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		// Only enforce read-only mode for actual sync operations (not dry runs)
 		if (!dryRun)
 		{
-			EnsureWriteActionAllowed("kubernetes manifests");
+			EnsureWriteOperationAllowed("update", "kubernetes manifests");
 		}
 
 		var request = new Management.KubernetesSyncManifestRequest
