@@ -1,4 +1,5 @@
 using System.Text;
+using SideroLabs.Omni.Api.Exceptions;
 
 namespace SideroLabs.Omni.Api.Examples;
 
@@ -346,7 +347,7 @@ public static class OmniClientExample
 	}
 
 	/// <summary>
-	/// Example demonstrating read-only mode and error handling
+	/// Example demonstrating read-only mode and proper error handling
 	/// </summary>
 	public static async Task ReadOnlyModeExample()
 	{
@@ -383,19 +384,55 @@ public static class OmniClientExample
 			await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
 			Console.WriteLine("  - Validated configuration");
 
-			// These operations would fail in a full implementation (write operations)
-			Console.WriteLine("\n❌ Write operations (would be blocked in full implementation):");
-			Console.WriteLine("  - CreateServiceAccountAsync() - would throw ReadOnlyModeException");
-			Console.WriteLine("  - RenewServiceAccountAsync() - would throw ReadOnlyModeException");
-			Console.WriteLine("  - DestroyServiceAccountAsync() - would throw ReadOnlyModeException");
-			Console.WriteLine("  - CreateSchematicAsync() - would throw ReadOnlyModeException");
+			// Demonstrate proper exception handling for write operations
+			Console.WriteLine("\n❌ Write operations (blocked in read-only mode):");
+
+			try
+			{
+				await client.Management.CreateServiceAccountAsync("test-key", cancellationToken);
+				Console.WriteLine("  - CreateServiceAccountAsync() - UNEXPECTED: Should have thrown ReadOnlyModeException");
+			}
+			catch (ReadOnlyModeException ex)
+			{
+				Console.WriteLine($"  - CreateServiceAccountAsync() - ✅ Blocked: {ex.Message}");
+				Console.WriteLine($"    Operation: {ex.Operation}, Resource: {ex.ResourceType}");
+			}
+
+			try
+			{
+				await client.Management.CreateSchematicAsync(["test-extension"], cancellationToken);
+				Console.WriteLine("  - CreateSchematicAsync() - UNEXPECTED: Should have thrown ReadOnlyModeException");
+			}
+			catch (ReadOnlyModeException ex)
+			{
+				Console.WriteLine($"  - CreateSchematicAsync() - ✅ Blocked: {ex.Message}");
+				Console.WriteLine($"    Operation: {ex.Operation}, Resource: {ex.ResourceType}");
+			}
+
+			try
+			{
+				await client.Management.GetKubeConfigAsync(serviceAccount: true, cancellationToken);
+				Console.WriteLine("  - GetKubeConfigAsync(serviceAccount=true) - UNEXPECTED: Should have thrown ReadOnlyModeException");
+			}
+			catch (ReadOnlyModeException ex)
+			{
+				Console.WriteLine($"  - GetKubeConfigAsync(serviceAccount=true) - ✅ Blocked: {ex.Message}");
+				Console.WriteLine($"    Operation: {ex.Operation}, Resource: {ex.ResourceType}");
+			}
 
 			Console.WriteLine("\n🛡️ Read-only mode provides safety for production environments");
+			Console.WriteLine("💡 All write operations are properly blocked with clear error messages");
 
 		}
 		catch (OperationCanceledException)
 		{
 			Console.WriteLine("Operation was cancelled");
+		}
+		catch (ReadOnlyModeException ex)
+		{
+			Console.WriteLine($"❌ Read-only mode violation: {ex.Message}");
+			Console.WriteLine($"   Operation: {ex.Operation}");
+			Console.WriteLine($"   Resource: {ex.ResourceType}");
 		}
 		catch (Exception ex)
 		{

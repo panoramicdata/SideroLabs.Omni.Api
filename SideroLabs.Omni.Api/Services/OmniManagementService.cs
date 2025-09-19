@@ -6,6 +6,7 @@ using Management;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Constants;
 using SideroLabs.Omni.Api.Enums;
+using SideroLabs.Omni.Api.Exceptions;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Models;
 using SideroLabs.Omni.Api.Security;
@@ -61,6 +62,12 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		string[]? serviceAccountGroups,
 		CancellationToken cancellationToken)
 	{
+		// Service account creation is a write operation
+		if (serviceAccount)
+		{
+			EnsureWriteOperationAllowed("create", "service account");
+		}
+
 		var request = new Management.KubeconfigRequest
 		{
 			ServiceAccount = serviceAccount,
@@ -133,12 +140,15 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		CreateServiceAccountAsync(armoredPgpPublicKey, useUserRole, null, cancellationToken);
 
 	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Create, Description = "Creates a new service account")]
 	public async Task<string> CreateServiceAccountAsync(
 		string armoredPgpPublicKey,
 		bool useUserRole,
 		string? role,
 		CancellationToken cancellationToken)
 	{
+		EnsureWriteActionAllowed("service account");
+
 		var request = new Management.CreateServiceAccountRequest
 		{
 			ArmoredPgpPublicKey = armoredPgpPublicKey,
@@ -185,11 +195,14 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Update, Description = "Renews a service account with new credentials")]
 	public async Task<string> RenewServiceAccountAsync(
 		string name,
 		string armoredPgpPublicKey,
 		CancellationToken cancellationToken)
 	{
+		EnsureWriteActionAllowed("service account");
+
 		var request = new Management.RenewServiceAccountRequest
 		{
 			Name = name,
@@ -207,8 +220,11 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Delete, Description = "Destroys a service account")]
 	public async Task DestroyServiceAccountAsync(string name, CancellationToken cancellationToken)
 	{
+		EnsureWriteActionAllowed("service account");
+
 		var request = new Management.DestroyServiceAccountRequest
 		{
 			Name = name
@@ -271,12 +287,15 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		CreateSchematicAsync(extensions, extraKernelArgs, null, cancellationToken);
 
 	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Create, Description = "Creates a new schematic for machine provisioning")]
 	public async Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
 		CancellationToken cancellationToken)
 	{
+		EnsureWriteActionAllowed("schematic");
+
 		var request = new Management.CreateSchematicRequest();
 
 		if (extensions != null)
@@ -348,10 +367,17 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		StreamKubernetesSyncManifestsAsync(false, cancellationToken);
 
 	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Update, Description = "Synchronizes Kubernetes manifests")]
 	public async IAsyncEnumerable<KubernetesSyncResult> StreamKubernetesSyncManifestsAsync(
 		bool dryRun,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
 	{
+		// Only enforce read-only mode for actual sync operations (not dry runs)
+		if (!dryRun)
+		{
+			EnsureWriteActionAllowed("kubernetes manifests");
+		}
+
 		var request = new Management.KubernetesSyncManifestRequest
 		{
 			DryRun = dryRun
