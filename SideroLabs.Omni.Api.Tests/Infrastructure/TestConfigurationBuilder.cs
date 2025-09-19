@@ -18,12 +18,30 @@ public class TestConfigurationBuilder(ILogger logger)
 	/// Builds configuration from multiple sources
 	/// </summary>
 	/// <returns>Built configuration</returns>
-	public IConfiguration BuildConfiguration() => new ConfigurationBuilder()
+	public IConfiguration BuildConfiguration()
+	{
+		_logger.LogInformation("Building test configuration");
+
+		return new ConfigurationBuilder()
 		.SetBasePath(Directory.GetCurrentDirectory())
 		.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 		.AddEnvironmentVariables("OMNI_")
 		.AddUserSecrets<TestConfigurationBuilder>()
 		.Build();
+	}
+
+	/// <summary>
+	/// Gets test expectations from configuration
+	/// </summary>
+	/// <param name="configuration">Configuration instance</param>
+	/// <returns>Test expectations</returns>
+	public TestExpectations GetTestExpectations(IConfiguration configuration)
+	{
+		_logger.LogInformation("Loading test expectations from configuration");
+
+		return configuration.GetSection("TestExpectations").Get<TestExpectations>()
+			?? throw new InvalidOperationException("Failed to load TestExpectations from configuration");
+	}
 
 	/// <summary>
 	/// Extracts PGP key from test data file for safe testing

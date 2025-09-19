@@ -60,6 +60,11 @@ public abstract class TestBase : IDisposable
 	protected IConfiguration Configuration => GetService<IConfiguration>();
 
 	/// <summary>
+	/// Gets the test expectations from configuration
+	/// </summary>
+	protected TestExpectations TestExpectations => GetService<TestExpectations>();
+
+	/// <summary>
 	/// Creates an OmniAuthenticator from the test PGP key file for testing
 	/// </summary>
 	/// <returns>OmniAuthenticator instance</returns>

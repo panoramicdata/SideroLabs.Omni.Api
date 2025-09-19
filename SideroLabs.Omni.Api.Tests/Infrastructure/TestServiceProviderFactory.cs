@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Extensions;
@@ -21,11 +20,14 @@ public class TestServiceProviderFactory(ILogger logger)
 	{
 		var configBuilder = new TestConfigurationBuilder(_logger);
 		var configuration = configBuilder.BuildConfiguration();
-
 		var services = new ServiceCollection();
 
 		// Register configuration
-		services.AddSingleton<IConfiguration>(configuration);
+		services.AddSingleton(configuration);
+
+		// Register test expectations
+		var testExpectations = configBuilder.GetTestExpectations(configuration);
+		services.AddSingleton(testExpectations);
 
 		// Configure OmniClientOptions from configuration and test PGP key
 		services.Configure<OmniClientOptions>(options =>
