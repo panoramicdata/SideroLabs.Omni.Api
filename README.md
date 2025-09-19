@@ -1,5 +1,10 @@
 # SideroLabs Omni API Client
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/4f7bad7c811949dcb03008b3f799b12b)](https://app.codacy.com/gh/panoramicdata/SideroLabs.Omni.Api/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![NuGet](https://img.shields.io/nuget/v/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
+[![NuGet](https://img.shields.io/nuget/dt/SideroLabs.Omni.Api.svg)](https://www.nuget.org/packages/SideroLabs.Omni.Api/)
+![License](https://img.shields.io/github/license/panoramicdata/SideroLabs.Omni.Api.svg)
+
 A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
 This client provides strongly-typed C# interfaces for the Omni gRPC services, with built-in PGP-based authentication and enterprise-ready features.
