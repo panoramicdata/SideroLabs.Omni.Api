@@ -289,39 +289,56 @@ dotnet test
 dotnet pack --configuration Release
 ```
 
-### Automated Publishing
+### Automated Release Process
 
-The project includes automated publishing scripts:
+The project includes an automated release and tagging script that handles version management, testing, tagging, and optional NuGet publishing:
 
 ```bash
-# Using PowerShell (recommended)
-.\Publish.ps1
-
-# Using batch file (Windows)
-.\publish.bat
+# Using PowerShell
+.\Tag.ps1
 
 # Common options
-.\Publish.ps1 -VersionBump Minor  # Increment minor version
-.\Publish.ps1 -SkipTests          # Skip unit tests
-.\Publish.ps1 -DryRun             # Test without actual publishing
-.\Publish.ps1 -Force              # Publish with uncommitted changes
+.\Tag.ps1 -Force              # Force tagging with uncommitted changes
+.\Tag.ps1 -SkipTests          # Skip unit tests (not recommended)
+.\Tag.ps1 -Publish            # Automatically publish to NuGet without prompting
 ```
 
 **Setup for NuGet Publishing:**
 1. Get your API key from [nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)
-2. Create a file named `nuget-key.txt` in the solution root
+2. Create a file named `nuget_key.txt` in the solution root
 3. Add your API key to the file (first line only)
-4. Run `.\Publish.ps1` - it will automatically publish if tests pass
+4. Run `.\Tag.ps1` - it will prompt whether to publish if tests pass
 
-The script will:
-- ✅ Validate prerequisites and working directory
-- ✅ Increment version (Major/Minor/Patch)
+**The Tag.ps1 script will:**
+- ✅ Validate prerequisites and git repository status
+- ✅ Get version using NerdBank GitVersioning (nbgv)
+- ✅ Restore NuGet packages
 - ✅ Build solution in Release mode
-- ✅ Run unit tests
-- ✅ Create Git tag
-- ✅ Pack NuGet package
-- ✅ Publish to NuGet.org (if `nuget-key.txt` exists)
-- ✅ Push changes and tags to Git remote
+- ✅ Run unit tests (unless `-SkipTests` is specified)
+- ✅ Create Git tag with current version
+- ✅ Push tag to origin
+- ✅ Optionally pack and publish NuGet package
+- ✅ Provide next steps for GitHub release creation
+
+**Version Management:**
+The script uses NerdBank GitVersioning to automatically determine the version. It will:
+- Try to use global `nbgv` tool
+- Fall back to local `nbgv` tool
+- Attempt to install `nbgv` if not found
+- Use fallback versioning from `version.json` if `nbgv` is unavailable
+
+**Example Usage:**
+
+```bash
+# Standard release process
+.\Tag.ps1
+
+# Quick release with automatic publishing
+.\Tag.ps1 -Publish
+
+# Emergency release (skip tests and force with uncommitted changes)
+.\Tag.ps1 -Force -SkipTests -Publish
+```
 
 ## Contributing
 
@@ -342,9 +359,9 @@ MIT License - see LICENSE file for details.
 
 ## Links
 
-- **🏠 Official Omni Project**: https://github.com/siderolabs/omni
-- **📋 Official Proto Definitions**: https://github.com/siderolabs/omni/tree/main/client
-- **🔐 Go API Signature Library**: https://github.com/siderolabs/go-api-signature
-- **📖 Omni Documentation**: https://omni.siderolabs.com/
-- **🏢 SideroLabs**: https://www.siderolabs.com/
-- **🐧 Talos Linux**: https://talos.dev/
+  - **🏠 Official Omni Project**: https://github.com/siderolabs/omni
+  - **📋 Official Proto Definitions**: https://github.com/siderolabs/omni/tree/main/client
+  - **🔐 Go API Signature Library**: https://github.com/siderolabs/go-api-signature
+  - **📖 Omni Documentation**: https://omni.siderolabs.com/
+  - **🏢 SideroLabs**: https://www.siderolabs.com/
+  - **🐧 Talos Linux**: https://talos.dev/
