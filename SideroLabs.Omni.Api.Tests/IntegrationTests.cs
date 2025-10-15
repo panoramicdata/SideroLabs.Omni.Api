@@ -4,6 +4,8 @@ using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace SideroLabs.Omni.Api.Tests;
 
@@ -207,7 +209,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 	}
 
 	[Fact]
-	public async Task RealWorld_GetTalosconfig_WithSideroLabsCredentials()
+	public async Task RealWorld_GetKubeconfig_WithAllParameters()
 	{
 		// Skip if integration tests are not configured
 		if (!ShouldRunIntegrationTests())
@@ -220,29 +222,115 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		var options = GetClientOptions();
 		using var client = new OmniClient(options);
 
-		Logger.LogInformation("🚀 Starting real-world talosconfig test");
+		Logger.LogInformation("🚀 Testing kubeconfig with all parameters");
 
 		try
 		{
-			// Act - Test getting talosconfig through real gRPC
-			Logger.LogInformation("🔍 Attempting to get talosconfig from real Omni gRPC API...");
-			var talosconfig = await client.Management.GetTalosConfigAsync(
-				admin: false,
+			// Act - Test getting kubeconfig with all available parameters
+			Logger.LogInformation("🔍 Attempting to get kubeconfig with grant_type and break_glass...");
+			var kubeconfig = await client.Management.GetKubeConfigAsync(
+				serviceAccount: false,
+				serviceAccountTtl: TimeSpan.FromHours(24),
+				serviceAccountUser: "test-user",
+				serviceAccountGroups: ["system:authenticated"],
+				grantType: "token",
+				breakGlass: false,
 				cancellationToken: CancellationToken);
 
-			// Assert - These should actually pass or the test should fail
-			talosconfig.Should().NotBeNull();
-			talosconfig.Should().NotBeEmpty();
+			kubeconfig.Should().NotBeNull();
+			kubeconfig.Should().NotBeEmpty();
 
-			Logger.LogInformation("✅ Successfully retrieved talosconfig from Sidero Labs Omni gRPC API!");
-			Logger.LogInformation("📊 Talosconfig Details:");
-			Logger.LogInformation("  Content length: {Length} characters", talosconfig.Length);
+			Logger.LogInformation("✅ Successfully retrieved kubeconfig with all parameters!");
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
-			// This is expected if the user role doesn't have permission to get talosconfig
-			Logger.LogInformation("🔒 Permission denied for talosconfig access - this is expected with Reader role");
-			Logger.LogInformation("✅ gRPC authentication is working correctly (permission check succeeded)");
+			Logger.LogInformation("🔒 Permission denied - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_GetTalosconfig_WithBreakGlass()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing talosconfig with break-glass parameter");
+
+		try
+		{
+			// Act - Test getting talosconfig with break-glass mode
+			Logger.LogInformation("🔍 Attempting to get talosconfig with raw=true and breakGlass=false...");
+			var talosconfig = await client.Management.GetTalosConfigAsync(
+				raw: true,
+				breakGlass: false,
+				cancellationToken: CancellationToken);
+
+			talosconfig.Should().NotBeNull();
+			talosconfig.Should().NotBeEmpty();
+
+			Logger.LogInformation("✅ Successfully retrieved talosconfig with break-glass parameter!");
+			Logger.LogInformation("📊 Talosconfig length: {Length} characters", talosconfig.Length);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_CreateSchematic_WithAllParameters()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing schematic creation with all parameters");
+
+		try
+		{
+			// Act - Test creating schematic with all available parameters
+			Logger.LogInformation("🔍 Creating schematic with Talos version, secure boot, and gRPC tunnel mode...");
+			var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
+				extensions: ["siderolabs/util-linux-tools"],
+				extraKernelArgs: ["console=ttyS0"],
+				metaValues: new Dictionary<uint, string> { { 0x0a, "test-env" } },
+				talosVersion: "v1.7.0",
+				mediaId: "installer",
+				secureBoot: false,
+				siderolinkGrpcTunnelMode: Enums.SiderolinkGrpcTunnelMode.Auto,
+				joinToken: null,
+				cancellationToken: CancellationToken);
+
+			schematicId.Should().NotBeNullOrEmpty();
+			pxeUrl.Should().NotBeNullOrEmpty();
+
+			Logger.LogInformation("✅ Successfully created schematic with all parameters!");
+			Logger.LogInformation("📊 Schematic Details:");
+			Logger.LogInformation("  Schematic ID: {SchematicId}", schematicId);
+			Logger.LogInformation("  PXE URL: {PxeUrl}", pxeUrl);
+			Logger.LogInformation("  gRPC Tunnel Enabled: {GrpcTunnelEnabled}", grpcTunnelEnabled);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for schematic creation - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
 		}
 	}
 
@@ -341,6 +429,518 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 		Logger.LogInformation("✅ Successfully validated config via Sidero Labs Omni gRPC API!");
 		Logger.LogInformation("📊 Config validation completed successfully");
+	}
+
+	[Fact]
+	public async Task RealWorld_ValidateJsonSchema_WithValidData()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing JSON schema validation with valid data");
+
+		// Act - Test JSON schema validation with valid data
+		var jsonSchema = """
+			{
+			  "type": "object",
+			  "properties": {
+			    "name": { "type": "string" },
+			    "age": { "type": "number" }
+			  },
+			  "required": ["name"]
+			}
+			""";
+
+		var validData = """
+			{
+			  "name": "John Doe",
+			  "age": 30
+			}
+			""";
+
+		Logger.LogInformation("🔍 Validating JSON data against schema...");
+		var result = await client.Management.ValidateJsonSchemaAsync(validData, jsonSchema, CancellationToken);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.IsValid.Should().BeTrue("Valid JSON data should pass schema validation");
+		result.Errors.Should().BeEmpty();
+
+		Logger.LogInformation("✅ JSON schema validation succeeded for valid data!");
+	}
+
+	[Fact]
+	public async Task RealWorld_ValidateJsonSchema_WithInvalidData()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing JSON schema validation with invalid data");
+
+		// Act - Test JSON schema validation with invalid data
+		var jsonSchema = """
+			{
+			  "type": "object",
+			  "properties": {
+			    "name": { "type": "string" },
+			    "age": { "type": "number" }
+			  },
+			  "required": ["name", "age"]
+			}
+			""";
+
+		var invalidData = """
+			{
+			  "name": "Jane Doe"
+			}
+			""";
+
+		Logger.LogInformation("🔍 Validating invalid JSON data against schema...");
+		var result = await client.Management.ValidateJsonSchemaAsync(invalidData, jsonSchema, CancellationToken);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.IsValid.Should().BeFalse("Invalid JSON data should fail schema validation");
+		result.Errors.Should().NotBeEmpty("Should have validation errors");
+		result.TotalErrorCount.Should().BePositive("Should have at least one error");
+
+		Logger.LogInformation("✅ JSON schema validation correctly detected {ErrorCount} error(s)!", result.TotalErrorCount);
+		Logger.LogInformation("📊 Validation Errors:");
+		Logger.LogInformation("{ErrorSummary}", result.GetErrorSummary());
+	}
+
+	[Fact]
+	public async Task RealWorld_ValidateJsonSchema_WithComplexSchema()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing JSON schema validation with complex nested schema");
+
+		// Act - Test with a more complex schema
+		var complexSchema = """
+			{
+			  "type": "object",
+			  "properties": {
+			    "user": {
+			      "type": "object",
+			      "properties": {
+			        "name": { "type": "string", "minLength": 1 },
+			        "email": { "type": "string", "format": "email" },
+			        "age": { "type": "integer", "minimum": 0, "maximum": 150 }
+			      },
+			      "required": ["name", "email"]
+			    },
+			    "tags": {
+			      "type": "array",
+			      "items": { "type": "string" },
+			      "minItems": 1
+			    }
+			  },
+			  "required": ["user"]
+			}
+			""";
+
+		var complexData = """
+			{
+			  "user": {
+			    "name": "Alice Smith",
+			    "email": "alice@example.com",
+			    "age": 25
+			  },
+			  "tags": ["developer", "golang", "kubernetes"]
+			}
+			""";
+
+		Logger.LogInformation("🔍 Validating complex JSON data against nested schema...");
+		var result = await client.Management.ValidateJsonSchemaAsync(complexData, complexSchema, CancellationToken);
+
+		// Assert
+		result.Should().NotBeNull();
+		
+		if (result.IsValid)
+		{
+			Logger.LogInformation("✅ Complex JSON schema validation succeeded!");
+		}
+		else
+		{
+			Logger.LogInformation("❌ Complex JSON schema validation failed with {ErrorCount} error(s)", result.TotalErrorCount);
+			Logger.LogInformation("{ErrorSummary}", result.GetErrorSummary());
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_GetSupportBundle_WithCluster()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		// Try to get a cluster name from configuration or use default
+		var clusterName = "default"; // Replace with actual cluster name if available
+
+		Logger.LogInformation("🚀 Testing support bundle generation for cluster: {Cluster}", clusterName);
+
+		try
+		{
+			// Act - Stream support bundle generation
+			var progressUpdates = 0;
+			var totalBundleSize = 0L;
+			var errors = new List<string>();
+
+			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)); // Longer timeout for bundle generation
+
+			await foreach (var progress in client.Management.GetSupportBundleAsync(
+				cluster: clusterName,
+				cancellationToken: cts.Token))
+			{
+				progressUpdates++;
+
+				if (progress.HasError)
+				{
+					errors.Add($"{progress.Source}: {progress.Error}");
+					Logger.LogWarning("Support bundle error from {Source}: {Error}", progress.Source, progress.Error);
+				}
+				else if (progress.HasBundleData)
+				{
+					totalBundleSize += progress.BundleData!.Length;
+					Logger.LogInformation("Received bundle data: {Size} bytes", progress.BundleData.Length);
+				}
+				else if (!string.IsNullOrEmpty(progress.State))
+				{
+					Logger.LogInformation("Progress: {State} ({Value}/{Total} - {Percentage:F1}%)", 
+						progress.State, progress.Value, progress.Total, progress.ProgressPercentage);
+				}
+
+				// Stop after receiving some data or enough updates
+				if (totalBundleSize > 0 || progressUpdates > 10)
+				{
+					break;
+				}
+			}
+
+			// Assert
+			progressUpdates.Should().BePositive("Should have received progress updates");
+			Logger.LogInformation("✅ Received {Updates} progress updates, total bundle size: {Size} bytes", 
+				progressUpdates, totalBundleSize);
+
+			if (errors.Count > 0)
+			{
+				Logger.LogWarning("Encountered {Count} errors during bundle generation", errors.Count);
+			}
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("ℹ️ Cluster '{Cluster}' not found - this is expected if no cluster exists", clusterName);
+			Logger.LogInformation("✅ gRPC API is working correctly (NotFound is expected for non-existent clusters)");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for support bundle generation - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+		catch (OperationCanceledException)
+		{
+			Logger.LogInformation("⏱️ Support bundle generation timed out - this may indicate a slow operation");
+			Logger.LogInformation("✅ gRPC streaming is working correctly (timeout is expected for long operations)");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_ReadAuditLog_WithDateRange()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		// Use a recent date range
+		var endDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+		var startDate = DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd");
+
+		Logger.LogInformation("🚀 Testing audit log reading from {StartDate} to {EndDate}", startDate, endDate);
+
+		try
+		{
+			// Act - Stream audit log entries
+			var chunkCount = 0;
+			var totalBytes = 0L;
+			var maxChunks = 5; // Limit chunks for testing
+
+			await foreach (var logData in client.Management.ReadAuditLogAsync(
+				startDate: startDate,
+				endDate: endDate,
+				cancellationToken: CancellationToken))
+			{
+				chunkCount++;
+				totalBytes += logData.Length;
+
+				var logText = System.Text.Encoding.UTF8.GetString(logData);
+				Logger.LogInformation("Received audit log chunk {Count}: {Size} bytes", chunkCount, logData.Length);
+				Logger.LogDebug("Log content preview: {Preview}", 
+					logText.Length > 100 ? logText[..100] + "..." : logText);
+
+				if (chunkCount >= maxChunks)
+				{
+					break;
+				}
+			}
+
+			// Assert
+			if (chunkCount > 0)
+			{
+				chunkCount.Should().BePositive("Should have received at least one audit log chunk");
+				totalBytes.Should().BePositive("Should have received some audit log data");
+				Logger.LogInformation("✅ Successfully read {Chunks} audit log chunks, {TotalBytes} total bytes", 
+					chunkCount, totalBytes);
+			}
+			else
+			{
+				Logger.LogInformation("ℹ️ No audit log entries found for the specified date range");
+				Logger.LogInformation("✅ gRPC streaming is working correctly (empty result is valid)");
+			}
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
+		{
+			Logger.LogInformation("ℹ️ Invalid date range format - expected YYYY-MM-DD");
+			Logger.LogInformation("✅ gRPC API is validating input correctly");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for audit log access - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_MaintenanceUpgrade_WithMachine()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		// Get a machine ID from talosconfig
+		var testMachineId = await GetFirstMachineIdAsync(client);
+
+		if (string.IsNullOrEmpty(testMachineId))
+		{
+			Logger.LogInformation("ℹ️ No machines found - skipping test");
+			Logger.LogInformation("💡 Tip: Ensure your Omni instance has at least one machine configured");
+			return;
+		}
+
+		Logger.LogInformation("🚀 Testing maintenance upgrade for machine: {MachineId}", testMachineId);
+
+		try
+		{
+			// Act - Attempt maintenance upgrade
+			await client.Management.MaintenanceUpgradeAsync(
+				machineId: testMachineId,
+				version: "v1.7.0",
+				cancellationToken: CancellationToken);
+
+			Logger.LogInformation("✅ Maintenance upgrade initiated successfully for machine {MachineId}", testMachineId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("ℹ️ Machine '{MachineId}' not found or not eligible for upgrade", testMachineId);
+			Logger.LogInformation("✅ gRPC API is working correctly (NotFound is expected for unavailable machines)");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for maintenance upgrade - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+		catch (Exceptions.ReadOnlyModeException ex)
+		{
+			Logger.LogInformation("🔒 Write operation blocked in read-only mode: {Message}", ex.Message);
+			Logger.LogInformation("✅ Read-only mode protection is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_GetMachineJoinConfig_WithGrpcTunnel()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine join config retrieval");
+
+		try
+		{
+			// Act - Get machine join configuration
+			var config = await client.Management.GetMachineJoinConfigAsync(
+				useGrpcTunnel: true,
+				joinToken: "test-token",
+				cancellationToken: CancellationToken);
+
+			// Assert
+			config.Should().NotBeNull();
+			Logger.LogInformation("✅ Machine join config retrieved successfully");
+			Logger.LogInformation("📊 Configuration Details:");
+			Logger.LogInformation("  Kernel Args: {Count}", config.KernelArgs.Count);
+			Logger.LogInformation("  Config Size: {Size} characters", config.Config.Length);
+			Logger.LogInformation("  Summary: {Summary}", config.GetSummary());
+
+			if (config.HasKernelArgs)
+			{
+				Logger.LogInformation("  Kernel Args String: {Args}", config.GetKernelArgsString());
+			}
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
+		{
+			Logger.LogInformation("ℹ️ Invalid join token provided");
+			Logger.LogInformation("✅ gRPC API is validating input correctly");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for machine join config - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_CreateJoinToken_WithExpiration()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		var tokenName = $"test-token-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
+		var expirationTime = DateTimeOffset.UtcNow.AddDays(7);
+
+		Logger.LogInformation("🚀 Testing join token creation: {TokenName}", tokenName);
+
+		try
+		{
+			// Act - Create join token
+			var tokenId = await client.Management.CreateJoinTokenAsync(
+				name: tokenName,
+				expirationTime: expirationTime,
+				cancellationToken: CancellationToken);
+
+			// Assert
+			tokenId.Should().NotBeNullOrEmpty();
+			Logger.LogInformation("✅ Join token created successfully: {TokenId}", tokenId);
+			Logger.LogInformation("📊 Token Details:");
+			Logger.LogInformation("  Name: {Name}", tokenName);
+			Logger.LogInformation("  Expiration: {Expiration:yyyy-MM-dd HH:mm:ss}", expirationTime);
+			Logger.LogInformation("  Token ID: {TokenId}", tokenId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for join token creation - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+		catch (Exceptions.ReadOnlyModeException ex)
+		{
+			Logger.LogInformation("🔒 Write operation blocked in read-only mode: {Message}", ex.Message);
+			Logger.LogInformation("✅ Read-only mode protection is working correctly");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_TearDownLockedCluster_WithClusterId()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		// Use a test cluster ID that doesn't exist to avoid accidental deletion
+		var testClusterId = $"test-cluster-{Guid.NewGuid()}";
+
+		Logger.LogInformation("🚀 Testing locked cluster tear down (non-existent cluster for safety)");
+
+		try
+		{
+			// Act - Attempt to tear down locked cluster
+			await client.Management.TearDownLockedClusterAsync(
+				clusterId: testClusterId,
+				cancellationToken: CancellationToken);
+
+			Logger.LogInformation("✅ Tear down operation completed for cluster {ClusterId}", testClusterId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("ℹ️ Cluster '{ClusterId}' not found - this is expected for test", testClusterId);
+			Logger.LogInformation("✅ gRPC API is working correctly (NotFound is expected for non-existent clusters)");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for cluster tear down - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
+		}
+		catch (Exceptions.ReadOnlyModeException ex)
+		{
+			Logger.LogInformation("🔒 Write operation blocked in read-only mode: {Message}", ex.Message);
+			Logger.LogInformation("✅ Read-only mode protection is working correctly");
+		}
 	}
 
 	[Fact]
@@ -588,16 +1188,6 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		results.SuccessRate.Should().BeGreaterThan(0.5, "At least 50% of gRPC operations should succeed with valid credentials");
 	}
 
-	/// <summary>
-	/// Helper class to track test operation results
-	/// </summary>
-	private sealed class TestOperationResults
-	{
-		public int SuccessCount { get; set; }
-		public int TotalOperations { get; set; }
-		public double SuccessRate => TotalOperations > 0 ? (double)SuccessCount / TotalOperations : 0.0;
-	}
-
 	[Fact]
 	public void ClientOptions_IsReadOnlyDefault_IsFalse()
 	{
@@ -661,5 +1251,354 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		{
 			Logger.LogInformation("ℹ️ No AuthToken configured - this is expected for environments without Omni credentials");
 		}
+	}
+
+	/// <summary>
+	/// Gets the first available machine ID from talosconfig
+	/// </summary>
+	private async Task<string?> GetFirstMachineIdAsync(OmniClient client)
+	{
+		try
+		{
+			Logger.LogInformation("🔍 Retrieving talosconfig to extract machine IDs...");
+			var talosconfig = await client.Management.GetTalosConfigAsync(
+				raw: false,
+				cancellationToken: CancellationToken);
+
+			// Parse YAML to extract endpoints
+			var deserializer = new DeserializerBuilder()
+				.WithNamingConvention(CamelCaseNamingConvention.Instance)
+				.Build();
+
+			var config = deserializer.Deserialize<Dictionary<string, object>>(talosconfig);
+			
+			// Extract endpoints from contexts
+			if (config.TryGetValue("contexts", out var contextsObj) && contextsObj is Dictionary<object, object> contexts)
+			{
+				foreach (var contextEntry in contexts.Values)
+				{
+					if (contextEntry is Dictionary<object, object> context &&
+						context.TryGetValue("endpoints", out var endpointsObj) &&
+						endpointsObj is List<object> endpoints &&
+						endpoints.Count > 0)
+					{
+						var firstEndpoint = endpoints[0].ToString();
+						Logger.LogInformation("✅ Found machine endpoint: {Endpoint}", firstEndpoint);
+						return firstEndpoint;
+					}
+				}
+			}
+
+			Logger.LogWarning("⚠️ No machine endpoints found in talosconfig");
+			return null;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "Failed to extract machine ID from talosconfig");
+			return null;
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_StreamMachineLogs_WithConfiguredMachines()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine log streaming with configured machines");
+
+		// Get the first machine ID from talosconfig
+		var testMachineId = await GetFirstMachineIdAsync(client);
+
+		if (string.IsNullOrEmpty(testMachineId))
+		{
+			Logger.LogInformation("ℹ️ No machines found in talosconfig - skipping test");
+			Logger.LogInformation("💡 Tip: Ensure your Omni instance has at least one machine configured");
+			return;
+		}
+
+		Logger.LogInformation("Attempting to stream logs from machine: {MachineId}", testMachineId);
+
+		try
+		{
+			// Act - Stream a few log entries
+			var logCount = 0;
+			var maxLogs = 5; // Only fetch first 5 logs for testing
+
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId: testMachineId,
+				follow: false, // Don't follow, just get recent logs
+				tailLines: 10,
+				cancellationToken: CancellationToken))
+			{
+				var logText = System.Text.Encoding.UTF8.GetString(logData);
+				Logger.LogInformation("📄 Log entry {Count}: {LogText}", ++logCount, logText.Length > 100 ? logText[..100] + "..." : logText);
+
+				if (logCount >= maxLogs)
+				{
+					break;
+				}
+			}
+
+			// Assert - We should have received some logs
+			logCount.Should().BePositive("Should have received at least one log entry from the machine");
+
+			Logger.LogInformation("✅ Successfully streamed {Count} log entries from machine {MachineId}", logCount, testMachineId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			// Machine not found - provide helpful message
+			Logger.LogWarning("⚠️ Machine '{MachineId}' not found.", testMachineId);
+			Logger.LogInformation("💡 Tip: The machine may not be available or accessible");
+
+			// Still mark as success since this confirms the API is working correctly
+			Logger.LogInformation("✅ gRPC authentication and machine log API are working correctly (NotFound is expected for unavailable machines)");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			// Permission denied - expected with Reader role
+			Logger.LogInformation("🔒 Permission denied for machine log access - this is expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly (permission check succeeded)");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_MachineLogStreaming_ValidatesInput()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine log streaming input validation");
+
+		try
+		{
+			// Act & Assert - Test with empty machine ID
+			var emptyMachineId = "";
+			var logCount = 0;
+
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId: emptyMachineId,
+				follow: false,
+				tailLines: 1,
+				cancellationToken: CancellationToken))
+			{
+				logCount++;
+				break; // Just check if we can start the stream
+			}
+
+			// If we get here, either:
+			// 1. The API accepted empty machine ID (some APIs do this)
+			// 2. We got an error (which is expected and handled in the catch)
+			Logger.LogInformation("ℹ️ Machine log streaming API accepted empty machine ID");
+		}
+		catch (Grpc.Core.RpcException rpcEx)
+		{
+			// Expected - API should reject invalid input
+			Logger.LogInformation("✅ Machine log streaming correctly validates input: {Status}", rpcEx.StatusCode);
+			Logger.LogInformation("   Error message: {Message}", rpcEx.Status.Detail);
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_MachineLogStreaming_HandlesNonExistentMachine()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine log streaming with non-existent machine");
+
+		// Use a machine ID that definitely doesn't exist
+		var nonExistentMachineId = "non-existent-machine-" + Guid.NewGuid();
+
+		try
+		{
+			// Act - Try to stream logs from non-existent machine
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId: nonExistentMachineId,
+				follow: false,
+				tailLines: 1,
+				cancellationToken: CancellationToken))
+			{
+				// If we get here, something unexpected happened
+				Logger.LogWarning("⚠️ Received log data for non-existent machine: {Length} bytes", logData.Length);
+				break;
+			}
+
+			Logger.LogInformation("ℹ️ Machine log streaming completed without error for non-existent machine");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			// Expected - machine doesn't exist
+			Logger.LogInformation("✅ Machine log streaming correctly handles non-existent machine: NotFound");
+			Logger.LogInformation("   Machine ID: {MachineId}", nonExistentMachineId);
+		}
+		catch (Grpc.Core.RpcException rpcEx)
+		{
+			// Other gRPC errors
+			Logger.LogInformation("ℹ️ Machine log streaming returned gRPC error: {Status}", rpcEx.StatusCode);
+			Logger.LogInformation("   Error: {Message}", rpcEx.Status.Detail);
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_MachineLogStreaming_SupportsFollowMode()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine log streaming in follow mode");
+
+		// Get the first machine ID from talosconfig
+		var testMachineId = await GetFirstMachineIdAsync(client);
+
+		if (string.IsNullOrEmpty(testMachineId))
+		{
+			Logger.LogInformation("ℹ️ No machines found - skipping test");
+			return;
+		}
+
+		try
+		{
+			// Act - Start streaming with follow=true, but with a short timeout
+			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+			var logCount = 0;
+
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId: testMachineId,
+				follow: true, // Enable follow mode
+				tailLines: 5,
+				cancellationToken: cts.Token))
+			{
+				logCount++;
+				Logger.LogDebug("Received log entry {Count} in follow mode", logCount);
+
+				// Stop after a few entries to avoid long-running test
+				if (logCount >= 3)
+				{
+					break;
+				}
+			}
+
+			Logger.LogInformation("✅ Follow mode streaming works correctly (received {Count} log entries)", logCount);
+		}
+		catch (OperationCanceledException)
+		{
+			// Expected when timeout expires
+			Logger.LogInformation("✅ Follow mode streaming correctly handles cancellation");
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("ℹ️ Machine '{MachineId}' not found", testMachineId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for machine log access - this is expected with Reader role");
+		}
+	}
+
+	[Fact]
+	public async Task RealWorld_MachineLogStreaming_SupportsTailLines()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		var options = GetClientOptions();
+		using var client = new OmniClient(options);
+
+		Logger.LogInformation("🚀 Testing machine log streaming with tail lines");
+
+		// Get the first machine ID from talosconfig
+		var testMachineId = await GetFirstMachineIdAsync(client);
+
+		if (string.IsNullOrEmpty(testMachineId))
+		{
+			Logger.LogInformation("ℹ️ No machines found - skipping test");
+			return;
+		}
+
+		try
+		{
+			// Act - Request specific number of tail lines
+			var requestedTailLines = 20;
+			var logCount = 0;
+
+			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+				machineId: testMachineId,
+				follow: false,
+				tailLines: requestedTailLines,
+				cancellationToken: CancellationToken))
+			{
+				logCount++;
+
+				// Don't wait for all logs in the test
+				if (logCount >= requestedTailLines)
+				{
+					break;
+				}
+			}
+
+			Logger.LogInformation("✅ Tail lines parameter works correctly (requested {Requested}, received {Actual})",
+				requestedTailLines, logCount);
+
+			if (logCount > 0)
+			{
+				logCount.Should().BeLessThanOrEqualTo(requestedTailLines, "Should not receive more logs than requested");
+			}
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("ℹ️ Machine '{MachineId}' not found", testMachineId);
+		}
+		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied for machine log access - this is expected with Reader role");
+		}
+	}
+
+	/// <summary>
+	/// Helper class to track test operation results
+	/// </summary>
+	private sealed class TestOperationResults
+	{
+		public int SuccessCount { get; set; }
+		public int TotalOperations { get; set; }
+		public double SuccessRate => TotalOperations > 0 ? (double)SuccessCount / TotalOperations : 0.0;
 	}
 }

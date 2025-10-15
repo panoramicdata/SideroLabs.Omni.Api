@@ -1,4 +1,5 @@
 using System.Text;
+using SideroLabs.Omni.Api.Enums;
 using SideroLabs.Omni.Api.Exceptions;
 using SideroLabs.Omni.Api.Models;
 
@@ -72,7 +73,7 @@ public static class OmniClientExample
 
 		// Get talosconfig for Talos cluster access
 		var talosconfig = await client.Management.GetTalosConfigAsync(
-			admin: true,
+			raw: true,
 			cancellationToken: cancellationToken);
 
 		Console.WriteLine($"Retrieved talosconfig ({talosconfig.Length} characters)");
@@ -369,8 +370,8 @@ public static class OmniClientExample
 	/// </summary>
 	private static async Task CreateAndDisplaySchematic(OmniClient client, CancellationToken cancellationToken)
 	{
-		// Create a schematic for provisioning machines
-		var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
+		// Create a schematic for provisioning machines with all available options
+		var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
 			extensions:
 			[
 				"siderolabs/iscsi-tools",        // iSCSI storage support
@@ -389,18 +390,24 @@ public static class OmniClientExample
 				{ 0x0b, "rack-a1" },            // Rack identifier
 				{ 0x0c, "production" }          // Environment
 			},
+			talosVersion: "v1.7.0",             // NEW: Specify Talos version
+			mediaId: "installer",               // NEW: Installation media
+			secureBoot: true,                   // NEW: Enable secure boot
+			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,  // NEW: gRPC tunnel mode
+			joinToken: null,                    // NEW: Optional join token
 			cancellationToken: cancellationToken);
 
-		DisplaySchematicResults(schematicId, pxeUrl);
+		DisplaySchematicResults(schematicId, pxeUrl, grpcTunnelEnabled);
 	}
 
 	/// <summary>
 	/// Displays the schematic creation results
 	/// </summary>
-	private static void DisplaySchematicResults(string schematicId, string pxeUrl)
+	private static void DisplaySchematicResults(string schematicId, string pxeUrl, bool grpcTunnelEnabled)
 	{
 		Console.WriteLine($"✅ Created schematic: {schematicId}");
 		Console.WriteLine($"📦 PXE Boot URL: {pxeUrl}");
+		Console.WriteLine($"🔌 gRPC Tunnel: {(grpcTunnelEnabled ? "Enabled" : "Disabled")}");
 		Console.WriteLine();
 		Console.WriteLine("Use this PXE URL to boot machines with the configured extensions and settings.");
 		Console.WriteLine("The schematic includes:");
@@ -409,6 +416,8 @@ public static class OmniClientExample
 		Console.WriteLine("  - gVisor for container security");
 		Console.WriteLine("  - Custom kernel arguments for console and networking");
 		Console.WriteLine("  - Metadata tags for datacenter, rack, and environment");
+		Console.WriteLine("  - Talos v1.7.0 with secure boot enabled");
+		Console.WriteLine($"  - gRPC tunnel mode configured for optimal connectivity");
 	}
 
 	/// <summary>
@@ -625,11 +634,12 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n5️⃣ Machine Provisioning:");
 
-		var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
+		var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
 			extensions: ["siderolabs/util-linux-tools"],
 			cancellationToken: cancellationToken);
 		Console.WriteLine($"   ✅ Schematic created: {schematicId}");
 		Console.WriteLine($"   📦 PXE URL: {pxeUrl}");
+		Console.WriteLine($"   🔌 gRPC Tunnel: {(grpcTunnelEnabled ? "Enabled" : "Disabled")}");
 	}
 
 	/// <summary>

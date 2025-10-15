@@ -31,20 +31,23 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	{
 		Output.WriteSection("Configuration Management");
 
-		// Get kubeconfig for cluster access
+		// Get kubeconfig for cluster access with all available options
 		var kubeconfig = await client.Management.GetKubeConfigAsync(
 			serviceAccount: true,
 			serviceAccountTtl: TimeSpan.FromHours(24),
 			serviceAccountUser: "automation",
 			serviceAccountGroups: ["system:masters"],
+			grantType: "token",  // New parameter
+			breakGlass: false,   // New parameter
 			cancellationToken: cancellationToken);
 
 		Output.WriteLine("Retrieved kubeconfig ({0} characters)", kubeconfig.Length);
 		File.WriteAllText("kubeconfig.yaml", kubeconfig);
 
-		// Get talosconfig for Talos cluster access
+		// Get talosconfig for Talos cluster access with break-glass option
 		var talosconfig = await client.Management.GetTalosConfigAsync(
-			admin: true,
+			raw: true,
+			breakGlass: false,  // New parameter
 			cancellationToken: cancellationToken);
 
 		Output.WriteLine("Retrieved talosconfig ({0} characters)", talosconfig.Length);
@@ -97,6 +100,7 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 		Output.WriteSection("Operational Tasks");
 
 		await ValidateConfiguration(client, cancellationToken);
+		await ValidateJsonSchema(client, cancellationToken);
 		await CheckKubernetesUpgrade(client, cancellationToken);
 	}
 
@@ -116,6 +120,44 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 
 		await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
 		Output.WriteSuccess("Configuration validation successful");
+	}
+
+	/// <summary>
+	/// Validates JSON data against a schema
+	/// </summary>
+	private async Task ValidateJsonSchema(OmniClient client, CancellationToken cancellationToken)
+	{
+		var jsonSchema = """
+			{
+			  "type": "object",
+			  "properties": {
+			    "cluster": { "type": "string" },
+			    "version": { "type": "string" },
+			    "replicas": { "type": "number", "minimum": 1 }
+			  },
+			  "required": ["cluster", "version"]
+			}
+			""";
+
+		var jsonData = """
+			{
+			  "cluster": "production",
+			  "version": "1.29.0",
+			  "replicas": 3
+			}
+			""";
+
+		var result = await client.Management.ValidateJsonSchemaAsync(jsonData, jsonSchema, cancellationToken);
+		
+		if (result.IsValid)
+		{
+			Output.WriteSuccess("JSON schema validation successful");
+		}
+		else
+		{
+			Output.WriteError($"JSON schema validation failed with {result.TotalErrorCount} error(s)");
+			Output.WriteLine(result.GetErrorSummary());
+		}
 	}
 
 	/// <summary>

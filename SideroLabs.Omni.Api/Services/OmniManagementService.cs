@@ -40,19 +40,28 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 	/// <inheritdoc />
 	public Task<string> GetKubeConfigAsync(CancellationToken cancellationToken) =>
-		GetKubeConfigAsync(false, null, null, null, cancellationToken);
+		GetKubeConfigAsync(false, null, null, null, null, false, cancellationToken);
 
 	/// <inheritdoc />
 	public Task<string> GetKubeConfigAsync(bool serviceAccount, CancellationToken cancellationToken) =>
-		GetKubeConfigAsync(serviceAccount, null, null, null, cancellationToken);
+		GetKubeConfigAsync(serviceAccount, null, null, null, null, false, cancellationToken);
 
 	/// <inheritdoc />
 	public Task<string> GetKubeConfigAsync(bool serviceAccount, TimeSpan? serviceAccountTtl, CancellationToken cancellationToken) =>
-		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, null, null, cancellationToken);
+		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, null, null, null, false, cancellationToken);
 
 	/// <inheritdoc />
 	public Task<string> GetKubeConfigAsync(bool serviceAccount, TimeSpan? serviceAccountTtl, string? serviceAccountUser, CancellationToken cancellationToken) =>
-		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, serviceAccountUser, null, cancellationToken);
+		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, serviceAccountUser, null, null, false, cancellationToken);
+
+	/// <inheritdoc />
+	public Task<string> GetKubeConfigAsync(
+		bool serviceAccount,
+		TimeSpan? serviceAccountTtl,
+		string? serviceAccountUser,
+		string[]? serviceAccountGroups,
+		CancellationToken cancellationToken) =>
+		GetKubeConfigAsync(serviceAccount, serviceAccountTtl, serviceAccountUser, serviceAccountGroups, null, false, cancellationToken);
 
 	/// <inheritdoc />
 	public async Task<string> GetKubeConfigAsync(
@@ -60,6 +69,8 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		TimeSpan? serviceAccountTtl,
 		string? serviceAccountUser,
 		string[]? serviceAccountGroups,
+		string? grantType,
+		bool breakGlass,
 		CancellationToken cancellationToken)
 	{
 		// Service account creation is a write operation
@@ -68,10 +79,18 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			EnsureWriteOperationAllowed("create", "service account");
 		}
 
+		// Break-glass access is a sensitive operation
+		if (breakGlass)
+		{
+			Logger.LogWarning("Using break-glass access for kubeconfig");
+		}
+
 		var request = new Management.KubeconfigRequest
 		{
 			ServiceAccount = serviceAccount,
 			ServiceAccountUser = serviceAccountUser ?? "",
+			GrantType = grantType ?? "",
+			BreakGlass = breakGlass
 		};
 
 		if (serviceAccountTtl.HasValue)
@@ -96,14 +115,25 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 	/// <inheritdoc />
 	public Task<string> GetTalosConfigAsync(CancellationToken cancellationToken) =>
-		GetTalosConfigAsync(false, cancellationToken);
+		GetTalosConfigAsync(false, false, cancellationToken);
 
 	/// <inheritdoc />
-	public async Task<string> GetTalosConfigAsync(bool admin, CancellationToken cancellationToken)
+	public Task<string> GetTalosConfigAsync(bool raw, CancellationToken cancellationToken) =>
+		GetTalosConfigAsync(raw, false, cancellationToken);
+
+	/// <inheritdoc />
+	public async Task<string> GetTalosConfigAsync(bool raw, bool breakGlass, CancellationToken cancellationToken)
 	{
+		// Break-glass access is a sensitive operation
+		if (breakGlass)
+		{
+			Logger.LogWarning("Using break-glass access for talosconfig");
+		}
+
 		var request = new Management.TalosconfigRequest
 		{
-			Raw = admin  // The proto uses 'raw' instead of 'admin'
+			Raw = raw,
+			BreakGlass = breakGlass
 		};
 
 		var response = await _callHelper.ExecuteCallAsync(
@@ -255,6 +285,79 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
+	public async Task<ValidateJsonSchemaResult> ValidateJsonSchemaAsync(
+		string data,
+		string schema,
+		CancellationToken cancellationToken)
+	{
+		var request = new Management.ValidateJsonSchemaRequest
+		{
+			Data = data,
+			Schema = schema
+		};
+
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.ValidateJSONSchemaAsync,
+			GrpcMethods.ValidateJsonSchema,
+			"JSON schema validation",
+			cancellationToken);
+
+		// Convert the proto response to our model
+		var result = new ValidateJsonSchemaResult
+		{
+			Errors = ConvertProtoErrors(response.Errors)
+		};
+
+		if (!result.IsValid)
+		{
+			Logger.LogWarning("JSON schema validation failed with {ErrorCount} error(s)", result.TotalErrorCount);
+		}
+
+		return result;
+	}
+
+	/// <summary>
+	/// Converts proto validation errors to model errors
+	/// </summary>
+	private static List<ValidateJsonSchemaError> ConvertProtoErrors(
+		Google.Protobuf.Collections.RepeatedField<Management.ValidateJsonSchemaResponse.Types.Error> protoErrors)
+	{
+		var errors = new List<ValidateJsonSchemaError>();
+
+		foreach (var protoError in protoErrors)
+		{
+			errors.Add(ConvertProtoError(protoError));
+		}
+
+		return errors;
+	}
+
+	/// <summary>
+	/// Recursively converts a proto error to a model error
+	/// </summary>
+	private static ValidateJsonSchemaError ConvertProtoError(Management.ValidateJsonSchemaResponse.Types.Error protoError)
+	{
+		var error = new ValidateJsonSchemaError
+		{
+			SchemaPath = protoError.SchemaPath ?? "",
+			DataPath = protoError.DataPath ?? "",
+			Cause = protoError.Cause ?? ""
+		};
+
+		// Recursively convert nested errors
+		if (protoError.Errors != null)
+		{
+			foreach (var nestedProtoError in protoError.Errors)
+			{
+				error.Errors.Add(ConvertProtoError(nestedProtoError));
+			}
+		}
+
+		return error;
+	}
+
+	/// <inheritdoc />
 	public async Task<(bool Ok, string Reason)> KubernetesUpgradePreChecksAsync(
 		string newVersion,
 		CancellationToken cancellationToken)
@@ -275,28 +378,48 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(CancellationToken cancellationToken) =>
-		CreateSchematicAsync(null, null, null, cancellationToken);
+	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(CancellationToken cancellationToken) =>
+		CreateSchematicAsync(null, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
-		CreateSchematicAsync(extensions, null, null, cancellationToken);
+	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
+		CreateSchematicAsync(extensions, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
-		CreateSchematicAsync(extensions, extraKernelArgs, null, cancellationToken);
+	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
+		CreateSchematicAsync(extensions, extraKernelArgs, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	[IsWriteAction(WriteActionType.Create, Description = "Creates a new schematic for machine provisioning")]
-	public async Task<(string SchematicId, string PxeUrl)> CreateSchematicAsync(
+	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
+		CancellationToken cancellationToken) =>
+		CreateSchematicAsync(extensions, extraKernelArgs, metaValues, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
+
+	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Create, Description = "Creates a new schematic for machine provisioning")]
+	public async Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+		string[]? extensions,
+		string[]? extraKernelArgs,
+		Dictionary<uint, string>? metaValues,
+		string? talosVersion,
+		string? mediaId,
+		bool secureBoot,
+		SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode,
+		string? joinToken,
 		CancellationToken cancellationToken)
 	{
 		EnsureWriteOperationAllowed("create", "schematic");
 
-		var request = new Management.CreateSchematicRequest();
+		var request = new Management.CreateSchematicRequest
+		{
+			TalosVersion = talosVersion ?? "",
+			MediaId = mediaId ?? "",
+			SecureBoot = secureBoot,
+			SiderolinkGrpcTunnelMode = (Management.CreateSchematicRequest.Types.SiderolinkGRPCTunnelMode)(int)siderolinkGrpcTunnelMode,
+			JoinToken = joinToken ?? ""
+		};
 
 		if (extensions != null)
 		{
@@ -323,7 +446,210 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			"schematic creation",
 			cancellationToken);
 
-		return (response.SchematicId, response.PxeUrl);
+		return (response.SchematicId, response.PxeUrl, response.GrpcTunnelEnabled);
+	}
+
+	/// <inheritdoc />
+	public async IAsyncEnumerable<SupportBundleProgress> GetSupportBundleAsync(
+		string cluster,
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		Logger.LogInformation("Starting support bundle generation for cluster: {Cluster}", cluster);
+
+		var request = new Management.GetSupportBundleRequest
+		{
+			Cluster = cluster
+		};
+
+		using var call = _callHelper.ExecuteStreamingCall(
+			request,
+			_grpcClient.GetSupportBundle,
+			GrpcMethods.GetSupportBundle,
+			"support bundle generation");
+
+		await foreach (var update in call.ResponseStream.ReadAllAsync(cancellationToken))
+		{
+			var progress = new SupportBundleProgress
+			{
+				Source = update.Progress?.Source ?? "",
+				Error = update.Progress?.Error ?? "",
+				State = update.Progress?.State ?? "",
+				Total = update.Progress?.Total ?? 0,
+				Value = update.Progress?.Value ?? 0,
+				BundleData = update.BundleData?.Length > 0 ? update.BundleData.ToByteArray() : null
+			};
+
+			if (progress.HasError)
+			{
+				Logger.LogWarning("Support bundle generation error from {Source}: {Error}", 
+					progress.Source, progress.Error);
+			}
+			else if (progress.HasBundleData)
+			{
+				Logger.LogInformation("Support bundle data received: {Size} bytes", progress.BundleData!.Length);
+			}
+			else if (!string.IsNullOrEmpty(progress.State))
+			{
+				Logger.LogDebug("Support bundle progress: {State} ({Value}/{Total})", 
+					progress.State, progress.Value, progress.Total);
+			}
+
+			yield return progress;
+		}
+
+		Logger.LogInformation("Support bundle generation completed for cluster: {Cluster}", cluster);
+	}
+
+	/// <inheritdoc />
+	public async IAsyncEnumerable<byte[]> ReadAuditLogAsync(
+		string startDate,
+		string endDate,
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		Logger.LogInformation("Reading audit logs from {StartDate} to {EndDate}", startDate, endDate);
+
+		var request = new Management.ReadAuditLogRequest
+		{
+			StartTime = startDate,
+			EndTime = endDate
+		};
+
+		using var call = _callHelper.ExecuteStreamingCall(
+			request,
+			_grpcClient.ReadAuditLog,
+			GrpcMethods.ReadAuditLog,
+			"audit log reading");
+
+		var totalBytesRead = 0L;
+		var chunkCount = 0;
+
+		await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
+		{
+			var logData = response.AuditLog.ToByteArray();
+			totalBytesRead += logData.Length;
+			chunkCount++;
+
+			Logger.LogDebug("Received audit log chunk {ChunkNumber}: {Size} bytes", chunkCount, logData.Length);
+
+			yield return logData;
+		}
+
+		Logger.LogInformation("Audit log reading completed: {TotalChunks} chunks, {TotalBytes} total bytes", 
+			chunkCount, totalBytesRead);
+	}
+
+	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Update, Description = "Performs a maintenance upgrade on a machine")]
+	public async Task MaintenanceUpgradeAsync(
+		string machineId,
+		string version,
+		CancellationToken cancellationToken)
+	{
+		EnsureWriteOperationAllowed("upgrade", "machine");
+
+		Logger.LogInformation("Starting maintenance upgrade for machine {MachineId} to version {Version}", 
+			machineId, version);
+
+		var request = new Management.MaintenanceUpgradeRequest
+		{
+			MachineId = machineId,
+			Version = version
+		};
+
+		await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.MaintenanceUpgradeAsync,
+			GrpcMethods.MaintenanceUpgrade,
+			"maintenance upgrade",
+			cancellationToken);
+
+		Logger.LogInformation("Maintenance upgrade completed successfully for machine {MachineId}", machineId);
+	}
+
+	/// <inheritdoc />
+	public async Task<MachineJoinConfig> GetMachineJoinConfigAsync(
+		bool useGrpcTunnel,
+		string joinToken,
+		CancellationToken cancellationToken)
+	{
+		Logger.LogInformation("Getting machine join configuration (useGrpcTunnel: {UseGrpcTunnel})", useGrpcTunnel);
+
+		var request = new Management.GetMachineJoinConfigRequest
+		{
+			UseGrpcTunnel = useGrpcTunnel,
+			JoinToken = joinToken
+		};
+
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.GetMachineJoinConfigAsync,
+			GrpcMethods.GetMachineJoinConfig,
+			"machine join config retrieval",
+			cancellationToken);
+
+		var config = new MachineJoinConfig
+		{
+			Config = response.Config ?? "",
+			KernelArgs = [.. response.KernelArgs]
+		};
+
+		Logger.LogInformation("Machine join config retrieved: {Summary}", config.GetSummary());
+
+		return config;
+	}
+
+	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Create, Description = "Creates a join token for machines")]
+	public async Task<string> CreateJoinTokenAsync(
+		string name,
+		DateTimeOffset expirationTime,
+		CancellationToken cancellationToken)
+	{
+		EnsureWriteOperationAllowed("create", "join token");
+
+		Logger.LogInformation("Creating join token: {Name}, expires: {ExpirationTime}", name, expirationTime);
+
+		var request = new Management.CreateJoinTokenRequest
+		{
+			Name = name,
+			ExpirationTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(expirationTime)
+		};
+
+		var response = await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.CreateJoinTokenAsync,
+			GrpcMethods.CreateJoinToken,
+			"join token creation",
+			cancellationToken);
+
+		Logger.LogInformation("Join token created successfully: {TokenId}", response.Id);
+
+		return response.Id;
+	}
+
+	/// <inheritdoc />
+	[IsWriteAction(WriteActionType.Delete, Description = "Tears down a locked cluster")]
+	public async Task TearDownLockedClusterAsync(
+		string clusterId,
+		CancellationToken cancellationToken)
+	{
+		EnsureWriteOperationAllowed("tear down", "locked cluster");
+
+		Logger.LogWarning("Tearing down locked cluster: {ClusterId} - this is a destructive operation", clusterId);
+
+		var request = new Management.TearDownLockedClusterRequest
+		{
+			ClusterId = clusterId
+		};
+
+		await _callHelper.ExecuteCallAsync(
+			request,
+			_grpcClient.TearDownLockedClusterAsync,
+			GrpcMethods.TearDownLockedCluster,
+			"locked cluster tear down",
+			cancellationToken);
+
+		Logger.LogInformation("Locked cluster {ClusterId} torn down successfully", clusterId);
 	}
 
 	/// <inheritdoc />
