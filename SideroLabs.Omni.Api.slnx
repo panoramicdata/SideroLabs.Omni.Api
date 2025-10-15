@@ -7,8 +7,8 @@
     <File Path="nuget_key.example.txt" />
     <File Path="nuget_key.txt" />
     <File Path="README.md" />
+    <File Path="Release.ps1" />
     <File Path="SideroLabs.Omni.Api.dic" />
-    <File Path="Tag.ps1" />
     <File Path="version.json" />
   </Folder>
   <Project Path="SideroLabs.Omni.Api.Examples/SideroLabs.Omni.Api.Examples.csproj" />
