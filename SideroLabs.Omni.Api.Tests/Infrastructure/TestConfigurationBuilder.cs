@@ -103,8 +103,9 @@ public class TestConfigurationBuilder(ILogger logger)
 		{
 			options.Identity = testPgpKey.Value.Identity;
 			options.PgpPrivateKey = testPgpKey.Value.PgpKey;
-			// Clear file path since we're using direct key content
+			// Clear other auth methods since we're using direct key content
 			options.PgpKeyFilePath = null;
+			options.AuthToken = null;
 		}
 
 		// Set logger for OmniClient
