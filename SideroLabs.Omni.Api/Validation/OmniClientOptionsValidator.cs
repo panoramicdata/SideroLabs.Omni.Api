@@ -60,18 +60,35 @@ internal class OmniClientOptionsValidator : IOptionsValidator<OmniClientOptions>
 
 		var errors = new List<string>();
 
-		if (string.IsNullOrWhiteSpace(options.Endpoint))
+		if (!options.BaseUrl.IsAbsoluteUri)
 		{
-			errors.Add("Endpoint is required");
-		}
-		else if (!Uri.TryCreate(options.Endpoint, UriKind.Absolute, out _))
-		{
-			errors.Add("Endpoint must be a valid URI");
+			errors.Add("BaseUrl must be an absolute Uri");
 		}
 
 		if (options.TimeoutSeconds <= 0)
 		{
 			errors.Add("TimeoutSeconds must be positive");
+		}
+
+		// Exactly one of the following must be provided:
+		// - PgpPrivateKey
+		// - PgpKeyFilePath
+		// - AuthToken
+		var authMethodsProvided = new[]
+		{
+			!string.IsNullOrWhiteSpace(options.PgpPrivateKey),
+			!string.IsNullOrWhiteSpace(options.PgpKeyFilePath),
+			!string.IsNullOrWhiteSpace(options.AuthToken)
+		}.Count(b => b);
+
+		switch (authMethodsProvided)
+		{
+			case 0:
+				errors.Add("One of PgpPrivateKey, PgpKeyFilePath, or AuthToken must be provided for authentication");
+				break;
+			case > 1:
+				errors.Add("Only one of PgpPrivateKey, PgpKeyFilePath, or AuthToken should be provided");
+				break;
 		}
 
 		return errors.Count == 0 ? ValidationResult.Success() : ValidationResult.Failure([.. errors]);

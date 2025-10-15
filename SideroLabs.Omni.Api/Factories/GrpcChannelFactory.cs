@@ -35,8 +35,8 @@ internal class GrpcChannelFactory(ILogger logger) : IGrpcChannelFactory
 			_logger.LogWarning("Certificate validation is disabled");
 		}
 
-		var channel = GrpcChannel.ForAddress(options.Endpoint, channelOptions);
-		_logger.LogDebug("Created gRPC channel for {Endpoint}", options.Endpoint);
+		var channel = GrpcChannel.ForAddress(options.BaseUrl, channelOptions);
+		_logger.LogDebug("Created gRPC channel for {BaseUrl}", options.BaseUrl);
 
 		return channel;
 	}

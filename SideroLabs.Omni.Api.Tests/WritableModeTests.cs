@@ -26,7 +26,7 @@ public class WritableModeTests
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "test-key",
 			IsReadOnly = false,
@@ -46,7 +46,7 @@ public class WritableModeTests
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "test-key",
 			IsReadOnly = false,
@@ -64,19 +64,19 @@ public class WritableModeTests
 		// Act & Assert - These should not throw ReadOnlyModeException
 		// They may throw other exceptions (network, auth, etc.) but not ReadOnlyModeException
 
-		await AssertNotReadOnlyException(() => 
+		await AssertNotReadOnlyException(() =>
 			client.Management.CreateServiceAccountAsync(testPgpKey, cts.Token));
 
-		await AssertNotReadOnlyException(() => 
+		await AssertNotReadOnlyException(() =>
 			client.Management.RenewServiceAccountAsync(testAccountName, testPgpKey, cts.Token));
 
-		await AssertNotReadOnlyException(() => 
+		await AssertNotReadOnlyException(() =>
 			client.Management.DestroyServiceAccountAsync(testAccountName, cts.Token));
 
-		await AssertNotReadOnlyException(() => 
+		await AssertNotReadOnlyException(() =>
 			client.Management.CreateSchematicAsync(testExtensions, cts.Token));
 
-		await AssertNotReadOnlyException(() => 
+		await AssertNotReadOnlyException(() =>
 			client.Management.GetKubeConfigAsync(serviceAccount: true, cts.Token));
 
 		// Test streaming operation (will throw on enumeration due to network, but not ReadOnlyModeException)
@@ -92,7 +92,7 @@ public class WritableModeTests
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "test-key",
 			IsReadOnly = isReadOnly,
@@ -112,7 +112,7 @@ public class WritableModeTests
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "test-key",
 			Logger = _logger

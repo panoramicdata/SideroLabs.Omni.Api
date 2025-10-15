@@ -66,7 +66,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="target">Target options</param>
 	private static void CopyOptions(OmniClientOptions source, OmniClientOptions target)
 	{
-		target.Endpoint = source.Endpoint;
+		target.BaseUrl = source.BaseUrl;
 		target.Identity = source.Identity;
 		target.PgpPrivateKey = source.PgpPrivateKey;
 		target.PgpKeyFilePath = source.PgpKeyFilePath;

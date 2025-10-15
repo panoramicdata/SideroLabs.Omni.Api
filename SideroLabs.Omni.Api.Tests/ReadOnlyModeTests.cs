@@ -252,8 +252,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		// Arrange - Create a client with read-only mode enabled but no real connection
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test-readonly.example.com", // Non-existent endpoint
+			BaseUrl = new("https://test-readonly.example.com"), // Non-existent endpoint
 			Identity = "test-user",
+			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE",
 			IsReadOnly = true,
 			TimeoutSeconds = 1, // Short timeout
 			Logger = Logger

@@ -24,7 +24,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60,
@@ -36,26 +36,10 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		using var client = new OmniClient(options);
 
 		// Assert
-		client.Endpoint.Should().Be("https://test.example.com");
+		client.BaseUrl.Should().Be("https://test.example.com");
 		client.UseTls.Should().BeTrue();
 		client.IsReadOnly.Should().BeFalse(); // Default value
 		client.Management.Should().NotBeNull(); // Verify ManagementService is available
-	}
-
-	[Fact]
-	public void Constructor_WithInvalidEndpoint_ThrowsOmniConfigurationException()
-	{
-		// Arrange
-		var options = new OmniClientOptions
-		{
-			Endpoint = "", // Invalid endpoint
-			Identity = "test-user",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----"
-		};
-
-		// Act & Assert
-		var exception = ((Action)(() => _ = new OmniClient(options))).Should().Throw<OmniConfigurationException>();
-		exception.Which.ValidationErrors.Should().Contain("Endpoint is required");
 	}
 
 	[Fact]
@@ -64,7 +48,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = -1 // Invalid timeout
@@ -81,7 +65,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----"
 		};
@@ -100,7 +84,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://omni.example.com:8443",
+			BaseUrl = new("https://omni.example.com:8443"),
 			Identity = "test-identity",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
 			UseTls = true,
@@ -111,7 +95,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		using var client = new OmniClient(options);
 
 		// Assert
-		client.Endpoint.Should().Be("https://omni.example.com:8443");
+		client.BaseUrl.Should().Be("https://omni.example.com:8443");
 		client.UseTls.Should().BeTrue();
 		client.IsReadOnly.Should().BeTrue();
 		// Note: Identity may be null if authenticator creation fails (e.g., invalid PGP key)
@@ -124,7 +108,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			Identity = "test-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----"
 		};
@@ -141,16 +125,12 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Arrange
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com"
+			BaseUrl = new("https://test.example.com")
 			// No Identity or PgpPrivateKey provided
 		};
 
 		// Act
-		using var client = new OmniClient(options);
-
-		// Assert
-		client.Endpoint.Should().Be("https://test.example.com");
-		client.Identity.Should().BeNull(); // No authenticator should be created
-		client.Management.Should().NotBeNull(); // ManagementService should still be available
+		// Constructing this should fail with an OmniConfigurationException due to missing credentials
+		var exception = ((Action)(() => _ = new OmniClient(options))).Should().Throw<OmniConfigurationException>();
 	}
 }

@@ -20,7 +20,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		// Act
 		services.AddOmniClient(options =>
 		{
-			options.Endpoint = "https://test.example.com:8443";
+			options.BaseUrl = new("https://test.example.com:8443");
 			options.Identity = "test-user";
 			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
 		});
@@ -30,7 +30,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		// Assert
 		var omniClientOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
 		omniClientOptions.Should().NotBeNull();
-		omniClientOptions.Endpoint.Should().Be("https://test.example.com:8443");
+		omniClientOptions.BaseUrl.ToString().Should().Be("https://test.example.com:8443/");
 		omniClientOptions.Identity.Should().Be("test-user");
 		omniClientOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 
@@ -45,7 +45,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		var services = new ServiceCollection();
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com:8443",
+			BaseUrl = new("https://test.example.com:8443"),
 			Identity = "test-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60
@@ -59,7 +59,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		// Assert
 		var registeredOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
 		registeredOptions.Should().NotBeNull();
-		registeredOptions.Endpoint.Should().Be("https://test.example.com:8443");
+		registeredOptions.BaseUrl.ToString().Should().Be("https://test.example.com:8443/");
 		registeredOptions.Identity.Should().Be("test-user");
 		registeredOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 		registeredOptions.TimeoutSeconds.Should().Be(60);
@@ -77,7 +77,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		// Act
 		services.AddOmniClient(options =>
 		{
-			options.Endpoint = "https://test.example.com";
+			options.BaseUrl = new("https://test.example.com");
 			options.Identity = "test-user";
 			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
 		});
@@ -86,7 +86,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		var omniClientOptions = serviceProvider.GetRequiredService<IOptions<OmniClientOptions>>().Value;
 
 		// Assert
-		omniClientOptions.Endpoint.Should().Be("https://test.example.com");
+		omniClientOptions.BaseUrl.Should().Be("https://test.example.com");
 		omniClientOptions.Identity.Should().Be("test-user");
 		omniClientOptions.PgpPrivateKey.Should().NotBeNullOrEmpty();
 	}

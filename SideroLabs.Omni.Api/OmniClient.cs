@@ -1,6 +1,5 @@
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
-using SideroLabs.Omni.Api.Extensions;
 using SideroLabs.Omni.Api.Factories;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Security;
@@ -42,7 +41,7 @@ public class OmniClient : IOmniClient
 		var authenticatorFactory = new AuthenticatorFactory(_logger);
 		_authenticator = authenticatorFactory.CreateAuthenticatorAsync(_options).GetAwaiter().GetResult();
 
-		_logger.LogDebug("Initialized Omni gRPC client for endpoint: {Endpoint}", _options.Endpoint);
+		_logger.LogDebug("Initialized Omni gRPC client for endpoint: {BaseUrl}", _options.BaseUrl);
 	}
 
 	/// <summary>
@@ -54,7 +53,7 @@ public class OmniClient : IOmniClient
 	/// <summary>
 	/// Gets the gRPC endpoint URL
 	/// </summary>
-	public string Endpoint => _options.Endpoint;
+	public Uri BaseUrl => _options.BaseUrl;
 
 	/// <summary>
 	/// Gets whether TLS is enabled
@@ -75,7 +74,6 @@ public class OmniClient : IOmniClient
 	{
 		var validator = new OmniClientOptionsValidator();
 		var validationResult = validator.Validate(_options);
-
 		validationResult.ThrowIfInvalid();
 
 		_logger.LogDebug("OmniClient options validated successfully");

@@ -21,9 +21,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		var configuration = LoadConfiguration();
 		var omniSection = configuration.GetSection("Omni");
 
-		var (identity, pgpPrivateKey) = ExtractCredentials(omniSection);
+		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni config section must contain AuthToken.");
 
-		return CreateClientOptions(omniSection, identity, pgpPrivateKey, isReadOnlyOverride);
+		return CreateClientOptions(omniSection, authToken, isReadOnlyOverride);
 	}
 
 	/// <summary>
@@ -38,75 +38,19 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 	}
 
 	/// <summary>
-	/// Extracts identity and PGP key from configuration
-	/// </summary>
-	private (string identity, string pgpPrivateKey) ExtractCredentials(IConfigurationSection omniSection)
-	{
-		var authToken = omniSection["AuthToken"];
-		if (!string.IsNullOrEmpty(authToken))
-		{
-			var (identity, pgpKey) = TryDecodeAuthToken(authToken);
-			if (!string.IsNullOrEmpty(identity) && !string.IsNullOrEmpty(pgpKey))
-			{
-				return (identity, pgpKey);
-			}
-		}
-
-		// Fallback to placeholder credentials
-		return GetFallbackCredentials();
-	}
-
-	/// <summary>
-	/// Attempts to decode the AuthToken
-	/// </summary>
-	private (string? identity, string? pgpKey) TryDecodeAuthToken(string authToken)
-	{
-		try
-		{
-			var decodedBytes = Convert.FromBase64String(authToken);
-			var decodedJson = Encoding.UTF8.GetString(decodedBytes);
-
-			using var jsonDoc = JsonDocument.Parse(decodedJson);
-			var root = jsonDoc.RootElement;
-
-			var identity = root.TryGetProperty("name", out var nameElement) ? nameElement.GetString() : null;
-			var pgpKey = root.TryGetProperty("pgp_key", out var pgpKeyElement) ? pgpKeyElement.GetString() : null;
-
-			Logger.LogInformation("Successfully decoded AuthToken for identity: {Identity}", identity);
-			return (identity, pgpKey);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(ex, "Failed to decode AuthToken, falling back to placeholder credentials");
-			return (null, null);
-		}
-	}
-
-	/// <summary>
-	/// Gets fallback credentials when decoding fails
-	/// </summary>
-	private static (string identity, string pgpPrivateKey) GetFallbackCredentials()
-	{
-		return ("integration-test-user", "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest-key-placeholder\n-----END PGP PRIVATE KEY BLOCK-----");
-	}
-
-	/// <summary>
 	/// Creates the OmniClientOptions with the provided configuration
 	/// </summary>
-	private OmniClientOptions CreateClientOptions(IConfigurationSection omniSection, string identity, string pgpPrivateKey, bool? isReadOnlyOverride)
-	{
-		return new OmniClientOptions
+	private OmniClientOptions CreateClientOptions(IConfigurationSection omniSection, string authToken, bool? isReadOnlyOverride)
+		=> new()
 		{
-			Endpoint = omniSection["Endpoint"] ?? throw new InvalidOperationException("Omni:Endpoint not configured"),
-			Identity = identity,
-			PgpPrivateKey = pgpPrivateKey,
+			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl not configured")),
+			AuthToken = authToken,
 			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
 			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
 			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
 			IsReadOnly = isReadOnlyOverride ?? bool.Parse(omniSection["IsReadOnly"] ?? "false"),
 			Logger = Logger
 		};
-	}
 
 	/// <summary>
 	/// Determines if integration tests should run based on configuration
@@ -119,7 +63,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 			.Build();
 
 		var omniSection = configuration.GetSection("Omni");
-		var endpoint = omniSection["Endpoint"];
+		var endpoint = omniSection["BaseUrl"];
 		var authToken = omniSection["AuthToken"];
 
 		// Only run if we have a real endpoint and auth token
@@ -151,7 +95,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		using var client = new OmniClient(options);
 
 		Logger.LogInformation("🚀 Starting real-world gRPC integration test with Sidero Labs credentials");
-		Logger.LogInformation("Endpoint: {Endpoint}", options.Endpoint);
+		Logger.LogInformation("BaseUrl: {BaseUrl}", options.BaseUrl);
 		Logger.LogInformation("Identity: {Identity}", options.Identity);
 		Logger.LogInformation("IsReadOnly: {IsReadOnly}", options.IsReadOnly);
 
@@ -586,7 +530,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 		// Assert
 		result.Should().NotBeNull();
-		
+
 		if (result.IsValid)
 		{
 			Logger.LogInformation("✅ Complex JSON schema validation succeeded!");
@@ -644,7 +588,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 				}
 				else if (!string.IsNullOrEmpty(progress.State))
 				{
-					Logger.LogInformation("Progress: {State} ({Value}/{Total} - {Percentage:F1}%)", 
+					Logger.LogInformation("Progress: {State} ({Value}/{Total} - {Percentage:F1}%)",
 						progress.State, progress.Value, progress.Total, progress.ProgressPercentage);
 				}
 
@@ -657,7 +601,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 			// Assert
 			progressUpdates.Should().BePositive("Should have received progress updates");
-			Logger.LogInformation("✅ Received {Updates} progress updates, total bundle size: {Size} bytes", 
+			Logger.LogInformation("✅ Received {Updates} progress updates, total bundle size: {Size} bytes",
 				progressUpdates, totalBundleSize);
 
 			if (errors.Count > 0)
@@ -719,7 +663,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 				var logText = System.Text.Encoding.UTF8.GetString(logData);
 				Logger.LogInformation("Received audit log chunk {Count}: {Size} bytes", chunkCount, logData.Length);
-				Logger.LogDebug("Log content preview: {Preview}", 
+				Logger.LogDebug("Log content preview: {Preview}",
 					logText.Length > 100 ? logText[..100] + "..." : logText);
 
 				if (chunkCount >= maxChunks)
@@ -733,7 +677,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 			{
 				chunkCount.Should().BePositive("Should have received at least one audit log chunk");
 				totalBytes.Should().BePositive("Should have received some audit log data");
-				Logger.LogInformation("✅ Successfully read {Chunks} audit log chunks, {TotalBytes} total bytes", 
+				Logger.LogInformation("✅ Successfully read {Chunks} audit log chunks, {TotalBytes} total bytes",
 					chunkCount, totalBytes);
 			}
 			else
@@ -1199,7 +1143,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		// Arrange & Act
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com"
+			BaseUrl = new("https://test.example.com")
 		};
 
 		// Assert
@@ -1212,7 +1156,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		// Arrange & Act
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://test.example.com",
+			BaseUrl = new("https://test.example.com"),
 			IsReadOnly = true
 		};
 
@@ -1276,7 +1220,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 				.Build();
 
 			var config = deserializer.Deserialize<Dictionary<string, object>>(talosconfig);
-			
+
 			// Extract endpoints from contexts
 			if (config.TryGetValue("contexts", out var contextsObj) && contextsObj is Dictionary<object, object> contexts)
 			{
@@ -1288,7 +1232,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 						endpoints.Count > 0)
 					{
 						var firstEndpoint = endpoints[0].ToString();
-						Logger.LogInformation("✅ Found machine endpoint: {Endpoint}", firstEndpoint);
+						Logger.LogInformation("✅ Found machine endpoint: {BaseUrl}", firstEndpoint);
 						return firstEndpoint;
 					}
 				}

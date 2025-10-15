@@ -13,7 +13,7 @@ public interface IOmniClient : IDisposable
 	/// <summary>
 	/// Gets the gRPC endpoint URL
 	/// </summary>
-	string Endpoint { get; }
+	Uri BaseUrl { get; }
 
 	/// <summary>
 	/// Gets whether TLS is enabled

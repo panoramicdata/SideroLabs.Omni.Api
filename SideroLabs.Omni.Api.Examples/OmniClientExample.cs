@@ -44,7 +44,7 @@ public static class OmniClientExample
 	{
 		return new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "your-username",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 30,
@@ -149,7 +149,7 @@ public static class OmniClientExample
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "your-username",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60,
@@ -238,7 +238,7 @@ public static class OmniClientExample
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "admin-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 30,
@@ -254,7 +254,7 @@ public static class OmniClientExample
 		{
 			Console.WriteLine("=== Service Account Lifecycle ===");
 			var samplePgpPublicKey = GetSamplePgpPublicKey();
-			
+
 			await DemonstrateServiceAccountLifecycle(client, samplePgpPublicKey, cancellationToken);
 		}
 		catch (OperationCanceledException)
@@ -338,7 +338,7 @@ public static class OmniClientExample
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "provisioning-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 30,
@@ -427,7 +427,7 @@ public static class OmniClientExample
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "readonly-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 30,
@@ -490,7 +490,7 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n❌ Write operations (blocked in read-only mode):");
 
-		await TryWriteOperation("CreateServiceAccountAsync", 
+		await TryWriteOperation("CreateServiceAccountAsync",
 			() => client.Management.CreateServiceAccountAsync("test-key", cancellationToken));
 
 		await TryWriteOperation("CreateSchematicAsync",
@@ -533,7 +533,7 @@ public static class OmniClientExample
 	{
 		var options = new OmniClientOptions
 		{
-			Endpoint = "https://your-omni-instance.example.com",
+			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "comprehensive-user",
 			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 			TimeoutSeconds = 60,

@@ -11,7 +11,7 @@ public class OmniClientOptions
 	/// <summary>
 	/// The gRPC endpoint URL for the Omni Management API
 	/// </summary>
-	public string Endpoint { get; set; } = string.Empty;
+	public Uri BaseUrl { get; set; } = new Uri("https://invalid/");
 
 	/// <summary>
 	/// The identity (username) for PGP authentication
@@ -28,6 +28,12 @@ public class OmniClientOptions
 	/// This file should contain the base64-encoded JSON with 'name' and 'pgp_key' properties
 	/// </summary>
 	public string? PgpKeyFilePath { get; set; }
+
+	/// <summary>
+	/// The authToken
+	/// for identity / key extraction
+	/// </summary>
+	public string? AuthToken { get; set; }
 
 	/// <summary>
 	/// Timeout for gRPC calls in seconds

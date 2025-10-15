@@ -26,7 +26,7 @@ public static class ExampleConfigurationFactory
 	/// <returns>Configured options</returns>
 	public static OmniClientOptions CreateStandardOptions(string identity, int timeoutSeconds) => new()
 	{
-		Endpoint = "https://your-omni-instance.example.com",
+		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
 		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 		TimeoutSeconds = timeoutSeconds,
@@ -47,7 +47,7 @@ public static class ExampleConfigurationFactory
 	/// <returns>Configured read-only options</returns>
 	public static OmniClientOptions CreateReadOnlyOptions(string identity) => new()
 	{
-		Endpoint = "https://your-omni-instance.example.com",
+		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
 		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 		TimeoutSeconds = 30,
@@ -69,7 +69,7 @@ public static class ExampleConfigurationFactory
 	/// <returns>Configured options with longer timeout</returns>
 	public static OmniClientOptions CreateStreamingOptions(string identity) => new()
 	{
-		Endpoint = "https://your-omni-instance.example.com",
+		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
 		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
 		TimeoutSeconds = 60,
