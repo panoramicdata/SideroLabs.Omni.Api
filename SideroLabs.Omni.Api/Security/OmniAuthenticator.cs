@@ -20,11 +20,6 @@ public class OmniAuthenticator
 	private const string PayloadHeaderKey = "x-sidero-payload";
 	private const string SignatureHeaderKey = "x-sidero-signature";
 
-	private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-	};
-
 	// Headers that are included in the signed payload (from go-api-signature)
 	private static readonly string[] IncludedHeaders = [
 		TimestampHeaderKey,
@@ -152,7 +147,7 @@ public class OmniAuthenticator
 
 		// Build payload from metadata and method
 		var payload = BuildPayload(metadata, method);
-		var payloadJson = JsonSerializer.Serialize(payload, _jsonSerializerOptions);
+		var payloadJson = JsonSerializer.Serialize(payload, OmniClient.JsonSerializerOptions);
 
 		_logger.LogDebug("Signing payload: {Payload}", payloadJson);
 

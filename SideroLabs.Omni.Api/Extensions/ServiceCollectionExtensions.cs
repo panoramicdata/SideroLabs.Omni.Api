@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
 			return new OmniClient(options);
 		});
 
-		services.AddSingleton<OmniClient>(serviceProvider =>
+		services.AddSingleton(serviceProvider =>
 			(OmniClient)serviceProvider.GetRequiredService<IOmniClient>());
 
 		// Register individual services for direct injection

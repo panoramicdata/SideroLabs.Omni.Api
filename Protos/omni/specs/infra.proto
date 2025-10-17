@@ -1,0 +1,107 @@
+syntax = "proto3";
+package specs;
+
+option go_package = "github.com/siderolabs/omni/client/api/omni/specs";
+
+import "omni/specs/omni.proto";
+import "google/protobuf/timestamp.proto";
+
+message MachineRequestSpec {
+  string talos_version = 1;
+  specs.Overlay overlay = 2;
+  repeated string extensions = 3;
+  repeated string kernel_args = 4;
+  repeated specs.MetaValue meta_values = 5;
+  string provider_data = 6;
+  GrpcTunnelMode grpc_tunnel = 7;
+}
+
+message MachineRequestStatusSpec {
+  enum Stage {
+    UNKNOWN = 0;
+    PROVISIONING = 1;
+    PROVISIONED = 2;
+    FAILED = 3;
+  }
+
+  string id = 1;
+  Stage stage = 2;
+  string error = 3;
+  string status = 4;
+}
+
+message InfraMachineSpec {
+  enum MachinePowerState {
+    POWER_STATE_OFF = 0;
+    POWER_STATE_ON = 1;
+  }
+
+  MachinePowerState preferred_power_state = 1;
+  InfraMachineConfigSpec.AcceptanceStatus acceptance_status = 2;
+  string cluster_talos_version = 3;
+  repeated string extensions = 4;
+
+  // WipeId is set to a new id each time the machine gets unallocated.
+  //
+  // It is used by the provider to ensure that the machine is wiped between allocations.
+  string wipe_id = 5;
+
+  string extra_kernel_args = 6;
+  string requested_reboot_id = 7;
+  bool cordoned = 8;
+
+  // InstallEventId is a counter, incremented each time Omni receives an event over SideroLink that indicates there is Talos installation on the disk.
+  //
+  // This value is then used by the infra provider to make the decision whether Talos is installed or not.
+  // It is able to track the installation state by:
+  // - Storing a copy of the value of this counter internally after wiping a machine.
+  // - Comparing the value of this counter with the stored value to determine if Talos is installed:
+  //   It is installed if the value of the counter is greater than the stored value.
+  uint64 install_event_id = 9;
+
+  // NodeUniqueToken is copied from the corresponding siderolink.Link resource.
+  string node_unique_token = 10;
+}
+
+message InfraMachineStateSpec {
+  bool installed = 1;
+}
+
+message InfraMachineStatusSpec {
+  enum MachinePowerState {
+    POWER_STATE_UNKNOWN = 0;
+    POWER_STATE_OFF = 1;
+    POWER_STATE_ON = 2;
+  }
+
+  MachinePowerState power_state = 1;
+
+  // ReadyToUse is set to true when the machine is not dirty, i.e., there is no pending wipe operation.
+  bool ready_to_use = 2;
+  string last_reboot_id = 3;
+  google.protobuf.Timestamp last_reboot_timestamp = 4;
+  bool installed = 5;
+  // WipedNodeUniqueToken is updated when the bare metal infra provider wipes the machine.
+  // It reads the current token from the infra.Machine resource and updates it here.
+  string wiped_node_unique_token = 6;
+}
+
+message InfraProviderSpec {}
+
+message InfraProviderStatusSpec {
+  string schema = 1;
+  string name = 2;
+  string description = 3;
+  string icon = 4;
+}
+
+message InfraProviderHealthStatusSpec {
+  google.protobuf.Timestamp last_heartbeat_timestamp = 1;
+  string error = 2;
+}
+
+message BMCConfigSpec {
+  InfraMachineBMCConfigSpec config = 1;
+}
+
+message MachineRegistrationSpec {}

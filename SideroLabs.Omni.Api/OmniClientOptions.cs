@@ -41,6 +41,11 @@ public class OmniClientOptions
 	public int TimeoutSeconds { get; set; } = 30;
 
 	/// <summary>
+	/// Default namespace to use for resource operations when none is provided
+	/// </summary>
+	public string DefaultNamespace { get; set; } = "default";
+
+	/// <summary>
 	/// Whether to use Transport Layer Security for the connection
 	/// </summary>
 	public bool UseTls { get; set; } = true;

@@ -62,6 +62,7 @@ public class ValidateJsonSchemaResult
 			{
 				count++;
 			}
+
 			CountErrors(error.Errors, ref count);
 		}
 	}

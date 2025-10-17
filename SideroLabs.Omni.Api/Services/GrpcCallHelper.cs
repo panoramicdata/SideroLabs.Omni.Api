@@ -29,7 +29,7 @@ internal class GrpcCallHelper(ILogger logger, Func<string, CallOptions> createCa
 		Func<TRequest, CallOptions, AsyncUnaryCall<TResponse>> grpcCall,
 		string methodPath,
 		string operationName,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		_logger.LogDebug("Executing {OperationName}", operationName);
 

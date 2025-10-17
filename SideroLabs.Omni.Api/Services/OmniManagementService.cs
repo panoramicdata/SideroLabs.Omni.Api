@@ -85,7 +85,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			Logger.LogWarning("Using break-glass access for kubeconfig");
 		}
 
-		var request = new Management.KubeconfigRequest
+		var request = new KubeconfigRequest
 		{
 			ServiceAccount = serviceAccount,
 			ServiceAccountUser = serviceAccountUser ?? "",
@@ -130,7 +130,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			Logger.LogWarning("Using break-glass access for talosconfig");
 		}
 
-		var request = new Management.TalosconfigRequest
+		var request = new TalosconfigRequest
 		{
 			Raw = raw,
 			BreakGlass = breakGlass
@@ -179,7 +179,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		EnsureWriteOperationAllowed("create", "service account");
 
-		var request = new Management.CreateServiceAccountRequest
+		var request = new CreateServiceAccountRequest
 		{
 			ArmoredPgpPublicKey = armoredPgpPublicKey,
 			UseUserRole = useUserRole,
@@ -233,7 +233,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		EnsureWriteOperationAllowed("update", "service account");
 
-		var request = new Management.RenewServiceAccountRequest
+		var request = new RenewServiceAccountRequest
 		{
 			Name = name,
 			ArmoredPgpPublicKey = armoredPgpPublicKey
@@ -255,7 +255,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		EnsureWriteOperationAllowed("delete", "service account");
 
-		var request = new Management.DestroyServiceAccountRequest
+		var request = new DestroyServiceAccountRequest
 		{
 			Name = name
 		};
@@ -271,7 +271,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	/// <inheritdoc />
 	public async Task ValidateConfigAsync(string config, CancellationToken cancellationToken)
 	{
-		var request = new Management.ValidateConfigRequest
+		var request = new ValidateConfigRequest
 		{
 			Config = config
 		};
@@ -290,7 +290,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		string schema,
 		CancellationToken cancellationToken)
 	{
-		var request = new Management.ValidateJsonSchemaRequest
+		var request = new ValidateJsonSchemaRequest
 		{
 			Data = data,
 			Schema = schema
@@ -321,7 +321,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	/// Converts proto validation errors to model errors
 	/// </summary>
 	private static List<ValidateJsonSchemaError> ConvertProtoErrors(
-		Google.Protobuf.Collections.RepeatedField<Management.ValidateJsonSchemaResponse.Types.Error> protoErrors)
+		Google.Protobuf.Collections.RepeatedField<ValidateJsonSchemaResponse.Types.Error> protoErrors)
 	{
 		var errors = new List<ValidateJsonSchemaError>();
 
@@ -336,7 +336,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	/// <summary>
 	/// Recursively converts a proto error to a model error
 	/// </summary>
-	private static ValidateJsonSchemaError ConvertProtoError(Management.ValidateJsonSchemaResponse.Types.Error protoError)
+	private static ValidateJsonSchemaError ConvertProtoError(ValidateJsonSchemaResponse.Types.Error protoError)
 	{
 		var error = new ValidateJsonSchemaError
 		{
@@ -362,7 +362,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		string newVersion,
 		CancellationToken cancellationToken)
 	{
-		var request = new Management.KubernetesUpgradePreChecksRequest
+		var request = new KubernetesUpgradePreChecksRequest
 		{
 			NewVersion = newVersion
 		};
@@ -412,12 +412,12 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		EnsureWriteOperationAllowed("create", "schematic");
 
-		var request = new Management.CreateSchematicRequest
+		var request = new CreateSchematicRequest
 		{
 			TalosVersion = talosVersion ?? "",
 			MediaId = mediaId ?? "",
 			SecureBoot = secureBoot,
-			SiderolinkGrpcTunnelMode = (Management.CreateSchematicRequest.Types.SiderolinkGRPCTunnelMode)(int)siderolinkGrpcTunnelMode,
+			SiderolinkGrpcTunnelMode = (CreateSchematicRequest.Types.SiderolinkGRPCTunnelMode)(int)siderolinkGrpcTunnelMode,
 			JoinToken = joinToken ?? ""
 		};
 
@@ -456,7 +456,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		Logger.LogInformation("Starting support bundle generation for cluster: {Cluster}", cluster);
 
-		var request = new Management.GetSupportBundleRequest
+		var request = new GetSupportBundleRequest
 		{
 			Cluster = cluster
 		};
@@ -508,7 +508,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		Logger.LogInformation("Reading audit logs from {StartDate} to {EndDate}", startDate, endDate);
 
-		var request = new Management.ReadAuditLogRequest
+		var request = new ReadAuditLogRequest
 		{
 			StartTime = startDate,
 			EndTime = endDate
@@ -550,7 +550,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		Logger.LogInformation("Starting maintenance upgrade for machine {MachineId} to version {Version}", 
 			machineId, version);
 
-		var request = new Management.MaintenanceUpgradeRequest
+		var request = new MaintenanceUpgradeRequest
 		{
 			MachineId = machineId,
 			Version = version
@@ -574,7 +574,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	{
 		Logger.LogInformation("Getting machine join configuration (useGrpcTunnel: {UseGrpcTunnel})", useGrpcTunnel);
 
-		var request = new Management.GetMachineJoinConfigRequest
+		var request = new GetMachineJoinConfigRequest
 		{
 			UseGrpcTunnel = useGrpcTunnel,
 			JoinToken = joinToken
@@ -609,7 +609,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 		Logger.LogInformation("Creating join token: {Name}, expires: {ExpirationTime}", name, expirationTime);
 
-		var request = new Management.CreateJoinTokenRequest
+		var request = new CreateJoinTokenRequest
 		{
 			Name = name,
 			ExpirationTime = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(expirationTime)
@@ -637,7 +637,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 		Logger.LogWarning("Tearing down locked cluster: {ClusterId} - this is a destructive operation", clusterId);
 
-		var request = new Management.TearDownLockedClusterRequest
+		var request = new TearDownLockedClusterRequest
 		{
 			ClusterId = clusterId
 		};
@@ -667,7 +667,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 		int tailLines,
 		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
 	{
-		var request = new Management.MachineLogsRequest
+		var request = new MachineLogsRequest
 		{
 			MachineId = machineId,
 			Follow = follow,
@@ -704,7 +704,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			EnsureWriteOperationAllowed("update", "kubernetes manifests");
 		}
 
-		var request = new Management.KubernetesSyncManifestRequest
+		var request = new KubernetesSyncManifestRequest
 		{
 			DryRun = dryRun
 		};

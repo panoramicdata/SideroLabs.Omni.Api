@@ -11,6 +11,26 @@ public interface IOmniClient : IDisposable
 	IManagementService Management { get; }
 
 	/// <summary>
+	/// Gets the Resource Client for COSI resource operations
+	/// </summary>
+	IOmniResourceClient Resources { get; }
+
+	/// <summary>
+	/// Cluster-specific operations (status, create, delete, machine lock/unlock)
+	/// </summary>
+	IClusterOperations Clusters { get; }
+
+	/// <summary>
+	/// Template operations (rendering, sync, export, diff)
+	/// </summary>
+	ITemplateOperations Templates { get; }
+
+	/// <summary>
+	/// User management operations
+	/// </summary>
+	IUserManagement Users { get; }
+
+	/// <summary>
 	/// Gets the gRPC endpoint URL
 	/// </summary>
 	Uri BaseUrl { get; }

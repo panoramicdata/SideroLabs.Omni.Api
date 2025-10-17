@@ -1,0 +1,168 @@
+syntax = "proto3";
+package specs;
+
+option go_package = "github.com/siderolabs/omni/client/api/omni/specs";
+
+import "google/protobuf/timestamp.proto";
+
+// SiderolinkConfigSpec describes siderolink wireguard server state to persist it across restarts.
+message SiderolinkConfigSpec {
+  string private_key = 1;
+  string public_key = 2;
+  string wireguard_endpoint = 3;
+  string subnet = 5;
+  string server_address = 6;
+  string initial_join_token = 7;
+  string advertised_endpoint = 8;
+}
+
+// SiderolinkSpec describes each node connection information.
+message SiderolinkSpec {
+  string node_subnet = 1;
+  string node_public_key = 2;
+  string last_endpoint = 3;
+  bool connected = 4;
+  reserved 5;
+  reserved 6;
+  string virtual_addrport = 7;
+  // RemoteAddr is the machine address how it's visible from Omni
+  // it is determined by reading X-Forwarded-For header coming from the gRPC API.
+  string remote_addr = 8;
+  string node_unique_token = 9 [deprecated = true];
+}
+
+// LinkStatusSpec is created when the link peer event was submitted.
+message LinkStatusSpec {
+  string node_subnet = 1;
+  string node_public_key = 2;
+  string virtual_addrport = 3;
+  // LinkId is the ID of the resource which created the link status.
+  string link_id = 4;
+}
+
+// SiderolinkConnectionSpec describes each node connection information.
+message SiderolinkCounterSpec {
+  int64 bytes_received = 1;
+  int64 bytes_sent = 2;
+  google.protobuf.Timestamp last_alive = 3;
+}
+
+// ConnectionParamsSpec describes generated kernel parameters for connecting
+// the Talos node to Omni.
+message ConnectionParamsSpec {
+  // Args keeps the generated kernel arguments string.
+  string args = 1;
+  // ApiEndpoint is the service gRPC API endpoint (external domain/ip, schema and port).
+  string api_endpoint = 2;
+  // WireguardEndpoint is the service IP visible from the internal SideroLink network.
+  string wireguard_endpoint = 3;
+  // JoinToken is the default join token that can be used to connect to SideroLink.
+  string join_token = 4;
+  // UseGRPCTunnel is a flag to enable gRPC tunneling.
+  bool use_grpc_tunnel = 5;
+  // EventsPort is the siderolink events port.
+  int32 events_port = 9;
+  // LogsPort is the logs port.
+  int32 logs_port = 10;
+}
+
+// PendingMachineStatusSpec describes the spec of the pending machine status resource.
+message PendingMachineStatusSpec {
+  string token = 1;
+  bool talos_installed = 2;
+}
+
+message JoinConfig {
+  repeated string kernel_args = 1;
+  string config = 2;
+}
+
+message SiderolinkAPIConfigSpec {
+  // MachineApiAdvertisedUrl is the machine service gRPC API URL (external domain/ip, schema and port).
+  // Talos nodes use this API to get the siderolink connection params, key management server also runs there.
+  string machine_api_advertised_url = 1;
+  // WireguardAdvertisedEndpoint is the service IP visible from the internal SideroLink network.
+  string wireguard_advertised_endpoint = 2;
+  // EnforceGRPCTunnel is a flag to enable gRPC tunneling.
+  bool enforce_grpc_tunnel = 3;
+  // EventsPort is the siderolink events port.
+  int32 events_port = 4;
+  // LogsPort is the logs port.
+  int32 logs_port = 5;
+}
+
+message ProviderJoinConfigSpec {
+  JoinConfig config = 1;
+  string join_token = 2;
+}
+
+message MachineJoinConfigSpec {
+  JoinConfig config = 1;
+}
+
+message NodeUniqueTokenSpec {
+  // Token is the per node join token which is saved in the Node META partition after
+  // the machine is accepted in Omni.
+  // Only for Talos >= 1.6.
+  string token = 1;
+}
+
+message NodeUniqueTokenStatusSpec {
+  enum State {
+    UNKNOWN = 0;
+    PERSISTENT = 1;
+    EPHEMERAL = 2;
+    NONE = 3;
+    UNSUPPORTED = 4;
+  }
+
+  State state = 1;
+}
+
+// JoinTokenSpec keeps the node join tokens.
+message JoinTokenSpec {
+  // ExpirationTime is the lifetime of the token.
+  google.protobuf.Timestamp expiration_time = 1;
+  // Revoked allows to revoke the token before it expires.
+  bool revoked = 2;
+  // Name is the human readable join token description.
+  string name = 3;
+}
+
+// JoinTokenStatusSpec is the status of the join token.
+message JoinTokenStatusSpec {
+  enum State {
+    UNKNOWN = 0;
+    ACTIVE = 1;
+    REVOKED = 2;
+    EXPIRED = 3;
+  }
+
+  message Warning {
+    string machine = 1;
+    string message = 2;
+  }
+
+  // State of the token.
+  State state = 1;
+  // IsDefault is set on the join token which used by default.
+  bool is_default = 2;
+  // UseCount is the number of links that are using the join token.
+  uint64 use_count = 3;
+  // ExpirationTime is copied from the JoinTokenSpec.
+  google.protobuf.Timestamp expiration_time = 4;
+  // Name is copied from the JoinTokenSpec.
+  string name = 5;
+  // Warnings keeps the list of machines which might be broken if the token is revoked.
+  repeated Warning warnings = 6;
+}
+
+// JoinTokenUsageSpec creates a mapping that connects links and join tokens.
+message JoinTokenUsageSpec {
+  string token_id = 1;
+}
+
+// DefaultJoinTokenSpec is used to mark some join token as the default one.
+message DefaultJoinTokenSpec {
+  string token_id = 1;
+}

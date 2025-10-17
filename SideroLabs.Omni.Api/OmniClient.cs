@@ -1,10 +1,13 @@
+using System.Text.Json;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Factories;
 using SideroLabs.Omni.Api.Interfaces;
+using SideroLabs.Omni.Api.Resources;
 using SideroLabs.Omni.Api.Security;
 using SideroLabs.Omni.Api.Services;
 using SideroLabs.Omni.Api.Validation;
+using static Omni.Resources.ResourceService;
 
 namespace SideroLabs.Omni.Api;
 
@@ -21,6 +24,17 @@ public class OmniClient : IOmniClient
 
 	// Lazy-loaded services
 	private IManagementService? _managementService;
+	private IOmniResourceClient? _resourceClient;
+	private IClusterOperations? _clusterOperations;
+	private ITemplateOperations? _templateOperations;
+	private IUserManagement? _userManagement;
+
+	// JSON handling
+	internal static readonly JsonSerializerOptions JsonSerializerOptions = new()
+	{
+		PropertyNameCaseInsensitive = true,
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+	};
 
 	/// <summary>
 	/// Initializes a new instance of the OmniClient class
@@ -30,6 +44,9 @@ public class OmniClient : IOmniClient
 	{
 		_options = options ?? throw new ArgumentNullException(nameof(options));
 		_logger = _options.Logger;
+
+		// Initialize resource type registry
+		ResourceTypes.Initialize();
 
 		ValidateOptions();
 
@@ -49,6 +66,28 @@ public class OmniClient : IOmniClient
 	/// This is the primary service interface provided by Omni
 	/// </summary>
 	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
+
+	/// <summary>
+	/// Gets the Resource Client for COSI resource operations
+	/// Provides access to get, list, watch, create, update, and delete resources
+	/// </summary>
+	public IOmniResourceClient Resources => _resourceClient ??= new ResourceClientService(new ResourceServiceClient(_channel), _logger, _options.IsReadOnly, _options);
+
+	/// <summary>
+	/// Gets cluster operations (placeholder until implemented)
+	/// </summary>
+	public IClusterOperations Clusters => _clusterOperations ??= new ClusterOperations(Resources, _options);
+
+	/// <summary>
+	/// Gets template operations
+	/// </summary>
+	public ITemplateOperations Templates => _templateOperations ??= new TemplateOperations(Resources, _logger);
+
+
+	/// <summary>
+	/// Gets user management operations (placeholder until implemented)
+	/// </summary>
+	public IUserManagement Users => _userManagement ??= new UserManagement();
 
 	/// <summary>
 	/// Gets the gRPC endpoint URL

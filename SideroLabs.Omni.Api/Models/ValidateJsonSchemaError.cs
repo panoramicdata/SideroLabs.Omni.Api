@@ -44,7 +44,7 @@ public class ValidateJsonSchemaError
 	private static void CollectErrorMessages(ValidateJsonSchemaError error, List<string> messages, int depth)
 	{
 		var indent = new string(' ', depth * 2);
-		
+
 		if (!string.IsNullOrEmpty(error.Cause))
 		{
 			messages.Add($"{indent}• {error.Cause}");
@@ -52,6 +52,7 @@ public class ValidateJsonSchemaError
 			{
 				messages.Add($"{indent}  Data path: {error.DataPath}");
 			}
+
 			if (!string.IsNullOrEmpty(error.SchemaPath))
 			{
 				messages.Add($"{indent}  Schema path: {error.SchemaPath}");
