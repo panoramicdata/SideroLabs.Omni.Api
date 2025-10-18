@@ -85,9 +85,9 @@ public class OmniClient : IOmniClient
 
 
 	/// <summary>
-	/// Gets user management operations (placeholder until implemented)
+	/// Gets user management operations
 	/// </summary>
-	public IUserManagement Users => _userManagement ??= new UserManagement();
+	public IUserManagement Users => _userManagement ??= new UserManagement(Resources, _logger);
 
 	/// <summary>
 	/// Gets the gRPC endpoint URL

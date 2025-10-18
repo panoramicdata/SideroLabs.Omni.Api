@@ -6,6 +6,7 @@
     <File Path="management.proto" />
     <File Path="nuget_key.example.txt" />
     <File Path="nuget_key.txt" />
+    <File Path="OMNICTL_GAP_ANALYSIS.md" />
     <File Path="README.md" />
     <File Path="Release.ps1" />
     <File Path="SideroLabs.Omni.Api.dic" />

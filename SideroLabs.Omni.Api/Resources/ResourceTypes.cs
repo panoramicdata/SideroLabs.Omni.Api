@@ -27,13 +27,19 @@ public static class ResourceTypes
 				return;
 			}
 
-			// Register core resource types with their proto type names
-			// Based on omni proto definitions
-			ResourceTypeRegistry.Register<Cluster>("Clusters.omni.sidero.dev");
-			ResourceTypeRegistry.Register<Machine>("Machines.omni.sidero.dev");
-			ResourceTypeRegistry.Register<ClusterMachine>("ClusterMachines.omni.sidero.dev");
+		// Register core resource types with their proto type names
+		// Based on omni proto definitions
+		ResourceTypeRegistry.Register<Cluster>("Clusters.omni.sidero.dev");
+		ResourceTypeRegistry.Register<Machine>("Machines.omni.sidero.dev");
+		ResourceTypeRegistry.Register<ClusterMachine>("ClusterMachines.omni.sidero.dev");
+		ResourceTypeRegistry.Register<ConfigPatch>("ConfigPatches.omni.sidero.dev");
+		ResourceTypeRegistry.Register<ExtensionsConfiguration>("ExtensionsConfigurations.omni.sidero.dev");
+		
+		// Register auth resource types
+		ResourceTypeRegistry.Register<User>("Users.omni.sidero.dev");
+		ResourceTypeRegistry.Register<Identity>("Identities.omni.sidero.dev");
 
-			_initialized = true;
+		_initialized = true;
 		}
 	}
 
@@ -56,4 +62,24 @@ public static class ResourceTypes
 	/// Proto type name for ClusterMachine resources
 	/// </summary>
 	public const string ClusterMachineType = "ClusterMachines.omni.sidero.dev";
+
+	/// <summary>
+	/// Proto type name for ConfigPatch resources
+	/// </summary>
+	public const string ConfigPatchType = "ConfigPatches.omni.sidero.dev";
+
+	/// <summary>
+	/// Proto type name for ExtensionsConfiguration resources
+	/// </summary>
+	public const string ExtensionsConfigurationType = "ExtensionsConfigurations.omni.sidero.dev";
+
+	/// <summary>
+	/// Proto type name for User resources
+	/// </summary>
+	public const string UserType = "Users.omni.sidero.dev";
+
+	/// <summary>
+	/// Proto type name for Identity resources
+	/// </summary>
+	public const string IdentityType = "Identities.omni.sidero.dev";
 }

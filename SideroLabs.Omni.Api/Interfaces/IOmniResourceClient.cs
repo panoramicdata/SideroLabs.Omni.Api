@@ -16,10 +16,10 @@ public interface IOmniResourceClient
 	/// <param name="namespace">Resource namespace (default: "default")</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The requested resource</returns>
-    Task<TResource> GetAsync<TResource>(
-        string id,
-        string? @namespace = "default",
-        CancellationToken cancellationToken = default)
+	Task<TResource> GetAsync<TResource>(
+		string id,
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -36,16 +36,16 @@ public interface IOmniResourceClient
 	/// <param name="searchFor">Search terms</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Async enumerable of resources</returns>
-    IAsyncEnumerable<TResource> ListAsync<TResource>(
-        string? @namespace = "default",
-        string? selector = null,
-        string? idMatchRegexp = null,
-        int offset = 0,
-        int limit = 0,
-        string? sortBy = null,
-        bool sortDescending = false,
-        string[]? searchFor = null,
-        CancellationToken cancellationToken = default)
+	IAsyncEnumerable<TResource> ListAsync<TResource>(
+		string? @namespace = "default",
+		string? selector = null,
+		string? idMatchRegexp = null,
+		int offset = 0,
+		int limit = 0,
+		string? sortBy = null,
+		bool sortDescending = false,
+		string[]? searchFor = null,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -58,12 +58,12 @@ public interface IOmniResourceClient
 	/// <param name="tailEvents">Number of recent events to replay</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Async enumerable of resource events</returns>
-    IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync<TResource>(
-        string? @namespace = "default",
-        string? selector = null,
-        string? id = null,
-        int tailEvents = 0,
-        CancellationToken cancellationToken = default)
+	IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync<TResource>(
+		string? @namespace = "default",
+		string? selector = null,
+		string? id = null,
+		int tailEvents = 0,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -73,9 +73,9 @@ public interface IOmniResourceClient
 	/// <param name="resource">Resource to create</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The created resource</returns>
-    Task<TResource> CreateAsync<TResource>(
-        TResource resource,
-        CancellationToken cancellationToken = default)
+	Task<TResource> CreateAsync<TResource>(
+		TResource resource,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource;
 
 	/// <summary>
@@ -86,10 +86,10 @@ public interface IOmniResourceClient
 	/// <param name="currentVersion">Current resource version (for optimistic locking)</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The updated resource</returns>
-    Task<TResource> UpdateAsync<TResource>(
-        TResource resource,
-        string? currentVersion = null,
-        CancellationToken cancellationToken = default)
+	Task<TResource> UpdateAsync<TResource>(
+		TResource resource,
+		string? currentVersion = null,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource;
 
 	/// <summary>
@@ -99,10 +99,36 @@ public interface IOmniResourceClient
 	/// <param name="id">Resource ID</param>
 	/// <param name="namespace">Resource namespace (default: "default")</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-    Task DeleteAsync<TResource>(
-        string id,
-        string? @namespace = "default",
-        CancellationToken cancellationToken = default)
+	Task DeleteAsync<TResource>(
+		string id,
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default)
+		where TResource : IOmniResource, new();
+
+	/// <summary>
+	/// Deletes multiple resources matching a selector
+	/// </summary>
+	/// <typeparam name="TResource">Resource type</typeparam>
+	/// <param name="selector">Label selector query</param>
+	/// <param name="namespace">Resource namespace (default: "default")</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Number of resources deleted</returns>
+	Task<int> DeleteManyAsync<TResource>(
+		string? selector = null,
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default)
+		where TResource : IOmniResource, new();
+
+	/// <summary>
+	/// Deletes all resources of the specified type
+	/// </summary>
+	/// <typeparam name="TResource">Resource type</typeparam>
+	/// <param name="namespace">Resource namespace (default: "default")</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Number of resources deleted</returns>
+	Task<int> DeleteAllAsync<TResource>(
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -113,10 +139,10 @@ public interface IOmniResourceClient
 	/// <param name="dryRun">Dry run mode</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The applied resource</returns>
-    Task<TResource> ApplyAsync<TResource>(
-        TResource resource,
-        bool dryRun = false,
-        CancellationToken cancellationToken = default)
+	Task<TResource> ApplyAsync<TResource>(
+		TResource resource,
+		bool dryRun = false,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -127,10 +153,10 @@ public interface IOmniResourceClient
 	/// <param name="dryRun">Dry run mode</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The applied resource</returns>
-    Task<TResource> ApplyYamlAsync<TResource>(
-        string yaml,
-        bool dryRun = false,
-        CancellationToken cancellationToken = default)
+	Task<TResource> ApplyYamlAsync<TResource>(
+		string yaml,
+		bool dryRun = false,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -141,9 +167,9 @@ public interface IOmniResourceClient
 	/// <param name="dryRun">Dry run mode</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>The applied resource</returns>
-    Task<TResource> ApplyFileAsync<TResource>(
-        string filePath,
-        bool dryRun = false,
-        CancellationToken cancellationToken = default)
+	Task<TResource> ApplyFileAsync<TResource>(
+		string filePath,
+		bool dryRun = false,
+		CancellationToken cancellationToken = default)
 		where TResource : IOmniResource, new();
 }

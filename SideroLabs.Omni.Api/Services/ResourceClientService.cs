@@ -225,6 +225,58 @@ internal class ResourceClientService(
 	}
 
 	/// <inheritdoc />
+	public async Task<int> DeleteManyAsync<TResource>(
+		string? selector,
+		string? @namespace,
+		CancellationToken cancellationToken)
+		where TResource : IOmniResource, new()
+	{
+		CheckReadOnly(nameof(DeleteManyAsync));
+
+		var resourceType = ResourceTypeRegistry.GetProtoTypeName<TResource>();
+		logger.LogDebug("Deleting multiple resources {Type}/{Namespace} with selector {Selector}", 
+			resourceType, @namespace, selector ?? "(all)");
+
+		// List resources matching the selector
+		var resourcesToDelete = new List<string>();
+		await foreach (var resource in ListAsync<TResource>(@namespace, selector, null, 0, 0, null, false, null, cancellationToken))
+		{
+			resourcesToDelete.Add(resource.Metadata.Id);
+		}
+
+		// Delete each resource
+		var deletedCount = 0;
+		foreach (var resourceId in resourcesToDelete)
+		{
+			try
+			{
+				await DeleteAsync<TResource>(resourceId, @namespace, cancellationToken);
+				deletedCount++;
+			}
+			catch (Exception ex)
+			{
+				logger.LogWarning(ex, "Failed to delete resource {Type}/{Namespace}/{Id}", 
+					resourceType, @namespace, resourceId);
+			}
+		}
+
+		logger.LogInformation("Deleted {Count} resources of type {Type}/{Namespace}", 
+			deletedCount, resourceType, @namespace);
+
+		return deletedCount;
+	}
+
+	/// <inheritdoc />
+	public Task<int> DeleteAllAsync<TResource>(
+		string? @namespace,
+		CancellationToken cancellationToken)
+		where TResource : IOmniResource, new()
+	{
+		// DeleteAll is the same as DeleteMany with no selector
+		return DeleteManyAsync<TResource>(null, @namespace, cancellationToken);
+	}
+
+	/// <inheritdoc />
 	public Task<TResource> ApplyAsync<TResource>(
 		TResource resource,
 		bool dryRun,

@@ -79,3 +79,8 @@ readonly
 nullable
 timestamp
 Serializer
+Validator
+UserId
+UserInfo
+IdentitySpec
+UserSpec
