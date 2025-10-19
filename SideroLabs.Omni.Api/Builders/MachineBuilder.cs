@@ -7,7 +7,7 @@ namespace SideroLabs.Omni.Api.Builders;
 /// </summary>
 public class MachineBuilder
 {
-	private readonly Machine _machine;
+	private readonly Resources.Machine _machine;
 
 	/// <summary>
 	/// Initializes a new instance of the MachineBuilder class
@@ -20,7 +20,7 @@ public class MachineBuilder
 			throw new ArgumentException("Machine ID cannot be null or empty", nameof(machineId));
 		}
 
-		_machine = new Machine
+		_machine = new Resources.Machine
 		{
 			Metadata = new ResourceMetadata
 			{
@@ -136,7 +136,7 @@ public class MachineBuilder
 	/// <summary>
 	/// Builds and returns the configured Machine resource
 	/// </summary>
-	public Machine Build()
+	public Resources.Machine Build()
 	{
 		// Validate required fields
 		if (string.IsNullOrWhiteSpace(_machine.Spec.Role))
@@ -150,5 +150,5 @@ public class MachineBuilder
 	/// <summary>
 	/// Implicitly converts the builder to a Machine
 	/// </summary>
-	public static implicit operator Machine(MachineBuilder builder) => builder.Build();
+	public static implicit operator Resources.Machine(MachineBuilder builder) => builder.Build();
 }

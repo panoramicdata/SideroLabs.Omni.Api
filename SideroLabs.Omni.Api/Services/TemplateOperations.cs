@@ -51,7 +51,7 @@ internal class TemplateOperations(
 						if (cluster != null) list.Add(cluster);
 						break;
 					case "Machine":
-						var machine = ResourceSerializer.FromYaml<Machine>(doc);
+						var machine = ResourceSerializer.FromYaml<Resources.Machine>(doc);
 						if (machine != null) list.Add(machine);
 						break;
 					default:

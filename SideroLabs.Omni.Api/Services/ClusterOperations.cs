@@ -43,7 +43,7 @@ internal class ClusterOperations : IClusterOperations
 
 	public async Task LockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default)
 	{
-		var machine = await _resources.GetAsync<Machine>(machineId, _options.DefaultNamespace, cancellationToken)
+		var machine = await _resources.GetAsync<Resources.Machine>(machineId, _options.DefaultNamespace, cancellationToken)
 			?? throw new InvalidOperationException("Machine not found");
 		machine.Status ??= new MachineStatus();
 		machine.Status.Locked = true;
@@ -53,7 +53,7 @@ internal class ClusterOperations : IClusterOperations
 
 	public async Task UnlockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default)
 	{
-		var machine = await _resources.GetAsync<Machine>(machineId, _options.DefaultNamespace, cancellationToken) ?? throw new InvalidOperationException("Machine not found");
+		var machine = await _resources.GetAsync<Resources.Machine>(machineId, _options.DefaultNamespace, cancellationToken) ?? throw new InvalidOperationException("Machine not found");
 		machine.Status ??= new MachineStatus();
 		machine.Status.Locked = false;
 

@@ -2,6 +2,7 @@ using FluentValidation;
 using SideroLabs.Omni.Api.Builders;
 using SideroLabs.Omni.Api.Resources;
 using Xunit;
+using Machine = SideroLabs.Omni.Api.Resources.Machine;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Validation;
 

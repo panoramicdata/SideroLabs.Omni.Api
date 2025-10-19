@@ -55,7 +55,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 	/// <summary>
 	/// Determines if integration tests should run based on configuration
 	/// </summary>
-	private bool ShouldRunIntegrationTests()
+	private new bool ShouldRunIntegrationTests()
 	{
 		var configuration = new ConfigurationBuilder()
 			.SetBasePath(Directory.GetCurrentDirectory())

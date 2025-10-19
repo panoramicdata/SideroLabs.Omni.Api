@@ -13,8 +13,14 @@ namespace SideroLabs.Omni.Api;
 
 /// <summary>
 /// Client for interacting with the SideroLabs Omni gRPC API
-/// This is a gRPC-only client that implements the actual Omni services
+/// This client implements both ManagementService and COSI State service for full Omni functionality
 /// </summary>
+/// <remarks>
+/// ✅ ManagementService - Administrative and operational tasks (configs, service accounts, schematics, etc.)
+/// ✅ COSI State Service - Resource operations (clusters, machines, users, etc.) via /cosi.resource.State/*
+/// ❌ ResourceService - NOT available on Omni SaaS (returns HTTP 405) - use State service instead
+/// See BREAKTHROUGH_COSI_STATE_SERVICE.md for detailed analysis.
+/// </remarks>
 public class OmniClient : IOmniClient
 {
 	private readonly OmniClientOptions _options;
@@ -45,7 +51,7 @@ public class OmniClient : IOmniClient
 		_options = options ?? throw new ArgumentNullException(nameof(options));
 		_logger = _options.Logger;
 
-		// Initialize resource type registry
+		// Initialize resource type registry for COSI State service
 		ResourceTypes.Initialize();
 
 		ValidateOptions();
@@ -63,18 +69,18 @@ public class OmniClient : IOmniClient
 
 	/// <summary>
 	/// Gets the Management Service for administrative and operational tasks
-	/// This is the primary service interface provided by Omni
+	/// This is the primary (and only confirmed working) service interface provided by Omni SaaS
 	/// </summary>
 	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
 
 	/// <summary>
 	/// Gets the Resource Client for COSI resource operations
-	/// Provides access to get, list, watch, create, update, and delete resources
+	/// Now uses the COSI v1alpha1 State service which works on Omni SaaS!
 	/// </summary>
-	public IOmniResourceClient Resources => _resourceClient ??= new ResourceClientService(new ResourceServiceClient(_channel), _logger, _options.IsReadOnly, _options);
+	public IOmniResourceClient Resources => _resourceClient ??= new CosiStateClientService(_channel, _logger, _options.IsReadOnly, _options, _authenticator);
 
 	/// <summary>
-	/// Gets cluster operations (placeholder until implemented)
+	/// Gets cluster operations
 	/// </summary>
 	public IClusterOperations Clusters => _clusterOperations ??= new ClusterOperations(Resources, _options);
 
@@ -82,7 +88,6 @@ public class OmniClient : IOmniClient
 	/// Gets template operations
 	/// </summary>
 	public ITemplateOperations Templates => _templateOperations ??= new TemplateOperations(Resources, _logger);
-
 
 	/// <summary>
 	/// Gets user management operations
@@ -138,3 +143,5 @@ public class OmniClient : IOmniClient
 		GC.SuppressFinalize(this);
 	}
 }
+
+

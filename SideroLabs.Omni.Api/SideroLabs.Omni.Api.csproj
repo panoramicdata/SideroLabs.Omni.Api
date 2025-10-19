@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -79,9 +79,16 @@
 		<Protobuf Include="Protos\management.proto" GrpcServices="Client" ProtoRoot="Protos" />
 		<Protobuf Include="Protos\omni\resources\resources.proto" GrpcServices="Client" ProtoRoot="Protos" />
 		<Protobuf Include="Protos\v1alpha1\resource.proto" GrpcServices="None" ProtoRoot="Protos" />
+		<Protobuf Include="Protos\v1alpha1\state.proto" GrpcServices="Client" ProtoRoot="Protos" />
 		<Protobuf Include="Protos\common\common.proto" GrpcServices="None" ProtoRoot="Protos" />
 		<Protobuf Include="Protos\omni.proto" GrpcServices="None" ProtoRoot="Protos" />
 		<Protobuf Include="Protos\google\rpc\status.proto" GrpcServices="None" ProtoRoot="Protos" />
+		
+		<!-- Talos machine proto (required by omni specs) -->
+		<Protobuf Include="Protos\talos\machine\machine.proto" GrpcServices="None" ProtoRoot="Protos" />
+		
+		<!-- Omni resource spec definitions -->
+		<Protobuf Include="Protos\omni\specs\*.proto" GrpcServices="None" ProtoRoot="Protos" />
 	</ItemGroup>
 
 </Project>

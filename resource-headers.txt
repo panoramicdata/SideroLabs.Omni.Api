@@ -1,0 +1,107 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Program Files\dotnet\sdk\10.0.100-rc.2.25502.107\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(351,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\SideroLabs.Omni.Api.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.100-rc.2.25502.107\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(351,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\SideroLabs.Omni.Api.csproj]
+  SideroLabs.Omni.Api -> C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\bin\Debug\net9.0\SideroLabs.Omni.Api.dll
+  SideroLabs.Omni.Api.Tests -> C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\SideroLabs.Omni.Api.Tests.dll
+Test run for C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\SideroLabs.Omni.Api.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 18.0.0-preview-25502-107 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.13]     SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody [FAIL]
+  Failed SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody [398 ms]
+  Error Message:
+   Grpc.Core.RpcException : Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+  Stack Trace:
+     at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs:line 122
+   at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+   at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: Building test configuration
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: Loading test expectations from configuration
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöì Testing ResourceService endpoint with read-only List operation
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase: Test PGP key file not found: C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\TestData\pgp-key-test.txt
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] OmniClient options validated successfully
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ≡ƒöº Creating gRPC Channel
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   BaseUrl: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Scheme: https
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Host: panoramicdata.eu-central-1.omni.siderolabs.io
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Port: 443
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   AbsoluteUri: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ≡ƒöÑ≡ƒöÑ≡ƒöÑ LoggingHttpMessageHandler CONSTRUCTED ≡ƒöÑ≡ƒöÑ≡ƒöÑ
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Γ£à gRPC channel created successfully
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Channel Target: panoramicdata.eu-central-1.omni.siderolabs.io
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Successfully decoded AuthToken for identity: nuget-dev
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Initialized Omni authenticator with identity: nuget-dev, key fingerprint: e5f5cf635c188a12e3f729d5572a6e2d55bec90a
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Initialized Omni gRPC client for endpoint: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôì Endpoint: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöÉ Identity: nuget-dev
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôï Attempting to list Cluster resources...
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Listing resources Clusters.omni.sidero.dev/default
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Signing payload: {"headers":{"x-sidero-timestamp":["1760826295"]},"method":"/omni.resources.ResourceService/List"}
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Signed gRPC request for method: /omni.resources.ResourceService/List
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Calling ResourceService.List with authentication
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Resource Type: Clusters.omni.sidero.dev
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Namespace: default
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Method: /omni.resources.ResourceService/List
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Headers: 3
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-timestamp: 1760826295
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-payload: {"headers":{"x-sidero-timestamp":["1760826295"]},"method":"/omni.resources.ResourceService/List"}
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-signature: [REDACTED]
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ≡ƒîÉ HTTP Request:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Method: POST
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   URI: https://panoramicdata.eu-central-1.omni.siderolabs.io/omni.resources.ResourceService/List
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Version: HTTP/2.0
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Headers:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     User-Agent: grpc-dotnet/2.71.0
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     User-Agent: (.NET 9.0.10; CLR 9.0.10; net8.0; windows; x64)
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     TE: trailers
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     grpc-accept-encoding: identity,gzip,deflate
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-timestamp: 1760826295
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-payload: {"headers":{"x-sidero-timestamp":["1760826295"]},"method":"/omni.resources.ResourceService/List"}
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     x-sidero-signature: [REDACTED]
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     grpc-timeout: 1M
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Content Headers:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Content-Type: application/grpc
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ≡ƒôÑ HTTP Response:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Status: 405 Method Not Allowed
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Version: HTTP/2.0
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Headers:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Date: Sat, 18 Oct 2025 22:24:56 GMT
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Vary: Accept-Encoding
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     X-Content-Type-Options: nosniff
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Content Headers:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Allow: OPTIONS
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Allow: GET
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Allow: HEAD
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]     Content-Type: text/plain; charset=utf-8
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient]   Content Body: read-only
+
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: Γ¥î gRPC Error: Unknown - Bad gRPC response. HTTP status code: 405
+ Grpc.Core.RpcException: Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+    at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs:line 122
+    at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+    at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+    at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôè DETAILED ERROR ANALYSIS:
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Code: Unknown
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Detail: Bad gRPC response. HTTP status code: 405
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   HTTP Status Code: 405
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No HTTP response body found in exception trailers
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No trailers in response
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Debug] SideroLabs.Omni.Api.Tests.TestBase: [SideroLabs.Omni.Api.OmniClient] Disposing OmniClient
+
+
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 410 ms - SideroLabs.Omni.Api.Tests.dll (net9.0)

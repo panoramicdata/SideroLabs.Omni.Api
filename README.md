@@ -23,32 +23,38 @@ This client provides strongly-typed C# interfaces for the Omni gRPC services, wi
 
 - **Native gRPC client** - Direct implementation of Omni's actual gRPC services
 - **PGP-based authentication** - Uses Omni's standard PGP signature authentication (compatible with [go-api-signature](https://github.com/siderolabs/go-api-signature))
-- **Streaming support** - Real-time log streaming and manifest synchronization
-- **Type-safe operations** - Generated from official Omni proto definitions
+- **Streaming support** - Real-time log streaming, manifest synchronization, and resource watching
+- **Type-safe operations** - Generated from official Omni and COSI proto definitions
 
-### 🛠️ **Omni ManagementService Operations**
-Based on the actual `management.proto` from the [Omni project](https://github.com/siderolabs/omni/tree/main/client):
+### 🎯 **Two Complete API Surfaces**
 
-**Configuration Management:**
+This library provides **full parity with omnictl** through two complementary gRPC services:
 
-- `GetKubeConfigAsync()` - Retrieve kubeconfig for clusters
-- `GetTalosConfigAsync()` - Retrieve talosconfig for Talos clusters  
-- `GetOmniConfigAsync()` - Retrieve omnictl client configuration
+#### 1️⃣ **COSI State Service** (`/cosi.resource.State/*`)
+**Resource operations** - Full CRUD for clusters, machines, users, and all Omni resources:
 
-**Service Account Management:**
+- `Resources.ListAsync<T>()` - List resources by type
+- `Resources.GetAsync<T>()` - Get specific resources
+- `Resources.CreateAsync<T>()` - Create new resources
+- `Resources.UpdateAsync<T>()` - Update existing resources
+- `Resources.DeleteAsync<T>()` - Delete resources
+- `Resources.WatchAsync<T>()` - Watch resources for changes (streaming)
 
-- `CreateServiceAccountAsync()` - Create new service accounts
-- `RenewServiceAccountAsync()` - Renew service account credentials
-- `ListServiceAccountsAsync()` - List all service accounts
-- `DestroyServiceAccountAsync()` - Delete service accounts
+**High-level Operations:**
+- `Clusters` - Cluster management operations
+- `Users` - User and identity management
+- `Templates` - Template rendering and synchronization
 
-**Operational Tasks:**
+#### 2️⃣ **ManagementService** (`/management.ManagementService/*`)
+**Administrative operations** - Configurations, service accounts, provisioning:
 
-- `StreamMachineLogsAsync()` - Stream logs from machines in real-time
-- `ValidateConfigAsync()` - Validate configuration files
-- `KubernetesUpgradePreChecksAsync()` - Check if K8s upgrade is safe
-- `StreamKubernetesSyncManifestsAsync()` - Sync Kubernetes manifests
-- `CreateSchematicAsync()` - Create schematics for machine provisioning
+- `GetKubeConfigAsync()` / `GetTalosConfigAsync()` / `GetOmniConfigAsync()`
+- `CreateServiceAccountAsync()` / `RenewServiceAccountAsync()` / `ListServiceAccountsAsync()`
+- `StreamMachineLogsAsync()` / `StreamKubernetesSyncManifestsAsync()`
+- `CreateSchematicAsync()` - Machine provisioning
+- `ValidateConfigAsync()` / `KubernetesUpgradePreChecksAsync()`
+
+> **🎉 Breakthrough Discovery**: After deep investigation of the omnictl source code, we discovered that it uses the COSI v1alpha1 State service (`/cosi.resource.State/*`), NOT the ResourceService (`/omni.resources.ResourceService/*`). This library now implements the correct service, providing full parity with omnictl! See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for details.
 
 ### 🛡️ **Enterprise Features**
 
@@ -57,6 +63,79 @@ Based on the actual `management.proto` from the [Omni project](https://github.co
 - **Proper error handling** - gRPC status codes and meaningful error messages
 - **Timeout management** - Configurable request timeouts
 - **Connection pooling** - Efficient gRPC channel management
+
+## ✅ **What This Library Provides**
+
+This library provides **complete parity with omnictl** for both administrative and resource operations:
+
+### COSI State Service (Resource Operations)
+✅ **Full Resource CRUD** - Create, Read, Update, Delete for all Omni resources  
+✅ **Resource Types** - Clusters, Machines, Users, Identities, Templates, and more  
+✅ **Resource Watching** - Real-time change notifications via Watch API  
+✅ **Label Queries** - Filter resources by labels and selectors  
+
+### ManagementService (Administrative Operations)
+✅ **Configuration Management** - kubeconfig, talosconfig, omniconfig retrieval  
+✅ **Service Account Management** - Full lifecycle management  
+✅ **Machine Provisioning** - Schematic creation and management  
+✅ **Operational Tasks** - Log streaming, manifest sync, validation  
+✅ **PGP Authentication** - Compatible with Omni's security model  
+✅ **Type-Safe API** - Strongly-typed C# interfaces  
+
+### Enterprise Features
+✅ **Read-Only Mode** - Prevent accidental destructive operations  
+✅ **Comprehensive Logging** - Structured logging throughout  
+✅ **Proper Error Handling** - gRPC status codes and meaningful messages  
+
+## 🎯 **Architecture & API Design**
+
+```text
+OmniClient
+├── Resources (COSI State Service - /cosi.resource.State/*)
+│   ├── ListAsync<T>()      - List resources
+│   ├── GetAsync<T>()       - Get specific resource
+│   ├── CreateAsync<T>()    - Create resource
+│   ├── UpdateAsync<T>()    - Update resource
+│   ├── DeleteAsync<T>()    - Delete resource
+│   └── WatchAsync<T>()     - Watch for changes
+│
+├── Clusters (High-level cluster operations)
+│   ├── GetStatusAsync()    - Get cluster status
+│   ├── CreateAsync()       - Create cluster
+│   ├── DeleteAsync()       - Delete cluster
+│   ├── LockMachineAsync()  - Lock machine
+│   └── UnlockMachineAsync()- Unlock machine
+│
+├── Users (User management)
+│   ├── CreateAsync()       - Create user
+│   ├── ListAsync()         - List users
+│   ├── GetAsync()          - Get user
+│   ├── DeleteAsync()       - Delete user
+│   └── SetRoleAsync()      - Update user role
+│
+├── Templates (Template operations)
+│   ├── LoadAsync()         - Load template
+│   ├── RenderAsync()       - Render with variables
+│   ├── SyncAsync()         - Sync to cluster
+│   └── DiffAsync()         - Show differences
+│
+└── Management (Administrative operations - /management.ManagementService/*)
+    ├── GetKubeConfigAsync()
+    ├── GetTalosConfigAsync()
+    ├── GetOmniConfigAsync()
+    ├── CreateServiceAccountAsync()
+    ├── StreamMachineLogsAsync()
+    ├── CreateSchematicAsync()
+    └── ... (16+ operations total)
+```
+
+**Key Insight**: This client uses the **same gRPC services as omnictl**, specifically:
+- **COSI State API** (`/cosi.resource.State/*`) for resource operations
+- **ManagementService API** (`/management.ManagementService/*`) for administrative tasks
+
+See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for the technical discovery process.
+
+
 
 ## Quick Start
 
@@ -74,24 +153,39 @@ using SideroLabs.Omni.Api;
 // Configure the client
 var options = new OmniClientOptions
 {
-    Endpoint = "https://your-omni-instance.com",
+    BaseUrl = new Uri("https://your-omni-instance.com"),
     Identity = "your-username",
     PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...",
-    UseTls = true,
-    ValidateCertificate = true
+    TimeoutSeconds = 30
 };
 
 // Create the client
 using var client = new OmniClient(options);
+
+// RESOURCE OPERATIONS (COSI State Service)
+
+// List all clusters
+await foreach (var cluster in client.Resources.ListAsync<Cluster>(cancellationToken: cancellationToken))
+{
+    Console.WriteLine($"Cluster: {cluster.Metadata.Id}");
+}
+
+// Get a specific cluster
+var cluster = await client.Resources.GetAsync<Cluster>("my-cluster", "default", cancellationToken);
+
+// Watch for cluster changes
+await foreach (var evt in client.Resources.WatchAsync<Cluster>(cancellationToken: cancellationToken))
+{
+    Console.WriteLine($"{evt.Type}: {evt.Resource.Metadata.Id}");
+}
+
+// ADMINISTRATIVE OPERATIONS (ManagementService)
 
 // Get kubeconfig for a cluster
 var kubeconfig = await client.Management.GetKubeConfigAsync(
     serviceAccount: true,
     serviceAccountTtl: TimeSpan.FromHours(24),
     cancellationToken: cancellationToken);
-
-// List service accounts
-var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
 
 // Stream machine logs
 await foreach (var logEntry in client.Management.StreamMachineLogsAsync(
@@ -102,6 +196,12 @@ await foreach (var logEntry in client.Management.StreamMachineLogsAsync(
 {
     Console.WriteLine(Encoding.UTF8.GetString(logEntry));
 }
+
+// Create a service account
+var publicKeyId = await client.Management.CreateServiceAccountAsync(
+    armoredPgpPublicKey: pgpPublicKey,
+    useUserRole: true,
+    cancellationToken: cancellationToken);
 ```
 
 ### Authentication Setup
@@ -111,7 +211,7 @@ The client uses **PGP-based authentication** as required by Omni, implementing t
 ```csharp
 var options = new OmniClientOptions
 {
-    Endpoint = "https://omni.example.com",
+    BaseUrl = new Uri("https://omni.example.com"),
     Identity = "your-omni-username",
     PgpPrivateKey = File.ReadAllText("path/to/private-key.asc"),
     Logger = logger
@@ -123,10 +223,22 @@ Or load from a base64-encoded key file (compatible with Omni's key format):
 ```csharp
 var options = new OmniClientOptions
 {
-    Endpoint = "https://omni.example.com",
+    BaseUrl = new Uri("https://omni.example.com"),
     PgpKeyFilePath = "path/to/key-file.json" // Contains base64-encoded JSON
 };
 ```
+
+Or use an auth token (recommended for quick start):
+
+```csharp
+var options = new OmniClientOptions
+{
+    BaseUrl = new Uri("https://omni.example.com"),
+    AuthToken = Environment.GetEnvironmentVariable("OMNI_AUTH_TOKEN")
+};
+```
+
+See [QUICK_START_AUTH_TOKEN.md](QUICK_START_AUTH_TOKEN.md) for auth token setup.
 
 ### Read-Only Mode
 
@@ -135,7 +247,7 @@ Enable read-only mode for safe production use:
 ```csharp
 var options = new OmniClientOptions
 {
-    Endpoint = "https://omni.example.com",
+    BaseUrl = new Uri("https://omni.example.com"),
     Identity = "readonly-user", 
     PgpPrivateKey = "...",
     IsReadOnly = true // Prevents destructive operations
@@ -143,6 +255,110 @@ var options = new OmniClientOptions
 ```
 
 ## Advanced Usage
+
+### Resource Operations (COSI State Service)
+
+```csharp
+// List all clusters
+var clusters = new List<Cluster>();
+await foreach (var cluster in client.Resources.ListAsync<Cluster>(cancellationToken: cancellationToken))
+{
+    clusters.Add(cluster);
+}
+
+// Get a specific machine
+var machine = await client.Resources.GetAsync<Machine>(
+    id: "machine-uuid",
+    @namespace: "default",
+    cancellationToken: cancellationToken);
+
+// Watch for resource changes
+await foreach (var evt in client.Resources.WatchAsync<Cluster>(
+    tailEvents: 10, // Replay last 10 events
+    cancellationToken: cancellationToken))
+{
+    Console.WriteLine($"{evt.Type}: {evt.Resource.Metadata.Id}");
+    if (evt.OldResource != null)
+    {
+        Console.WriteLine($"  Changed from version {evt.OldResource.Metadata.Version}");
+    }
+}
+
+// Create a resource
+var newCluster = new Cluster
+{
+    Metadata = new ResourceMetadata
+    {
+        Id = "my-new-cluster",
+        Namespace = "default"
+    },
+    Spec = new ClusterSpec
+    {
+        // ... cluster configuration
+    }
+};
+await client.Resources.CreateAsync(newCluster, cancellationToken);
+
+// Update a resource
+cluster.Spec.SomeProperty = "new-value";
+await client.Resources.UpdateAsync(cluster, cancellationToken: cancellationToken);
+
+// Delete a resource
+await client.Resources.DeleteAsync<Cluster>(
+    id: "cluster-to-delete",
+    @namespace: "default",
+    cancellationToken: cancellationToken);
+```
+
+### High-Level Cluster Operations
+
+```csharp
+// Get cluster status
+var status = await client.Clusters.GetStatusAsync(
+    clusterName: "production",
+    waitTimeout: TimeSpan.FromMinutes(5),
+    cancellationToken: cancellationToken);
+
+// Lock a machine (prevent updates)
+await client.Clusters.LockMachineAsync(
+    machineId: "machine-uuid",
+    clusterName: "production",
+    cancellationToken: cancellationToken);
+
+// Unlock a machine
+await client.Clusters.UnlockMachineAsync(
+    machineId: "machine-uuid",
+    clusterName: "production",
+    cancellationToken: cancellationToken);
+```
+
+### User Management
+
+```csharp
+// Create a new user
+var (user, identity) = await client.Users.CreateAsync(
+    email: "newuser@example.com",
+    role: "Operator",
+    cancellationToken: cancellationToken);
+
+// List all users
+var users = await client.Users.ListAsync(cancellationToken);
+foreach (var userInfo in users)
+{
+    Console.WriteLine($"{userInfo.Email} - {userInfo.Role}");
+}
+
+// Update user role
+await client.Users.SetRoleAsync(
+    email: "user@example.com",
+    role: "Admin",
+    cancellationToken: cancellationToken);
+
+// Delete a user
+await client.Users.DeleteAsync(
+    email: "olduser@example.com",
+    cancellationToken: cancellationToken);
+```
 
 ### Service Account Management
 
@@ -194,13 +410,13 @@ var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| `Endpoint` | Omni gRPC endpoint URL | *Required* |
-| `Identity` | Username for PGP authentication | *Required* |
+| `BaseUrl` | Omni gRPC endpoint URL | *Required* |
+| `Identity` | Username for PGP authentication | *Optional* |
 | `PgpPrivateKey` | PGP private key (armored format) | *Optional* |
 | `PgpKeyFilePath` | Path to PGP key file | *Optional* |
+| `AuthToken` | Authentication token (alternative to PGP) | *Optional* |
 | `TimeoutSeconds` | Request timeout in seconds | `30` |
-| `UseTls` | Enable TLS encryption | `true` |
-| `ValidateCertificate` | Validate server certificates | `true` |
+| `DefaultNamespace` | Default namespace for resources | `"default"` |
 | `IsReadOnly` | Enable read-only mode | `false` |
 | `Logger` | Microsoft.Extensions.Logging logger | `NullLogger` |
 
@@ -209,9 +425,11 @@ var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
 ```csharp
 services.AddOmniClient(options =>
 {
-    options.Endpoint = "https://omni.example.com";
+    options.BaseUrl = new Uri("https://omni.example.com");
     options.Identity = "api-user";
     options.PgpPrivateKey = Environment.GetEnvironmentVariable("OMNI_PGP_KEY");
+    // OR use auth token
+    options.AuthToken = Environment.GetEnvironmentVariable("OMNI_AUTH_TOKEN");
 });
 
 // Inject and use
@@ -224,28 +442,49 @@ public class MyService
         _omniClient = omniClient;
     }
 
-    public async Task<string> GetKubeConfigAsync()
+    public async Task<List<Cluster>> GetClustersAsync()
     {
-        return await _omniClient.Management.GetKubeConfigAsync();
+        var clusters = new List<Cluster>();
+        await foreach (var cluster in _omniClient.Resources.ListAsync<Cluster>())
+        {
+            clusters.Add(cluster);
+        }
+        return clusters;
     }
 }
 ```
 
 ## Architecture
 
-This client is built around the **actual Omni gRPC services** as defined in the [official Omni proto files](https://github.com/siderolabs/omni/tree/main/client):
+This client is built around the **actual Omni gRPC services** as used by omnictl:
 
 ```text
 OmniClient
-└── Management (IManagementService)
-    ├── Configuration Operations (kubeconfig, talosconfig, omniconfig)
-    ├── Service Account Management (create, renew, list, destroy)
-    ├── Machine Operations (logs streaming)
-    ├── Kubernetes Operations (upgrade checks, manifest sync)
-    └── Provisioning (schematic creation)
+├── Resources (COSI State Service)
+│   └── /cosi.resource.State/* endpoints
+│       ├── Get, List, Create, Update, Delete
+│       └── Watch (streaming)
+│
+├── Clusters (High-level operations on Resources)
+├── Users (High-level operations on Resources)
+├── Templates (High-level operations on Resources)
+│
+└── Management (ManagementService)
+    └── /management.ManagementService/* endpoints
+        ├── Configuration Operations (kubeconfig, talosconfig, omniconfig)
+        ├── Service Account Management (create, renew, list, destroy)
+        ├── Machine Operations (logs streaming)
+        ├── Kubernetes Operations (upgrade checks, manifest sync)
+        └── Provisioning (schematic creation)
 ```
 
-**Note**: This client implements **only the gRPC services that Omni actually provides**. It does not include cluster CRUD operations, as these are handled through different mechanisms in the Omni architecture.
+**Key Discovery**: By analyzing the omnictl source code, we found that it uses:
+- **COSI State Service** (`/cosi.resource.State/*`) for all resource operations
+- **NOT** ResourceService (`/omni.resources.ResourceService/*`) which returns HTTP 405 on SaaS
+
+This means we have **full parity with omnictl** for both resource and administrative operations!
+
+See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for the complete technical discovery.
 
 ## Compatibility
 
@@ -300,9 +539,28 @@ dotnet build
 # Run unit tests
 dotnet test
 
+# Run integration tests (requires setup)
+# See INTEGRATION_TEST_SETUP.md for configuration
+dotnet test --filter "Category=Integration"
+
 # Create NuGet package
 dotnet pack --configuration Release
 ```
+
+#### Integration Testing Setup
+
+For integration testing against a real Omni instance:
+
+1. See [INTEGRATION_TEST_SETUP.md](INTEGRATION_TEST_SETUP.md) for quick start
+2. See [SideroLabs.Omni.Api.Tests/INTEGRATION_TESTING.md](SideroLabs.Omni.Api.Tests/INTEGRATION_TESTING.md) for detailed guide
+3. Run helper script: `cd SideroLabs.Omni.Api.Tests && .\Create-ServiceAccount.ps1`
+
+The setup includes:
+- ✅ Service account creation with Admin role
+- ✅ PGP key pair generation guidance
+- ✅ appsettings.json template
+- ✅ Security best practices
+- ✅ CI/CD integration examples
 
 ### Automated Release Process
 

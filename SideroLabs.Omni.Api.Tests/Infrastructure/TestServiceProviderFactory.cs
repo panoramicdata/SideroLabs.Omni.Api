@@ -25,6 +25,14 @@ public class TestServiceProviderFactory(ILogger logger)
 		// Register configuration
 		services.AddSingleton(configuration);
 
+		// Register logger factory that uses our test logger - CRITICAL for test output!
+		services.AddSingleton<ILoggerFactory>(sp =>
+		{
+			var factory = new LoggerFactory();
+			factory.AddProvider(new TestLoggerProvider(_logger));
+			return factory;
+		});
+
 		// Register test expectations
 		var testExpectations = configBuilder.GetTestExpectations(configuration);
 		services.AddSingleton(testExpectations);

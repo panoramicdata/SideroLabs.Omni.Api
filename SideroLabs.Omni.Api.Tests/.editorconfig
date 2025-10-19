@@ -1,0 +1,6 @@
+[*.cs]
+# Suppress obsolete warnings for ResourceService (documented as not available on Omni SaaS)
+dotnet_diagnostic.CS0618.severity = none
+
+# Suppress xUnit cancellation token warnings
+dotnet_diagnostic.xUnit1051.severity = suggestion

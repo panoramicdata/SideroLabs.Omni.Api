@@ -38,6 +38,15 @@ public static class ResourceTypes
 		// Register auth resource types
 		ResourceTypeRegistry.Register<User>("Users.omni.sidero.dev");
 		ResourceTypeRegistry.Register<Identity>("Identities.omni.sidero.dev");
+		
+		// Additional resource types for omnictl parity
+		ResourceTypeRegistry.Register<MachineSet>("MachineSets.omni.sidero.dev");
+		ResourceTypeRegistry.Register<MachineSetNode>("MachineSetNodes.omni.sidero.dev");
+		ResourceTypeRegistry.Register<ControlPlane>("ControlPlanes.omni.sidero.dev");
+		ResourceTypeRegistry.Register<LoadBalancerConfig>("LoadBalancerConfigs.omni.sidero.dev");
+		ResourceTypeRegistry.Register<TalosConfig>("TalosConfigs.omni.sidero.dev");
+		ResourceTypeRegistry.Register<KubernetesNode>("KubernetesNodes.omni.sidero.dev");
+		ResourceTypeRegistry.Register<MachineClass>("MachineClasses.omni.sidero.dev");
 
 		_initialized = true;
 		}

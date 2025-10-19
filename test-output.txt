@@ -1,0 +1,87 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Program Files\dotnet\sdk\10.0.100-rc.2.25502.107\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(351,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\SideroLabs.Omni.Api.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.100-rc.2.25502.107\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(351,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\SideroLabs.Omni.Api.csproj]
+  SideroLabs.Omni.Api -> C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\bin\Debug\net9.0\SideroLabs.Omni.Api.dll
+  SideroLabs.Omni.Api.Tests -> C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\SideroLabs.Omni.Api.Tests.dll
+Test run for C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\SideroLabs.Omni.Api.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 18.0.0-preview-25502-107 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\SideroLabs.Omni.Api.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 9.0.10)
+[xUnit.net 00:00:00.18]   Discovering: SideroLabs.Omni.Api.Tests
+[xUnit.net 00:00:00.50]   Discovered:  SideroLabs.Omni.Api.Tests
+[xUnit.net 00:00:00.70]   Starting:    SideroLabs.Omni.Api.Tests
+[xUnit.net 00:00:01.18]     SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody [FAIL]
+[xUnit.net 00:00:01.18]       Grpc.Core.RpcException : Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+[xUnit.net 00:00:01.18]       Stack Trace:
+[xUnit.net 00:00:01.18]         C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs(122,0): at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext()
+[xUnit.net 00:00:01.18]            at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+[xUnit.net 00:00:01.18]         C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs(73,0): at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody()
+[xUnit.net 00:00:01.18]         C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs(73,0): at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody()
+[xUnit.net 00:00:01.18]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.18]       Output:
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: Building test configuration
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: Loading test expectations from configuration
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöì Testing ResourceService endpoint with read-only List operation
+[xUnit.net 00:00:01.18]         [Warning] SideroLabs.Omni.Api.Tests.TestBase: Test PGP key file not found: C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\TestData\pgp-key-test.txt
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôì Endpoint: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöÉ Identity: nuget-dev
+[xUnit.net 00:00:01.18]         [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôï Attempting to list Cluster resources...
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase: Γ¥î gRPC Error: Unknown - Bad gRPC response. HTTP status code: 405
+[xUnit.net 00:00:01.18]         Grpc.Core.RpcException: Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+[xUnit.net 00:00:01.18]            at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs:line 122
+[xUnit.net 00:00:01.18]            at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+[xUnit.net 00:00:01.18]            at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+[xUnit.net 00:00:01.18]            at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôè DETAILED ERROR ANALYSIS:
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Code: Unknown
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Detail: Bad gRPC response. HTTP status code: 405
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase:   HTTP Status Code: 405
+[xUnit.net 00:00:01.18]         [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No HTTP response body found in exception trailers
+[xUnit.net 00:00:01.18]         [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No trailers in response
+[xUnit.net 00:00:01.18]         [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+[xUnit.net 00:00:01.19]   Finished:    SideroLabs.Omni.Api.Tests
+  Failed SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody [409 ms]
+  Error Message:
+   Grpc.Core.RpcException : Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+  Stack Trace:
+     at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs:line 122
+   at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+   at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+--- End of stack trace from previous location ---
+  Standard Output Messages:
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: Building test configuration
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: Loading test expectations from configuration
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöì Testing ResourceService endpoint with read-only List operation
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase: Test PGP key file not found: C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\bin\Debug\net9.0\TestData\pgp-key-test.txt
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôì Endpoint: https://panoramicdata.eu-central-1.omni.siderolabs.io/
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒöÉ Identity: nuget-dev
+ [Information] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôï Attempting to list Cluster resources...
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: Γ¥î gRPC Error: Unknown - Bad gRPC response. HTTP status code: 405
+ Grpc.Core.RpcException: Status(StatusCode="Unknown", Detail="Bad gRPC response. HTTP status code: 405")
+    at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+MoveNext() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api\Services\ResourceClientService.cs:line 122
+    at SideroLabs.Omni.Api.Services.ResourceClientService.ListAsync[TResource](String namespace, String selector, String idMatchRegexp, Int32 offset, Int32 limit, String sortBy, Boolean sortDescending, String[] searchFor, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+    at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+    at SideroLabs.Omni.Api.Tests.Resources.ResourceServiceDiagnosticTests.ResourceService_ListClusters_CaptureHttpResponseBody() in C:\Users\DavidBond\source\repos\panoramicdata\SideroLabs.Omni.Api\SideroLabs.Omni.Api.Tests\Resources\ResourceServiceDiagnosticTests.cs:line 73
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ≡ƒôè DETAILED ERROR ANALYSIS:
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Code: Unknown
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   gRPC Status Detail: Bad gRPC response. HTTP status code: 405
+ [Error] SideroLabs.Omni.Api.Tests.TestBase:   HTTP Status Code: 405
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No HTTP response body found in exception trailers
+ [Warning] SideroLabs.Omni.Api.Tests.TestBase:   ΓÜá∩╕Å No trailers in response
+ [Error] SideroLabs.Omni.Api.Tests.TestBase: ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 1.7459 Seconds

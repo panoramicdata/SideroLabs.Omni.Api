@@ -7,11 +7,13 @@ public interface IOmniClient : IDisposable
 {
 	/// <summary>
 	/// Gets the Management Service for administrative and operational tasks
+	/// This is the primary (and only confirmed working) service interface provided by Omni SaaS
 	/// </summary>
 	IManagementService Management { get; }
 
 	/// <summary>
 	/// Gets the Resource Client for COSI resource operations
+	/// Uses the COSI v1alpha1 State service (/cosi.resource.State/*)
 	/// </summary>
 	IOmniResourceClient Resources { get; }
 
@@ -50,3 +52,5 @@ public interface IOmniClient : IDisposable
 	/// </summary>
 	string? Identity { get; }
 }
+
+

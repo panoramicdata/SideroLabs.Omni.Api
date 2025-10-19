@@ -1,10 +1,12 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Grpc.Core;
+using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Omni.Resources;
 using SideroLabs.Omni.Api.Interfaces;
 using SideroLabs.Omni.Api.Resources;
+using SideroLabs.Omni.Api.Security;
 
 namespace SideroLabs.Omni.Api.Services;
 
@@ -18,8 +20,29 @@ internal class ResourceClientService(
 	ResourceService.ResourceServiceClient grpcClient,
 	ILogger logger,
 	bool isReadOnly,
-	OmniClientOptions options) : IOmniResourceClient
+	OmniClientOptions options,
+	OmniAuthenticator? authenticator) : IOmniResourceClient
 {
+	/// <summary>
+	/// Creates call options with authentication for ResourceService calls
+	/// </summary>
+	private CallOptions CreateCallOptions(string method)
+	{
+		var headers = new Metadata();
+
+		// Add PGP-based authentication if available
+		if (authenticator != null)
+		{
+			authenticator.SignRequest(headers, method);
+		}
+		else
+		{
+			logger.LogWarning("No authenticator available for ResourceService method: {Method}", method);
+		}
+
+		var deadline = DateTime.UtcNow.AddSeconds(options.TimeoutSeconds);
+		return new CallOptions(headers: headers, deadline: deadline);
+	}
 	/// <inheritdoc />
 	public async Task<TResource> GetAsync<TResource>(
 		string id,
@@ -37,7 +60,8 @@ internal class ResourceClientService(
 			Id = id
 		};
 
-		var response = await grpcClient.GetAsync(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/Get");
+		var response = await grpcClient.GetAsync(request, callOptions);
 
 		var resource = JsonSerializer.Deserialize<TResource>(response.Body, OmniClient.JsonSerializerOptions) ?? throw new InvalidOperationException($"Failed to deserialize resource {resourceType}/{id}");
 		logger.LogInformation("Retrieved resource {Type}/{Namespace}/{Id}", resourceType, @namespace, id);
@@ -75,7 +99,27 @@ internal class ResourceClientService(
 			request.SearchFor.AddRange(searchFor);
 		}
 
-		var response = await grpcClient.ListAsync(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/List");
+		
+		// Log authentication headers for debugging
+		logger.LogInformation("Calling ResourceService.List with authentication");
+		logger.LogInformation("  Resource Type: {Type}", resourceType);
+		logger.LogInformation("  Namespace: {Namespace}", request.Namespace);
+		logger.LogInformation("  Method: /omni.resources.ResourceService/List");
+		logger.LogInformation("  Headers: {HeaderCount}", callOptions.Headers?.Count ?? 0);
+		if (callOptions.Headers != null)
+		{
+			foreach (var header in callOptions.Headers)
+			{
+				if (header.Key.StartsWith("x-sidero"))
+				{
+					logger.LogInformation("    {Key}: {Value}", header.Key, 
+						header.Key.Contains("signature") ? "[REDACTED]" : header.Value);
+				}
+			}
+		}
+		
+		var response = await grpcClient.ListAsync(request, callOptions);
 
 		logger.LogInformation("Listed {Count} resources of type {Type}", response.Items.Count, resourceType);
 
@@ -110,7 +154,8 @@ internal class ResourceClientService(
 			TailEvents = tailEvents
 		};
 
-		using var call = grpcClient.Watch(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/Watch");
+		using var call = grpcClient.Watch(request, callOptions);
 
 		await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
 		{
@@ -159,7 +204,8 @@ internal class ResourceClientService(
 			}
 		};
 
-		await grpcClient.CreateAsync(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/Create");
+		await grpcClient.CreateAsync(request, callOptions);
 
 		logger.LogInformation("Created resource {Type}/{Namespace}/{Id}",
 			resourceType, resource.Metadata.Namespace, resource.Metadata.Id);
@@ -192,7 +238,8 @@ internal class ResourceClientService(
 			}
 		};
 
-		await grpcClient.UpdateAsync(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/Update");
+		await grpcClient.UpdateAsync(request, callOptions);
 
 		logger.LogInformation("Updated resource {Type}/{Namespace}/{Id}",
 			resourceType, resource.Metadata.Namespace, resource.Metadata.Id);
@@ -219,7 +266,8 @@ internal class ResourceClientService(
 			Id = id
 		};
 
-		await grpcClient.DeleteAsync(request, cancellationToken: cancellationToken);
+		var callOptions = CreateCallOptions("/omni.resources.ResourceService/Delete");
+		await grpcClient.DeleteAsync(request, callOptions);
 
 		logger.LogInformation("Deleted resource {Type}/{Namespace}/{Id}", resourceType, @namespace, id);
 	}
