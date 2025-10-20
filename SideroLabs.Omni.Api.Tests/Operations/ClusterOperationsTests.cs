@@ -14,6 +14,87 @@ namespace SideroLabs.Omni.Api.Tests.Operations;
 public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
 	[Fact]
+	public async Task ListAsync_ReturnsAllClusters()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		using var client = new OmniClient(GetClientOptions());
+
+		try
+		{
+			// Act - List clusters via Cluster Operations API
+			Logger.LogInformation("🔍 Listing clusters via Cluster Operations API");
+			
+			var clusters = new List<Api.Resources.Cluster>();
+			await foreach (var cluster in client.Clusters.ListAsync(cancellationToken: CancellationToken))
+			{
+				clusters.Add(cluster);
+			}
+
+			// Assert
+			Logger.LogInformation("📊 Found {Count} clusters", clusters.Count);
+			
+			// Verify each cluster has required metadata
+			foreach (var cluster in clusters)
+			{
+				cluster.Should().NotBeNull();
+				cluster.Metadata.Should().NotBeNull();
+				cluster.Metadata.Id.Should().NotBeNullOrEmpty();
+				cluster.Metadata.Namespace.Should().NotBeNullOrEmpty();
+				
+				Logger.LogDebug("  ✓ Cluster: {Id} in namespace {Namespace}", 
+					cluster.Metadata.Id, 
+					cluster.Metadata.Namespace);
+			}
+
+			Logger.LogInformation("✅ Successfully listed all clusters via Operations API");
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with restricted role");
+		}
+	}
+
+	[Fact]
+	public async Task ListAsync_WithCustomNamespace_ReturnsFilteredClusters()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		using var client = new OmniClient(GetClientOptions());
+
+		try
+		{
+			// Act - List clusters from a specific namespace
+			Logger.LogInformation("🔍 Listing clusters from 'default' namespace");
+			
+			var clusterCount = 0;
+			await foreach (var cluster in client.Clusters.ListAsync(@namespace: "default", cancellationToken: CancellationToken))
+			{
+				cluster.Should().NotBeNull();
+				cluster.Metadata.Namespace.Should().Be("default");
+				clusterCount++;
+			}
+
+			Logger.LogInformation("📊 Found {Count} clusters in 'default' namespace", clusterCount);
+			Logger.LogInformation("✅ Successfully filtered clusters by namespace");
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with restricted role");
+		}
+	}
+
+	[Fact]
 	public async Task GetStatus_ExistingCluster_ReturnsStatus()
 	{
 		// Skip if integration tests are not configured

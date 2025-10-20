@@ -3,8 +3,6 @@ package omni.resources;
 
 option go_package = "github.com/siderolabs/omni/client/api/omni/resources";
 
-import "google/protobuf/empty.proto";
-import "common/omni.proto";
 import "v1alpha1/resource.proto";
 
 message Resource {

@@ -5,15 +5,25 @@ namespace SideroLabs.Omni.Api.Services;
 
 internal class ClusterOperations : IClusterOperations
 {
-    private readonly IOmniResourceClient _resources;
-    private readonly OmniClientOptions _options;
+	private readonly IOmniResourceClient _resources;
+	private readonly OmniClientOptions _options;
 
-    // Internal constructor used for wiring from OmniClient
-    internal ClusterOperations(IOmniResourceClient resources, OmniClientOptions options)
-    {
-        _resources = resources ?? throw new ArgumentNullException(nameof(resources));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
+	// Internal constructor used for wiring from OmniClient
+	internal ClusterOperations(IOmniResourceClient resources, OmniClientOptions options)
+	{
+		_resources = resources ?? throw new ArgumentNullException(nameof(resources));
+		_options = options ?? throw new ArgumentNullException(nameof(options));
+	}
+
+	public async IAsyncEnumerable<Cluster> ListAsync(
+		string? @namespace = "default",
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		await foreach (var cluster in _resources.ListAsync<Cluster>(@namespace, cancellationToken: cancellationToken))
+		{
+			yield return cluster;
+		}
+	}
 
 	public async Task<object> GetStatusAsync(string clusterName, TimeSpan? waitTimeout = null, CancellationToken cancellationToken = default)
 	{
