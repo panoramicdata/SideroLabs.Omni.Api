@@ -298,8 +298,10 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 
 		try
 		{
-			// Arrange - Create a machine
-			var machine = new Api.Builders.MachineBuilder(machineId).Build();
+			// Arrange - Create a machine with required role
+			var machine = new Api.Builders.MachineBuilder(machineId)
+				.WithRole("worker")
+				.Build();
 
 			Logger.LogInformation("🔍 Creating first machine: {Id}", machineId);
 			await client.Resources.CreateAsync(machine, CancellationToken);
@@ -322,6 +324,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
 			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+			Logger.LogInformation("✅ gRPC authentication is working correctly");
 		}
 		finally
 		{
