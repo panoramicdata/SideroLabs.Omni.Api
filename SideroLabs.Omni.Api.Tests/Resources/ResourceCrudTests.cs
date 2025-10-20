@@ -635,6 +635,215 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 
 	#endregion
 
+	#region ExtensionsConfiguration CRUD Tests
+
+	[Fact]
+	public async Task ExtensionsConfiguration_Create_Success()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		using var client = new OmniClient(GetClientOptions());
+		var configId = CreateUniqueId("test-extensions");
+		
+		var config = new Api.Builders.ExtensionsConfigurationBuilder(configId)
+			.WithExtensions(["siderolabs/iscsi-tools", "siderolabs/util-linux-tools"])
+			.Build();
+
+		try
+		{
+			// Act
+			Logger.LogInformation("🔍 Creating test extensions configuration: {ConfigId}", configId);
+			var created = await client.Resources.CreateAsync(config, CancellationToken);
+
+			// Assert
+			created.Should().NotBeNull();
+			created.Metadata.Id.Should().Be(configId);
+			created.Spec.Extensions.Should().HaveCount(2);
+			created.Spec.Extensions.Should().Contain("siderolabs/iscsi-tools");
+
+			Logger.LogInformation("✅ Successfully created extensions configuration: {ConfigId}", configId);
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+		}
+		finally
+		{
+			// Cleanup
+			await CleanupExtensionsConfiguration(client, configId);
+		}
+	}
+
+	[Fact]
+	public async Task ExtensionsConfiguration_Get_ReturnsExtensionsConfiguration()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		using var client = new OmniClient(GetClientOptions());
+		var configId = CreateUniqueId("test-extensions");
+		
+		// Create an extensions configuration first
+		var config = await CreateTestExtensionsConfiguration(client, configId);
+		if (config == null)
+		{
+			Logger.LogInformation("⏭️ Skipping test - could not create extensions configuration (likely permission denied)");
+			return;
+		}
+
+		try
+		{
+			// Act
+			Logger.LogInformation("🔍 Getting extensions configuration: {ConfigId}", configId);
+			var retrieved = await client.Resources.GetAsync<Api.Resources.ExtensionsConfiguration>(configId, cancellationToken: CancellationToken);
+
+			// Assert
+			retrieved.Should().NotBeNull();
+			retrieved.Metadata.Id.Should().Be(configId);
+			retrieved.Spec.Extensions.Should().HaveCount(2);
+
+			Logger.LogInformation("✅ Successfully retrieved extensions configuration: {ConfigId}", configId);
+		}
+		finally
+		{
+			// Cleanup
+			await CleanupExtensionsConfiguration(client, configId);
+		}
+	}
+
+	[Fact]
+	public async Task ExtensionsConfiguration_Update_ModifiesExtensionsConfiguration()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		using var client = new OmniClient(GetClientOptions());
+		var configId = CreateUniqueId("test-extensions");
+		
+		// Create an extensions configuration first
+		var config = await CreateTestExtensionsConfiguration(client, configId);
+		if (config == null)
+		{
+			Logger.LogInformation("⏭️ Skipping test - could not create extensions configuration (likely permission denied)");
+			return;
+		}
+
+		try
+		{
+			// Act - Update the extensions configuration
+			Logger.LogInformation("🔍 Updating extensions configuration: {ConfigId}", configId);
+			config.Spec.Extensions = ["siderolabs/qemu-guest-agent"];
+			
+			var updated = await client.Resources.UpdateAsync(config, cancellationToken: CancellationToken);
+
+			// Assert
+			updated.Should().NotBeNull();
+			updated.Spec.Extensions.Should().HaveCount(1);
+			updated.Spec.Extensions.Should().Contain("siderolabs/qemu-guest-agent");
+
+			Logger.LogInformation("✅ Successfully updated extensions configuration: {ConfigId}", configId);
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+		}
+		finally
+		{
+			// Cleanup
+			await CleanupExtensionsConfiguration(client, configId);
+		}
+	}
+
+	[Fact]
+	public async Task ExtensionsConfiguration_Delete_RemovesExtensionsConfiguration()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		using var client = new OmniClient(GetClientOptions());
+		var configId = CreateUniqueId("test-extensions");
+		
+		// Create an extensions configuration first
+		var config = await CreateTestExtensionsConfiguration(client, configId);
+		if (config == null)
+		{
+			Logger.LogInformation("⏭️ Skipping test - could not create extensions configuration (likely permission denied)");
+			return;
+		}
+
+		// Act
+		Logger.LogInformation("🔍 Deleting extensions configuration: {ConfigId}", configId);
+		await client.Resources.DeleteAsync<Api.Resources.ExtensionsConfiguration>(configId, cancellationToken: CancellationToken);
+
+		// Assert - Try to get it, should throw NotFound
+		await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+		{
+			await client.Resources.GetAsync<Api.Resources.ExtensionsConfiguration>(configId, cancellationToken: CancellationToken);
+		});
+
+		Logger.LogInformation("✅ Successfully deleted extensions configuration: {ConfigId}", configId);
+	}
+
+	[Fact]
+	public async Task ExtensionsConfiguration_List_ReturnsMultipleExtensionsConfigurations()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		// Arrange
+		using var client = new OmniClient(GetClientOptions());
+
+		try
+		{
+			// Act
+			Logger.LogInformation("🔍 Listing all extensions configurations");
+			var configs = new List<Api.Resources.ExtensionsConfiguration>();
+			
+			await foreach (var config in client.Resources.ListAsync<Api.Resources.ExtensionsConfiguration>(cancellationToken: CancellationToken))
+			{
+				configs.Add(config);
+			}
+
+			// Assert
+			Logger.LogInformation("✅ Successfully listed {Count} extensions configurations", configs.Count);
+			configs.Should().NotBeNull();
+			
+			// We don't assert a specific count since we don't know how many exist
+			// Just verify we can list without error
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+		}
+	}
+
+	#endregion
+
 	#region Helper Methods
 
 	private OmniClientOptions GetClientOptions(bool? isReadOnlyOverride = null)
@@ -778,6 +987,47 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		catch (Exception ex)
 		{
 			Logger.LogWarning(ex, "Failed to cleanup test config patch: {PatchId}", patchId);
+		}
+	}
+
+	private async Task<Api.Resources.ExtensionsConfiguration?> CreateTestExtensionsConfiguration(OmniClient client, string configId)
+	{
+		try
+		{
+			var config = new Api.Builders.ExtensionsConfigurationBuilder(configId)
+				.WithExtensions(["siderolabs/iscsi-tools", "siderolabs/util-linux-tools"])
+				.Build();
+
+			Logger.LogDebug("Creating test extensions configuration: {ConfigId}", configId);
+			return await client.Resources.CreateAsync(config, CancellationToken);
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogWarning("Cannot create test extensions configuration - permission denied");
+			return null;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to create test extensions configuration: {ConfigId}", configId);
+			return null;
+		}
+	}
+
+	private async Task CleanupExtensionsConfiguration(OmniClient client, string configId)
+	{
+		try
+		{
+			await client.Resources.DeleteAsync<Api.Resources.ExtensionsConfiguration>(configId, cancellationToken: CancellationToken);
+			Logger.LogDebug("Cleaned up test extensions configuration: {ConfigId}", configId);
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			// Already deleted, that's fine
+			Logger.LogDebug("Test extensions configuration already deleted: {ConfigId}", configId);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "Failed to cleanup test extensions configuration: {ConfigId}", configId);
 		}
 	}
 

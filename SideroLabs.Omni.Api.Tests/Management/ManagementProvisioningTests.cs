@@ -24,18 +24,18 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange & Act
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Assert.NotEmpty(pxeUrl);
-		Assert.Contains("schematic", pxeUrl, StringComparison.OrdinalIgnoreCase);
-		
+		Assert.NotEmpty(result.SchematicId);
+		Assert.NotEmpty(result.PxeUrl);
+		Assert.Contains("schematic", result.PxeUrl, StringComparison.OrdinalIgnoreCase);
+
 		Logger.LogInformation("✓ Created schematic:");
-		Logger.LogInformation("  ID: {Id}", schematicId);
-		Logger.LogInformation("  PXE URL: {Url}", pxeUrl);
-		Logger.LogInformation("  gRPC Tunnel: {Enabled}", grpcTunnelEnabled);
+		Logger.LogInformation("  ID: {Id}", result.SchematicId);
+		Logger.LogInformation("  PXE URL: {Url}", result.PxeUrl);
+		Logger.LogInformation("  gRPC Tunnel: {Enabled}", result.GrpcTunnelEnabled);
 	}
 
 	[Fact(Skip = "Creates schematic - manual test only")]
@@ -47,25 +47,25 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange
-		var extensions = new[] 
-		{ 
+		var extensions = new[]
+		{
 			"siderolabs/iscsi-tools",
-			"siderolabs/util-linux-tools" 
+			"siderolabs/util-linux-tools"
 		};
 
 		// Act
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions,
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Assert.NotEmpty(pxeUrl);
-		Assert.Contains(schematicId, pxeUrl);
-		
+		Assert.NotEmpty(result.SchematicId);
+		Assert.NotEmpty(result.PxeUrl);
+		Assert.Contains(result.SchematicId, result.PxeUrl);
+
 		Logger.LogInformation("✓ Created schematic with extensions:");
 		Logger.LogInformation("  Extensions: {Extensions}", string.Join(", ", extensions));
-		Logger.LogInformation("  Schematic ID: {Id}", schematicId);
+		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
 	[Fact(Skip = "Creates schematic - manual test only")]
@@ -77,25 +77,25 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange
-		var kernelArgs = new[] 
-		{ 
+		var kernelArgs = new[]
+		{
 			"console=ttyS0",
-			"panic=10" 
+			"panic=10"
 		};
 
 		// Act
-		var (schematicId, pxeUrl, _) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions: null,
 			extraKernelArgs: kernelArgs,
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Assert.NotEmpty(pxeUrl);
-		
+		Assert.NotEmpty(result.SchematicId);
+		Assert.NotEmpty(result.PxeUrl);
+
 		Logger.LogInformation("✓ Created schematic with kernel args:");
 		Logger.LogInformation("  Kernel Args: {Args}", string.Join(" ", kernelArgs));
-		Logger.LogInformation("  Schematic ID: {Id}", schematicId);
+		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
 	[Fact(Skip = "Creates schematic - manual test only")]
@@ -114,18 +114,18 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		};
 
 		// Act
-		var (schematicId, pxeUrl, _) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: metaValues,
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Assert.NotEmpty(pxeUrl);
-		
+		Assert.NotEmpty(result.SchematicId);
+		Assert.NotEmpty(result.PxeUrl);
+
 		Logger.LogInformation("✓ Created schematic with meta values:");
-		Logger.LogInformation("  Schematic ID: {Id}", schematicId);
+		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
 	[Fact(Skip = "Creates schematic - manual test only")]
@@ -142,7 +142,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var metaValues = new Dictionary<uint, string> { { 0x0a, "test" } };
 
 		// Act
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions,
 			kernelArgs,
 			metaValues,
@@ -154,13 +154,13 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Assert.NotEmpty(pxeUrl);
-		
+		Assert.NotEmpty(result.SchematicId);
+		Assert.NotEmpty(result.PxeUrl);
+
 		Logger.LogInformation("✓ Created comprehensive schematic:");
-		Logger.LogInformation("  ID: {Id}", schematicId);
-		Logger.LogInformation("  URL: {Url}", pxeUrl);
-		Logger.LogInformation("  gRPC Tunnel: {Enabled}", grpcTunnelEnabled);
+		Logger.LogInformation("  ID: {Id}", result.SchematicId);
+		Logger.LogInformation("  URL: {Url}", result.PxeUrl);
+		Logger.LogInformation("  gRPC Tunnel: {Enabled}", result.GrpcTunnelEnabled);
 	}
 
 	[Fact(Skip = "Creates schematic - manual test only")]
@@ -172,7 +172,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange & Act
-		var (schematicId, pxeUrl, _) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: null,
@@ -184,8 +184,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
-		Logger.LogInformation("✓ Created schematic with secure boot enabled: {Id}", schematicId);
+		Assert.NotEmpty(result.SchematicId);
+		Logger.LogInformation("✓ Created schematic with secure boot enabled: {Id}", result.SchematicId);
 	}
 
 	[Theory(Skip = "Creates schematics - manual test only")]
@@ -201,7 +201,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange & Act
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await OmniClient.Management.CreateSchematicAsync(
+		var result = await OmniClient.Management.CreateSchematicAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: null,
@@ -213,9 +213,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			CancellationToken);
 
 		// Assert
-		Assert.NotEmpty(schematicId);
+		Assert.NotEmpty(result.SchematicId);
 		Logger.LogInformation("✓ Created schematic with tunnel mode {Mode}: gRPC Tunnel={Enabled}",
-			tunnelMode, grpcTunnelEnabled);
+			tunnelMode, result.GrpcTunnelEnabled);
 	}
 
 	[Fact(Skip = "Creates join token - manual test only")]
@@ -242,7 +242,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  Name: {Name}", tokenName);
 		Logger.LogInformation("  Token ID: {TokenId}", tokenId);
 		Logger.LogInformation("  Expires: {Expiration}", expiration);
-		
+
 		// Note: Would need to delete the token in cleanup
 	}
 
@@ -313,16 +313,16 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 	{
 		// This test requires a valid join token created first
 		// var joinToken = "valid-token-id";
-		
+
 		// var config = await OmniClient.Management.GetMachineJoinConfigAsync(
 		//     useGrpcTunnel: true,
 		//     joinToken: joinToken,
 		//     CancellationToken);
-		
+
 		// Assert.NotNull(config);
 		// Assert.NotEmpty(config.Config);
 		// Assert.NotNull(config.KernelArgs);
-		
+
 		Logger.LogInformation("Join config test requires valid token");
 	}
 

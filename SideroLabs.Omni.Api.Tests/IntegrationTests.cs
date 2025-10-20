@@ -256,25 +256,27 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		{
 			// Act - Test creating schematic with all available parameters
 			Logger.LogInformation("🔍 Creating schematic with Talos version, secure boot, and gRPC tunnel mode...");
-			var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
-				extensions: ["siderolabs/util-linux-tools"],
-				extraKernelArgs: ["console=ttyS0"],
-				metaValues: new Dictionary<uint, string> { { 0x0a, "test-env" } },
-				talosVersion: "v1.7.0",
-				mediaId: "installer",
-				secureBoot: false,
-				siderolinkGrpcTunnelMode: Enums.SiderolinkGrpcTunnelMode.Auto,
-				joinToken: null,
-				cancellationToken: CancellationToken);
+			var schematicResult = await client
+				.Management
+				.CreateSchematicAsync(
+					extensions: ["siderolabs/util-linux-tools"],
+					extraKernelArgs: ["console=ttyS0"],
+					metaValues: new Dictionary<uint, string> { { 0x0a, "test-env" } },
+					talosVersion: "v1.7.0",
+					mediaId: "installer",
+					secureBoot: false,
+					siderolinkGrpcTunnelMode: Enums.SiderolinkGrpcTunnelMode.Auto,
+					joinToken: null,
+					cancellationToken: CancellationToken);
 
-			schematicId.Should().NotBeNullOrEmpty();
-			pxeUrl.Should().NotBeNullOrEmpty();
+			schematicResult.SchematicId.Should().NotBeNullOrEmpty();
+			schematicResult.PxeUrl.Should().NotBeNullOrEmpty();
 
 			Logger.LogInformation("✅ Successfully created schematic with all parameters!");
 			Logger.LogInformation("📊 Schematic Details:");
-			Logger.LogInformation("  Schematic ID: {SchematicId}", schematicId);
-			Logger.LogInformation("  PXE URL: {PxeUrl}", pxeUrl);
-			Logger.LogInformation("  gRPC Tunnel Enabled: {GrpcTunnelEnabled}", grpcTunnelEnabled);
+			Logger.LogInformation("  Schematic ID: {SchematicId}", schematicResult.SchematicId);
+			Logger.LogInformation("  PXE URL: {PxeUrl}", schematicResult.PxeUrl);
+			Logger.LogInformation("  gRPC Tunnel Enabled: {GrpcTunnelEnabled}", schematicResult.GrpcTunnelEnabled);
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
@@ -913,18 +915,18 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 			// Act - Test Kubernetes upgrade pre-checks through real gRPC
 			Logger.LogInformation("🔍 Attempting Kubernetes upgrade pre-checks via real Omni gRPC API...");
 
-			var (canUpgrade, reason) = await client.Management.KubernetesUpgradePreChecksAsync(
+			var result = await client.Management.KubernetesUpgradePreChecksAsync(
 				"v1.29.0",
 				CancellationToken);
 
 			// Assert - Just log the results, this operation can legitimately return false
 			Logger.LogInformation("✅ Successfully completed Kubernetes upgrade pre-checks via Sidero Labs Omni gRPC API!");
 			Logger.LogInformation("📊 Upgrade Pre-check Results:");
-			Logger.LogInformation("  Can Upgrade to v1.29.0: {CanUpgrade}", canUpgrade ? "✅ Yes" : "❌ No");
-			Logger.LogInformation("  Reason: {Reason}", reason);
+			Logger.LogInformation("  Can Upgrade to v1.29.0: {CanUpgrade}", result.Ok ? "✅ Yes" : "❌ No");
+			Logger.LogInformation("  Reason: {Reason}", result.Reason);
 
 			// At minimum, the reason should not be null or empty
-			reason.Should().NotBeNull();
+			result.Reason.Should().NotBeNull();
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
 		{
@@ -1109,11 +1111,11 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		try
 		{
 			results.TotalOperations++;
-			var (upgradeOk, upgradeReason) = await client.Management.KubernetesUpgradePreChecksAsync(
+			var result = await client.Management.KubernetesUpgradePreChecksAsync(
 				"v1.29.0", CancellationToken);
-			upgradeReason.Should().NotBeNull();
+			result.Reason.Should().NotBeNull();
 			Logger.LogInformation("   ✅ Upgrade check: {Status} - {Reason}",
-				upgradeOk ? "Ready" : "Not ready", upgradeReason);
+				result.Ok ? "Ready" : "Not ready", result.Reason);
 			results.SuccessCount++;
 		}
 		catch (Grpc.Core.RpcException rpcEx) when (rpcEx.StatusCode == Grpc.Core.StatusCode.PermissionDenied)

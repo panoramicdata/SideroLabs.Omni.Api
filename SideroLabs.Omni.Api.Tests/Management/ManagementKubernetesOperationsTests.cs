@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Models;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Management;
@@ -21,16 +22,20 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 	public async Task KubernetesUpgradePreChecks_ValidVersion_ReturnsResult(string version)
 	{
 		// Arrange & Act
-		var (ok, reason) = await OmniClient.Management.KubernetesUpgradePreChecksAsync(
-			version,
-			CancellationToken);
+		var kubernetesUpgradePreCheckResult = await OmniClient
+			.Management
+			.KubernetesUpgradePreChecksAsync(
+				version,
+				CancellationToken);
 
 		// Assert - Result may be OK or not depending on cluster state
 		// Both are valid responses
-		Logger.LogInformation("Upgrade check for {Version}: OK={Ok}, Reason={Reason}", 
-			version, ok, reason);
-		
-		Assert.NotNull(reason);
+		Logger.LogInformation("Upgrade check for {Version}: OK={Ok}, Reason={Reason}",
+			version,
+			kubernetesUpgradePreCheckResult.Ok,
+			kubernetesUpgradePreCheckResult.Reason);
+
+		Assert.NotNull(kubernetesUpgradePreCheckResult.Reason);
 	}
 
 	[Theory]
@@ -42,22 +47,22 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Arrange & Act
 		try
 		{
-			var (ok, reason) = await OmniClient.Management.KubernetesUpgradePreChecksAsync(
+			var kubernetesUpgradePreCheckResult = await OmniClient.Management.KubernetesUpgradePreChecksAsync(
 				version,
 				CancellationToken);
 
 			// Assert - Should either return not OK or throw
-			if (!ok)
+			if (!kubernetesUpgradePreCheckResult.Ok)
 			{
-				Logger.LogInformation("✓ Invalid version {Version} correctly returned not OK: {Reason}", 
-					version, reason);
-				Assert.NotEmpty(reason);
+				Logger.LogInformation("✓ Invalid version {Version} correctly returned not OK: {Reason}",
+					version, kubernetesUpgradePreCheckResult.Reason);
+				Assert.NotEmpty(kubernetesUpgradePreCheckResult.Reason);
 			}
 		}
 		catch (RpcException ex)
 		{
 			// Also acceptable to throw an exception for invalid versions
-			Logger.LogInformation("✓ Invalid version {Version} correctly threw exception: {StatusCode}", 
+			Logger.LogInformation("✓ Invalid version {Version} correctly threw exception: {StatusCode}",
 				version, ex.StatusCode);
 		}
 	}
@@ -88,7 +93,7 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 
 		// Assert - Results should be consistent
 		Assert.Equal(result1.Ok, result2.Ok);
-		
+
 		Logger.LogInformation("✓ Upgrade pre-check results are consistent");
 	}
 
@@ -126,7 +131,7 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		}
 
 		Assert.True(syncCount > 0, "Should receive at least one sync result");
-		Logger.LogInformation("✓ Processed {Total} sync results ({Skipped} skipped)", 
+		Logger.LogInformation("✓ Processed {Total} sync results ({Skipped} skipped)",
 			syncCount, skippedCount);
 	}
 
@@ -165,7 +170,7 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		catch (OperationCanceledException)
 		{
 			// Expected
-			Logger.LogInformation("✓ Stream correctly stopped on cancellation after {Count} results", 
+			Logger.LogInformation("✓ Stream correctly stopped on cancellation after {Count} results",
 				syncCount);
 		}
 	}
@@ -175,12 +180,15 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 	{
 		// Arrange
 		var version = "v1.29.0";
-		var tasks = new List<Task<(bool Ok, string Reason)>>();
+		var tasks = new List<Task<KubernetesUpgradePreCheckResult>>();
 
 		// Act - Make multiple concurrent calls
 		for (int i = 0; i < 5; i++)
 		{
-			tasks.Add(OmniClient.Management.KubernetesUpgradePreChecksAsync(version, CancellationToken));
+			tasks.Add(OmniClient
+				.Management
+				.KubernetesUpgradePreChecksAsync(version, CancellationToken)
+				);
 		}
 
 		var results = await Task.WhenAll(tasks);
@@ -199,17 +207,22 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		var oldVersion = "v1.20.0";
 
 		// Act
-		var (ok, reason) = await OmniClient.Management.KubernetesUpgradePreChecksAsync(
-			oldVersion,
-			CancellationToken);
+		var kubernetesUpgradePreCheckResult = await OmniClient
+			.Management
+			.KubernetesUpgradePreChecksAsync(
+				oldVersion,
+				CancellationToken);
 
 		// Assert - Should return not OK (downgrade not allowed)
 		// OR throw an exception, both are acceptable
-		Logger.LogInformation("Downgrade check: OK={Ok}, Reason={Reason}", ok, reason);
-		
-		if (!ok)
+		Logger.LogInformation(
+			"Downgrade check: OK={Ok}, Reason={Reason}",
+			kubernetesUpgradePreCheckResult.Ok,
+			kubernetesUpgradePreCheckResult.Reason);
+
+		if (!kubernetesUpgradePreCheckResult.Ok)
 		{
-			Assert.Contains("downgrade", reason, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("downgrade", kubernetesUpgradePreCheckResult.Reason, StringComparison.OrdinalIgnoreCase);
 			Logger.LogInformation("✓ Downgrade correctly rejected");
 		}
 	}

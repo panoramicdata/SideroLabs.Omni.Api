@@ -148,7 +148,7 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 			""";
 
 		var result = await client.Management.ValidateJsonSchemaAsync(jsonData, jsonSchema, cancellationToken);
-		
+
 		if (result.IsValid)
 		{
 			Output.WriteSuccess("JSON schema validation successful");
@@ -165,15 +165,15 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	/// </summary>
 	private async Task CheckKubernetesUpgrade(OmniClient client, CancellationToken cancellationToken)
 	{
-		var (canUpgrade, reason) = await client.Management.KubernetesUpgradePreChecksAsync(
+		var upgradePreCheckResult = await client.Management.KubernetesUpgradePreChecksAsync(
 			"v1.29.0",
 			cancellationToken);
 
-		var upgradeStatus = canUpgrade ? "Ready" : "Not ready";
-		Output.WriteLine("Kubernetes upgrade to v1.29.0: {0} {1}", canUpgrade ? "✅" : "❌", upgradeStatus);
-		if (!string.IsNullOrEmpty(reason))
+		var upgradeStatus = upgradePreCheckResult.Ok ? "Ready" : "Not ready";
+		Output.WriteLine("Kubernetes upgrade to v1.29.0: {0} {1}", upgradePreCheckResult.Ok ? "✅" : "❌", upgradeStatus);
+		if (!string.IsNullOrEmpty(upgradePreCheckResult.Reason))
 		{
-			Output.WriteLine("Reason: {0}", reason);
+			Output.WriteLine("Reason: {0}", upgradePreCheckResult.Reason);
 		}
 	}
 

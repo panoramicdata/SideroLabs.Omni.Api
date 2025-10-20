@@ -45,8 +45,7 @@ public static class OmniClientExample
 		return new OmniClientOptions
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
-			Identity = "your-username",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+			AuthToken = "your-auth-token",
 			TimeoutSeconds = 30,
 			UseTls = true,
 			ValidateCertificate = true
@@ -61,20 +60,24 @@ public static class OmniClientExample
 		Console.WriteLine("=== Configuration Management ===");
 
 		// Get kubeconfig for cluster access
-		var kubeconfig = await client.Management.GetKubeConfigAsync(
-			serviceAccount: true,
-			serviceAccountTtl: TimeSpan.FromHours(24),
-			serviceAccountUser: "automation",
-			serviceAccountGroups: ["system:masters"],
-			cancellationToken: cancellationToken);
+		var kubeconfig = await client
+				.Management
+				.GetKubeConfigAsync(
+					true,
+					TimeSpan.FromHours(24),
+					"automation",
+					["system:masters"],
+					cancellationToken);
 
 		Console.WriteLine($"Retrieved kubeconfig ({kubeconfig.Length} characters)");
 		File.WriteAllText("kubeconfig.yaml", kubeconfig);
 
 		// Get talosconfig for Talos cluster access
-		var talosconfig = await client.Management.GetTalosConfigAsync(
-			raw: true,
-			cancellationToken: cancellationToken);
+		var talosconfig = await client
+			.Management
+			.GetTalosConfigAsync(
+				true,
+				cancellationToken);
 
 		Console.WriteLine($"Retrieved talosconfig ({talosconfig.Length} characters)");
 		File.WriteAllText("talosconfig.yaml", talosconfig);
@@ -126,18 +129,22 @@ public static class OmniClientExample
 			  key: value
 			""";
 
-		await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
+		await client
+			.Management
+			.ValidateConfigAsync(sampleConfig, cancellationToken);
 		Console.WriteLine("Configuration validation successful");
 
 		// Check Kubernetes upgrade readiness
-		var (canUpgrade, reason) = await client.Management.KubernetesUpgradePreChecksAsync(
-			"v1.29.0",
-			cancellationToken);
+		var upgradePreCheckResult = await client
+			.Management
+			.KubernetesUpgradePreChecksAsync(
+				"v1.29.0",
+				cancellationToken);
 
-		Console.WriteLine($"Kubernetes upgrade to v1.29.0: {(canUpgrade ? "✅ Ready" : "❌ Not ready")}");
-		if (!string.IsNullOrEmpty(reason))
+		Console.WriteLine($"Kubernetes upgrade to v1.29.0: {(upgradePreCheckResult.Ok ? "✅ Ready" : "❌ Not ready")}");
+		if (!string.IsNullOrEmpty(upgradePreCheckResult.Reason))
 		{
-			Console.WriteLine($"Reason: {reason}");
+			Console.WriteLine($"Reason: {upgradePreCheckResult.Reason}");
 		}
 
 	}
@@ -274,7 +281,7 @@ public static class OmniClientExample
 	{
 		return """
 			-----BEGIN PGP PUBLIC KEY BLOCK-----
-			
+
 			mQENBGJxyz4BCADGn5n1...sample...key...content
 			-----END PGP PUBLIC KEY BLOCK-----
 			""";
@@ -371,43 +378,45 @@ public static class OmniClientExample
 	private static async Task CreateAndDisplaySchematic(OmniClient client, CancellationToken cancellationToken)
 	{
 		// Create a schematic for provisioning machines with all available options
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
-			extensions:
-			[
-				"siderolabs/iscsi-tools",        // iSCSI storage support
-				"siderolabs/util-linux-tools",   // Additional Linux utilities
-				"siderolabs/gvisor"              // Container runtime security
-			],
-			extraKernelArgs:
-			[
-				"console=ttyS0,115200",          // Serial console
-				"net.ifnames=0",                 // Predictable network names
-				"systemd.unified_cgroup_hierarchy=0"
-			],
-			metaValues: new Dictionary<uint, string>
-			{
-				{ 0x0a, "datacenter-1" },       // Datacenter location
-				{ 0x0b, "rack-a1" },            // Rack identifier
-				{ 0x0c, "production" }          // Environment
-			},
-			talosVersion: "v1.7.0",             // NEW: Specify Talos version
-			mediaId: "installer",               // NEW: Installation media
-			secureBoot: true,                   // NEW: Enable secure boot
-			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,  // NEW: gRPC tunnel mode
-			joinToken: null,                    // NEW: Optional join token
-			cancellationToken: cancellationToken);
+		var schematicResult = await client
+			.Management
+			.CreateSchematicAsync(
+				extensions:
+				[
+					"siderolabs/iscsi-tools",        // iSCSI storage support
+					"siderolabs/util-linux-tools",   // Additional Linux utilities
+					"siderolabs/gvisor"              // Container runtime security
+				],
+				extraKernelArgs:
+				[
+					"console=ttyS0,115200",          // Serial console
+					"net.ifnames=0",                 // Predictable network names
+					"systemd.unified_cgroup_hierarchy=0"
+				],
+				metaValues: new Dictionary<uint, string>
+				{
+					{ 0x0a, "datacenter-1" },       // Datacenter location
+					{ 0x0b, "rack-a1" },            // Rack identifier
+					{ 0x0c, "production" }          // Environment
+				},
+				talosVersion: "v1.7.0",             // NEW: Specify Talos version
+				mediaId: "installer",               // NEW: Installation media
+				secureBoot: true,                   // NEW: Enable secure boot
+				siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,  // NEW: gRPC tunnel mode
+				joinToken: null,                    // NEW: Optional join token
+				cancellationToken: cancellationToken);
 
-		DisplaySchematicResults(schematicId, pxeUrl, grpcTunnelEnabled);
+		DisplaySchematicResults(schematicResult);
 	}
 
 	/// <summary>
 	/// Displays the schematic creation results
 	/// </summary>
-	private static void DisplaySchematicResults(string schematicId, string pxeUrl, bool grpcTunnelEnabled)
+	private static void DisplaySchematicResults(SchematicResult schematicResult)
 	{
-		Console.WriteLine($"✅ Created schematic: {schematicId}");
-		Console.WriteLine($"📦 PXE Boot URL: {pxeUrl}");
-		Console.WriteLine($"🔌 gRPC Tunnel: {(grpcTunnelEnabled ? "Enabled" : "Disabled")}");
+		Console.WriteLine($"✅ Created schematic: {schematicResult.SchematicId}");
+		Console.WriteLine($"📦 PXE Boot URL: {schematicResult.PxeUrl}");
+		Console.WriteLine($"🔌 gRPC Tunnel: {(schematicResult.GrpcTunnelEnabled ? "Enabled" : "Disabled")}");
 		Console.WriteLine();
 		Console.WriteLine("Use this PXE URL to boot machines with the configured extensions and settings.");
 		Console.WriteLine("The schematic includes:");
@@ -534,8 +543,7 @@ public static class OmniClientExample
 		var options = new OmniClientOptions
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
-			Identity = "comprehensive-user",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+			AuthToken = "your-auth-token",
 			TimeoutSeconds = 60,
 			UseTls = true,
 			ValidateCertificate = true
@@ -622,9 +630,9 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n4️⃣ Kubernetes Operations:");
 
-		var (upgradeOk, upgradeReason) = await client.Management.KubernetesUpgradePreChecksAsync(
+		var upgradePreCheckResult = await client.Management.KubernetesUpgradePreChecksAsync(
 			"v1.29.0", cancellationToken);
-		Console.WriteLine($"   ✅ Upgrade check: {(upgradeOk ? "Ready" : "Not ready")} - {upgradeReason}");
+		Console.WriteLine($"   ✅ Upgrade check: {(upgradePreCheckResult.Ok ? "Ready" : "Not ready")} - {upgradePreCheckResult.Reason}");
 	}
 
 	/// <summary>
@@ -634,12 +642,12 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n5️⃣ Machine Provisioning:");
 
-		var (schematicId, pxeUrl, grpcTunnelEnabled) = await client.Management.CreateSchematicAsync(
+		var schematicResult = await client.Management.CreateSchematicAsync(
 			extensions: ["siderolabs/util-linux-tools"],
 			cancellationToken: cancellationToken);
-		Console.WriteLine($"   ✅ Schematic created: {schematicId}");
-		Console.WriteLine($"   📦 PXE URL: {pxeUrl}");
-		Console.WriteLine($"   🔌 gRPC Tunnel: {(grpcTunnelEnabled ? "Enabled" : "Disabled")}");
+		Console.WriteLine($"   ✅ Schematic created: {schematicResult.SchematicId}");
+		Console.WriteLine($"   📦 PXE URL: {schematicResult.PxeUrl}");
+		Console.WriteLine($"   🔌 gRPC Tunnel: {(schematicResult.GrpcTunnelEnabled ? "Enabled" : "Disabled")}");
 	}
 
 	/// <summary>

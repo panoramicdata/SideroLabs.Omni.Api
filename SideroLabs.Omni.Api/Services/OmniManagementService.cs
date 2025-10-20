@@ -358,7 +358,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 	}
 
 	/// <inheritdoc />
-	public async Task<(bool Ok, string Reason)> KubernetesUpgradePreChecksAsync(
+	public async Task<KubernetesUpgradePreCheckResult> KubernetesUpgradePreChecksAsync(
 		string newVersion,
 		CancellationToken cancellationToken)
 	{
@@ -374,23 +374,25 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			"Kubernetes upgrade pre-checks",
 			cancellationToken);
 
-		return (response.Ok, response.Reason);
+		return response.Ok
+			? KubernetesUpgradePreCheckResult.Success(response.Reason)
+			: KubernetesUpgradePreCheckResult.Failure(response.Reason);
 	}
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(CancellationToken cancellationToken) =>
+	public Task<SchematicResult> CreateSchematicAsync(CancellationToken cancellationToken) =>
 		CreateSchematicAsync(null, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
+	public Task<SchematicResult> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
 		CreateSchematicAsync(extensions, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
+	public Task<SchematicResult> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
 		CreateSchematicAsync(extensions, extraKernelArgs, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
 
 	/// <inheritdoc />
-	public Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	public Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
@@ -399,7 +401,7 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 
 	/// <inheritdoc />
 	[IsWriteAction(WriteActionType.Create, Description = "Creates a new schematic for machine provisioning")]
-	public async Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	public async Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
@@ -446,7 +448,12 @@ internal class OmniManagementService : OmniServiceBase, IManagementService, IDis
 			"schematic creation",
 			cancellationToken);
 
-		return (response.SchematicId, response.PxeUrl, response.GrpcTunnelEnabled);
+		return new SchematicResult
+		{
+			SchematicId = response.SchematicId,
+			PxeUrl = response.PxeUrl,
+			GrpcTunnelEnabled = response.GrpcTunnelEnabled
+		};
 	}
 
 	/// <inheritdoc />

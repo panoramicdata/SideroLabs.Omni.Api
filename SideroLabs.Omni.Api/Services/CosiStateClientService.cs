@@ -112,9 +112,9 @@ internal class CosiStateClientService : IOmniResourceClient
 		};
 
 		var callOptions = CreateCallOptions("List");
-		
+
 		_logger.LogDebug("Calling COSI State.List for {Type}", resourceType);
-		
+
 		using var call = _grpcClient.List(request, callOptions);
 
 		var count = 0;
@@ -171,7 +171,7 @@ internal class CosiStateClientService : IOmniResourceClient
 				if (evt.Resource == null) continue;
 
 				var resource = DeserializeResource<TResource>(evt.Resource);
-				
+
 				TResource? oldResource = default;
 				if (evt.Old != null)
 				{
@@ -387,14 +387,14 @@ internal class CosiStateClientService : IOmniResourceClient
 	{
 		// Create a new instance of the resource
 		var resource = new TResource();
-		
+
 		// Map metadata from COSI to our resource
 		resource.Metadata = ResourceMetadata.FromProto(cosiResource.Metadata);
-		
+
 		// DIAGNOSTIC: Log what format we receive
 		var hasYamlSpec = cosiResource.Spec != null && !string.IsNullOrEmpty(cosiResource.Spec.YamlSpec);
 		var hasProtoSpec = cosiResource.Spec?.ProtoSpec != null && !cosiResource.Spec.ProtoSpec.IsEmpty;
-		
+
 		_logger.LogInformation(
 			"Spec format - Type: {Type}, YamlSpec: {HasYaml} ({YamlLength} bytes), ProtoSpec: {HasProto} ({ProtoLength} bytes)",
 			cosiResource.Metadata.Type,
@@ -402,18 +402,18 @@ internal class CosiStateClientService : IOmniResourceClient
 			hasYamlSpec ? cosiResource.Spec!.YamlSpec.Length : 0,
 			hasProtoSpec,
 			hasProtoSpec ? cosiResource.Spec!.ProtoSpec.Length : 0);
-		
+
 		// Try YamlSpec first (JSON format)
 		if (hasYamlSpec)
 		{
 			try
 			{
 				_logger.LogDebug("Attempting to deserialize YamlSpec as JSON for {Type}", cosiResource.Metadata.Type);
-				
+
 				var deserializedResource = JsonSerializer.Deserialize<TResource>(
-					cosiResource.Spec!.YamlSpec, 
+					cosiResource.Spec!.YamlSpec,
 					OmniClient.JsonSerializerOptions);
-				
+
 				if (deserializedResource != null)
 				{
 					var specProperty = typeof(TResource).GetProperty("Spec");
@@ -434,7 +434,7 @@ internal class CosiStateClientService : IOmniResourceClient
 				_logger.LogDebug(ex, "Failed to deserialize YamlSpec as JSON for {Type}", cosiResource.Metadata.Type);
 			}
 		}
-		
+
 		// Try ProtoSpec with our deserializer
 		if (hasProtoSpec)
 		{
@@ -457,7 +457,7 @@ internal class CosiStateClientService : IOmniResourceClient
 				_logger.LogDebug(ex, "Failed to deserialize ProtoSpec for {Type}", cosiResource.Metadata.Type);
 			}
 		}
-		
+
 		_logger.LogDebug("Returning resource with metadata only - no spec deserialization available for {Type}", cosiResource.Metadata.Type);
 		return resource;
 	}

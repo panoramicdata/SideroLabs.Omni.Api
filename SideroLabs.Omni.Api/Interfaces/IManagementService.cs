@@ -218,7 +218,7 @@ public interface IManagementService
 	/// <param name="newVersion">New Kubernetes version to check</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Pre-check results</returns>
-	Task<(bool Ok, string Reason)> KubernetesUpgradePreChecksAsync(
+	Task<KubernetesUpgradePreCheckResult> KubernetesUpgradePreChecksAsync(
 		string newVersion,
 		CancellationToken cancellationToken);
 
@@ -226,8 +226,8 @@ public interface IManagementService
 	/// Creates a schematic for machine provisioning
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
-	/// <returns>Schematic ID, PXE URL, and gRPC tunnel enabled status</returns>
-	Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
+	Task<SchematicResult> CreateSchematicAsync(
 		CancellationToken cancellationToken);
 
 	/// <summary>
@@ -235,8 +235,8 @@ public interface IManagementService
 	/// </summary>
 	/// <param name="extensions">Extensions to include</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	/// <returns>Schematic ID, PXE URL, and gRPC tunnel enabled status</returns>
-	Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
+	Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		CancellationToken cancellationToken);
 
@@ -246,8 +246,8 @@ public interface IManagementService
 	/// <param name="extensions">Extensions to include</param>
 	/// <param name="extraKernelArgs">Extra kernel arguments</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	/// <returns>Schematic ID, PXE URL, and gRPC tunnel enabled status</returns>
-	Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
+	Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		CancellationToken cancellationToken);
@@ -259,8 +259,8 @@ public interface IManagementService
 	/// <param name="extraKernelArgs">Extra kernel arguments</param>
 	/// <param name="metaValues">Meta values mapping</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	/// <returns>Schematic ID, PXE URL, and gRPC tunnel enabled status</returns>
-	Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
+	Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
@@ -278,8 +278,8 @@ public interface IManagementService
 	/// <param name="siderolinkGrpcTunnelMode">Siderolink gRPC tunnel mode</param>
 	/// <param name="joinToken">Join token for the machine</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	/// <returns>Schematic ID, PXE URL, and gRPC tunnel enabled status</returns>
-	Task<(string SchematicId, string PxeUrl, bool GrpcTunnelEnabled)> CreateSchematicAsync(
+	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
+	Task<SchematicResult> CreateSchematicAsync(
 		string[]? extensions,
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,

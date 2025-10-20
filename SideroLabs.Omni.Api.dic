@@ -85,4 +85,15 @@ UserInfo
 IdentitySpec
 UserSpec
 Lifecycle
-
+Pxe
+api
+bool
+async
+config
+csharp
+enum
+deserialization
+protobuf
+etcd
+rpc
+Deserialize

@@ -24,7 +24,7 @@ internal static class ProtoSpecDeserializer
 		// 1. Find the correct namespace for generated classes
 		// 2. Map proto messages to our resource spec classes
 		// 3. Handle all the field mappings
-		
+
 		// For now, return null so tests still pass with metadata-only
 		return null;
 	}
