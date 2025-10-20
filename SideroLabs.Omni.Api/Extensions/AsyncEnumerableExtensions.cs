@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace SideroLabs.Omni.Api.Extensions;
 
 /// <summary>
@@ -29,7 +31,7 @@ public static class AsyncEnumerableExtensions
 	/// </example>
 	public static async Task<List<T>> ToListAsync<T>(
 		this IAsyncEnumerable<T> source,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -68,7 +70,7 @@ public static class AsyncEnumerableExtensions
 	/// <returns>The first item or null</returns>
 	public static async Task<T?> FirstOrDefaultAsync<T>(
 		this IAsyncEnumerable<T> source,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -90,7 +92,7 @@ public static class AsyncEnumerableExtensions
 	/// <returns>The number of items</returns>
 	public static async Task<int> CountAsync<T>(
 		this IAsyncEnumerable<T> source,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -113,7 +115,7 @@ public static class AsyncEnumerableExtensions
 	/// <returns>True if at least one item exists</returns>
 	public static async Task<bool> AnyAsync<T>(
 		this IAsyncEnumerable<T> source,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -137,7 +139,7 @@ public static class AsyncEnumerableExtensions
 	public static async IAsyncEnumerable<T> TakeAsync<T>(
 		this IAsyncEnumerable<T> source,
 		int count,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -171,7 +173,7 @@ public static class AsyncEnumerableExtensions
 	public static async IAsyncEnumerable<T> SkipAsync<T>(
 		this IAsyncEnumerable<T> source,
 		int count,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
@@ -200,7 +202,7 @@ public static class AsyncEnumerableExtensions
 	public static async IAsyncEnumerable<T> WhereAsync<T>(
 		this IAsyncEnumerable<T> source,
 		Func<T, bool> predicate,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 		ArgumentNullException.ThrowIfNull(predicate);
@@ -226,7 +228,7 @@ public static class AsyncEnumerableExtensions
 	public static async IAsyncEnumerable<TResult> SelectAsync<TSource, TResult>(
 		this IAsyncEnumerable<TSource> source,
 		Func<TSource, TResult> selector,
-		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 		ArgumentNullException.ThrowIfNull(selector);
