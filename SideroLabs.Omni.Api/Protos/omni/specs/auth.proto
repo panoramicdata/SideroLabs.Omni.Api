@@ -3,7 +3,6 @@ package specs;
 
 option go_package = "github.com/siderolabs/omni/client/api/omni/specs";
 
-import "talos/machine/machine.proto";
 import "google/protobuf/timestamp.proto";
 
 // AuthConfigSpec describes the authentication configuration.
