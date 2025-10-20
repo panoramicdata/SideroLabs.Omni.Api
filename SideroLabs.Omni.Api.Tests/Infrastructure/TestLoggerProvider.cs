@@ -5,14 +5,9 @@ namespace SideroLabs.Omni.Api.Tests.Infrastructure;
 /// <summary>
 /// Logger provider that wraps a test logger for use in DI
 /// </summary>
-internal class TestLoggerProvider : ILoggerProvider
+internal class TestLoggerProvider(ILogger testLogger) : ILoggerProvider
 {
-	private readonly ILogger _testLogger;
-
-	public TestLoggerProvider(ILogger testLogger)
-	{
-		_testLogger = testLogger ?? throw new ArgumentNullException(nameof(testLogger));
-	}
+	private readonly ILogger _testLogger = testLogger ?? throw new ArgumentNullException(nameof(testLogger));
 
 	public ILogger CreateLogger(string categoryName)
 	{
@@ -25,16 +20,10 @@ internal class TestLoggerProvider : ILoggerProvider
 		// Nothing to dispose
 	}
 
-	private class TestLoggerWrapper : ILogger
+	private class TestLoggerWrapper(ILogger innerLogger, string categoryName) : ILogger
 	{
-		private readonly ILogger _innerLogger;
-		private readonly string _categoryName;
-
-		public TestLoggerWrapper(ILogger innerLogger, string categoryName)
-		{
-			_innerLogger = innerLogger;
-			_categoryName = categoryName;
-		}
+		private readonly ILogger _innerLogger = innerLogger;
+		private readonly string _categoryName = categoryName;
 
 		public IDisposable? BeginScope<TState>(TState state) where TState : notnull
 			=> _innerLogger.BeginScope(state);

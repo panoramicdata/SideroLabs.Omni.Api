@@ -15,29 +15,20 @@ namespace SideroLabs.Omni.Api.Services;
 /// This is the CORRECT service to use for resource operations on Omni SaaS (not ResourceService!)
 /// Uses the COSI v1alpha1 State gRPC service at /cosi.resource.State/*
 /// </summary>
-internal class CosiStateClientService : IOmniResourceClient
+internal class CosiStateClientService(
+	GrpcChannel channel,
+	ILogger logger,
+	bool isReadOnly,
+	OmniClientOptions options,
+	OmniAuthenticator? authenticator) : IOmniResourceClient
 {
-	private readonly State.StateClient _grpcClient;
-	private readonly ILogger _logger;
-	private readonly bool _isReadOnly;
-	private readonly OmniClientOptions _options;
-	private readonly OmniAuthenticator? _authenticator;
+	private readonly State.StateClient _grpcClient = new State.StateClient(channel);
+	private readonly ILogger _logger = logger;
+	private readonly bool _isReadOnly = isReadOnly;
+	private readonly OmniClientOptions _options = options;
+	private readonly OmniAuthenticator? _authenticator = authenticator;
 
 	private const string ServiceBasePath = "/cosi.resource.State";
-
-	public CosiStateClientService(
-		GrpcChannel channel,
-		ILogger logger,
-		bool isReadOnly,
-		OmniClientOptions options,
-		OmniAuthenticator? authenticator)
-	{
-		_grpcClient = new State.StateClient(channel);
-		_logger = logger;
-		_isReadOnly = isReadOnly;
-		_options = options;
-		_authenticator = authenticator;
-	}
 
 	/// <summary>
 	/// Creates headers with authentication for COSI State calls

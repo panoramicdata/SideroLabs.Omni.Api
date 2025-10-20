@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Interfaces;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Operations;
@@ -23,15 +24,13 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
-
 		try
 		{
 			// Act - List clusters via Cluster Operations API
 			Logger.LogInformation("🔍 Listing clusters via Cluster Operations API");
 
 			var clusters = new List<Api.Resources.Cluster>();
-			await foreach (var cluster in client.Clusters.ListAsync(cancellationToken: CancellationToken))
+			await foreach (var cluster in OmniClient.Clusters.ListAsync(cancellationToken: CancellationToken))
 			{
 				clusters.Add(cluster);
 			}
@@ -70,15 +69,13 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
-
 		try
 		{
 			// Act - List clusters from a specific namespace
 			Logger.LogInformation("🔍 Listing clusters from 'default' namespace");
 
 			var clusterCount = 0;
-			await foreach (var cluster in client.Clusters.ListAsync(@namespace: "default", cancellationToken: CancellationToken))
+			await foreach (var cluster in OmniClient.Clusters.ListAsync(@namespace: "default", cancellationToken: CancellationToken))
 			{
 				cluster.Should().NotBeNull();
 				cluster.Metadata.Namespace.Should().Be("default");
@@ -95,6 +92,91 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 	}
 
 	[Fact]
+	public async Task GetAsync_ExistingCluster_ReturnsCluster()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		try
+		{
+			// Arrange - List clusters to get an existing one
+			Logger.LogInformation("🔍 Finding existing cluster for GetAsync test");
+
+			Api.Resources.Cluster? existingCluster = null;
+			await foreach (var c in OmniClient.Resources.ListAsync<Api.Resources.Cluster>(
+				limit: 1,
+				cancellationToken: CancellationToken))
+			{
+				existingCluster = c;
+				break;
+			}
+
+			if (existingCluster == null)
+			{
+				Logger.LogInformation("⏭️ No existing clusters found - skipping GetAsync test");
+				return;
+			}
+
+			// Act - Get cluster via Operations API
+			Logger.LogInformation("🔍 Getting cluster via Operations API: {ClusterId}", existingCluster.Metadata.Id);
+			var cluster = await OmniClient.Clusters.GetAsync(
+				existingCluster.Metadata.Id,
+				cancellationToken: CancellationToken);
+
+			// Assert
+			cluster.Should().NotBeNull();
+			cluster.Metadata.Id.Should().Be(existingCluster.Metadata.Id);
+			cluster.Metadata.Namespace.Should().Be(existingCluster.Metadata.Namespace);
+
+			Logger.LogInformation("✅ Successfully retrieved cluster via Operations API");
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
+		{
+			Logger.LogInformation("⏭️ Cluster not found - may have been deleted");
+		}
+	}
+
+	[Fact]
+	public async Task GetAsync_NonExistentCluster_ThrowsNotFound()
+	{
+		// Skip if integration tests are not configured
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		var nonExistentId = CreateUniqueId("nonexistent");
+
+		try
+		{
+			// Act & Assert
+			Logger.LogInformation("🔍 Attempting to get non-existent cluster: {ClusterId}", nonExistentId);
+
+			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+			{
+				await OmniClient.Clusters.GetAsync(nonExistentId, cancellationToken: CancellationToken);
+			});
+
+			// Assert
+			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
+			Logger.LogInformation("✅ NotFound exception thrown as expected");
+		}
+		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+		{
+			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+		}
+	}
+
+	[Fact]
 	public async Task GetStatus_ExistingCluster_ReturnsStatus()
 	{
 		// Skip if integration tests are not configured
@@ -104,15 +186,13 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
-
 		try
 		{
 			// Arrange - List clusters to get an existing one
 			Logger.LogInformation("🔍 Finding existing cluster for status test");
 
 			Api.Resources.Cluster? existingCluster = null;
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+			await foreach (var c in OmniClient.Resources.ListAsync<Api.Resources.Cluster>(
 				limit: 1,
 				cancellationToken: CancellationToken))
 			{
@@ -128,7 +208,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 			// Act - Get cluster status
 			Logger.LogInformation("🔍 Getting status for cluster: {ClusterId}", existingCluster.Metadata.Id);
-			var status = await client.Clusters.GetStatusAsync(
+			var status = await OmniClient.Clusters.GetStatusAsync(
 				existingCluster.Metadata.Id,
 				cancellationToken: CancellationToken);
 
@@ -156,7 +236,6 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
 		var nonExistentId = CreateUniqueId("nonexistent");
 
 		try
@@ -166,7 +245,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
 			{
-				await client.Clusters.GetStatusAsync(nonExistentId, cancellationToken: CancellationToken);
+				await OmniClient.Clusters.GetStatusAsync(nonExistentId, cancellationToken: CancellationToken);
 			});
 
 			// Assert
@@ -189,7 +268,6 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
 		var clusterId = CreateUniqueId("ops-cluster");
 
 		try
@@ -202,7 +280,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 			// Act
 			Logger.LogInformation("🔍 Creating cluster via Operations API: {ClusterId}", clusterId);
-			var created = await client.Clusters.CreateAsync(cluster, CancellationToken);
+			var created = await OmniClient.Clusters.CreateAsync(cluster, CancellationToken);
 
 			// Assert
 			created.Should().NotBeNull();
@@ -217,7 +295,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		finally
 		{
 			// Cleanup
-			await CleanupCluster(client, clusterId);
+			await CleanupCluster(OmniClient, clusterId);
 		}
 	}
 
@@ -231,7 +309,6 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
 		var clusterId = CreateUniqueId("ops-delete");
 
 		try
@@ -243,16 +320,16 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 				.Build();
 
 			Logger.LogInformation("🔍 Creating cluster for delete test: {ClusterId}", clusterId);
-			await client.Clusters.CreateAsync(cluster, CancellationToken);
+			await OmniClient.Clusters.CreateAsync(cluster, CancellationToken);
 
 			// Act
 			Logger.LogInformation("🔍 Deleting cluster via Operations API: {ClusterId}", clusterId);
-			await client.Clusters.DeleteAsync(clusterId, force: false, cancellationToken: CancellationToken);
+			await OmniClient.Clusters.DeleteAsync(clusterId, force: false, cancellationToken: CancellationToken);
 
 			// Assert - Try to get it, should throw NotFound
 			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
 			{
-				await client.Resources.GetAsync<Api.Resources.Cluster>(clusterId, cancellationToken: CancellationToken);
+				await OmniClient.Resources.GetAsync<Api.Resources.Cluster>(clusterId, cancellationToken: CancellationToken);
 			});
 
 			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
@@ -263,7 +340,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
 
 			// Cleanup attempt
-			await CleanupCluster(client, clusterId);
+			await CleanupCluster(OmniClient, clusterId);
 		}
 	}
 
@@ -277,8 +354,6 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			return;
 		}
 
-		using var client = new OmniClient(GetClientOptions());
-
 		try
 		{
 			// Arrange - Find an existing machine and cluster
@@ -288,7 +363,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			Api.Resources.Cluster? existingCluster = null;
 
 			// Get a machine
-			await foreach (var m in client.Resources.ListAsync<Api.Resources.Machine>(
+			await foreach (var m in OmniClient.Resources.ListAsync<Api.Resources.Machine>(
 				limit: 1,
 				cancellationToken: CancellationToken))
 			{
@@ -297,7 +372,7 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 			}
 
 			// Get a cluster
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+			await foreach (var c in OmniClient.Resources.ListAsync<Api.Resources.Cluster>(
 				limit: 1,
 				cancellationToken: CancellationToken))
 			{
@@ -316,12 +391,12 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 			// Act - Lock machine to cluster
 			Logger.LogInformation("🔒 Locking machine {MachineId} to cluster {ClusterId}", machineId, clusterId);
-			await client.Clusters.LockMachineAsync(machineId, clusterId, CancellationToken);
+			await OmniClient.Clusters.LockMachineAsync(machineId, clusterId, CancellationToken);
 
 			Logger.LogInformation("✅ Machine locked successfully");
 
 			// Verify machine is locked by retrieving it
-			var lockedMachine = await client.Resources.GetAsync<Api.Resources.Machine>(
+			var lockedMachine = await OmniClient.Resources.GetAsync<Api.Resources.Machine>(
 				machineId,
 				cancellationToken: CancellationToken);
 
@@ -329,12 +404,12 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 			// Act - Unlock machine
 			Logger.LogInformation("🔓 Unlocking machine {MachineId}", machineId);
-			await client.Clusters.UnlockMachineAsync(machineId, clusterId, CancellationToken);
+			await OmniClient.Clusters.UnlockMachineAsync(machineId, clusterId, CancellationToken);
 
 			Logger.LogInformation("✅ Machine unlocked successfully");
 
 			// Verify machine is unlocked
-			var unlockedMachine = await client.Resources.GetAsync<Api.Resources.Machine>(
+			var unlockedMachine = await OmniClient.Resources.GetAsync<Api.Resources.Machine>(
 				machineId,
 				cancellationToken: CancellationToken);
 
@@ -354,27 +429,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 	#region Helper Methods
 
-	private OmniClientOptions GetClientOptions()
-	{
-		var configuration = Configuration;
-		var omniSection = configuration.GetSection("Omni");
-		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni:AuthToken required");
-
-		return new OmniClientOptions
-		{
-			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl required")),
-			AuthToken = authToken,
-			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
-			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
-			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
-			IsReadOnly = bool.Parse(omniSection["IsReadOnly"] ?? "false"),
-			Logger = Logger
-		};
-	}
-
 	private static string CreateUniqueId(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
 
-	private async Task CleanupCluster(OmniClient client, string clusterId)
+	private async Task CleanupCluster(IOmniClient client, string clusterId)
 	{
 		try
 		{

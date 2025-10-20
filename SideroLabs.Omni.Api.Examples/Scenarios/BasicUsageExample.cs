@@ -31,8 +31,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	{
 		Output.WriteSection("Configuration Management");
 
-		// Get kubeconfig for cluster access with all available options
-		var kubeconfig = await client.Management.GetKubeConfigAsync(
+		// Get kubeconfig for cluster access with all available options - NEW API!
+		var kubeconfig = await client.KubeConfig.GetAsync(
 			serviceAccount: true,
 			serviceAccountTtl: TimeSpan.FromHours(24),
 			serviceAccountUser: "automation",
@@ -44,8 +44,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 		Output.WriteLine("Retrieved kubeconfig ({0} characters)", kubeconfig.Length);
 		File.WriteAllText("kubeconfig.yaml", kubeconfig);
 
-		// Get talosconfig for Talos cluster access with break-glass option
-		var talosconfig = await client.Management.GetTalosConfigAsync(
+		// Get talosconfig for Talos cluster access with break-glass option - NEW API!
+		var talosconfig = await client.TalosConfig.GetAsync(
 			raw: true,
 			breakGlass: false,  // New parameter
 			cancellationToken: cancellationToken);
@@ -53,8 +53,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 		Output.WriteLine("Retrieved talosconfig ({0} characters)", talosconfig.Length);
 		File.WriteAllText("talosconfig.yaml", talosconfig);
 
-		// Get omniconfig for omnictl
-		var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+		// Get omniconfig for omnictl - NEW API!
+		var omniconfig = await client.OmniConfig.GetAsync(cancellationToken);
 		Output.WriteLine("Retrieved omniconfig ({0} characters)", omniconfig.Length);
 		File.WriteAllText("omniconfig.yaml", omniconfig);
 	}
@@ -66,8 +66,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	{
 		Output.WriteSection("Service Account Management");
 
-		// List existing service accounts
-		var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+		// List existing service accounts - NEW API!
+		var serviceAccounts = await client.ServiceAccounts.ListAsync(cancellationToken);
 		Output.WriteLine("Found {0} service accounts", serviceAccounts.Count);
 
 		foreach (var account in serviceAccounts)
@@ -118,7 +118,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 			  key: value
 			""";
 
-		await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
+		// NEW API!
+		await client.Validation.ValidateConfigAsync(sampleConfig, cancellationToken);
 		Output.WriteSuccess("Configuration validation successful");
 	}
 
@@ -147,7 +148,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 			}
 			""";
 
-		var result = await client.Management.ValidateJsonSchemaAsync(jsonData, jsonSchema, cancellationToken);
+		// NEW API!
+		var result = await client.Validation.ValidateJsonSchemaAsync(jsonData, jsonSchema, cancellationToken);
 
 		if (result.IsValid)
 		{
@@ -165,7 +167,8 @@ public class BasicUsageExample(IExampleOutput output) : ExampleBase(output)
 	/// </summary>
 	private async Task CheckKubernetesUpgrade(OmniClient client, CancellationToken cancellationToken)
 	{
-		var upgradePreCheckResult = await client.Management.KubernetesUpgradePreChecksAsync(
+		// NEW API!
+		var upgradePreCheckResult = await client.Kubernetes.UpgradePreChecksAsync(
 			"v1.29.0",
 			cancellationToken);
 

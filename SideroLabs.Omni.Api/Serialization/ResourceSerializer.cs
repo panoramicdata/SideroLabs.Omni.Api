@@ -15,6 +15,7 @@ public static class ResourceSerializer
 
 	private static readonly IDeserializer _yamlDeserializer = new DeserializerBuilder()
 		.WithNamingConvention(CamelCaseNamingConvention.Instance)
+		.IgnoreUnmatchedProperties()
 		.Build();
 
 	/// <summary>

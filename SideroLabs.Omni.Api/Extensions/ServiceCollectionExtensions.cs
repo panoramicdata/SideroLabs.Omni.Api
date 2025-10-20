@@ -43,8 +43,31 @@ public static class ServiceCollectionExtensions
 			(OmniClient)serviceProvider.GetRequiredService<IOmniClient>());
 
 		// Register individual services for direct injection
+		// Note: Management service is deprecated - use specific services instead
+		#pragma warning disable CS0618 // Type or member is obsolete
 		services.AddTransient(serviceProvider =>
 			serviceProvider.GetRequiredService<IOmniClient>().Management);
+		#pragma warning restore CS0618
+
+		// Register new focused services
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().KubeConfig);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().TalosConfig);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().OmniConfig);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().ServiceAccounts);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().Validation);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().Kubernetes);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().Schematics);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().MachineManagement);
+		services.AddTransient(serviceProvider =>
+			serviceProvider.GetRequiredService<IOmniClient>().Support);
 
 		return services;
 	}

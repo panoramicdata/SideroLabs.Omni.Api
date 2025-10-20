@@ -7,21 +7,15 @@ namespace SideroLabs.Omni.Api.Services;
 /// <summary>
 /// Service for managing users via COSI resources
 /// </summary>
-internal class UserManagement : IUserManagement
+/// <remarks>
+/// Initializes a new instance of the <see cref="UserManagement"/> class
+/// </remarks>
+/// <param name="resources">Resource client</param>
+/// <param name="logger">Logger</param>
+internal class UserManagement(IOmniResourceClient resources, ILogger logger) : IUserManagement
 {
-	private readonly IOmniResourceClient _resources;
-	private readonly ILogger _logger;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="UserManagement"/> class
-	/// </summary>
-	/// <param name="resources">Resource client</param>
-	/// <param name="logger">Logger</param>
-	public UserManagement(IOmniResourceClient resources, ILogger logger)
-	{
-		_resources = resources ?? throw new ArgumentNullException(nameof(resources));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
+	private readonly IOmniResourceClient _resources = resources ?? throw new ArgumentNullException(nameof(resources));
+	private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
 	/// <inheritdoc />
 	public async Task<(User User, Identity Identity)> CreateAsync(

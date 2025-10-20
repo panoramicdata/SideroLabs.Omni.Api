@@ -25,6 +25,14 @@ internal class ClusterOperations : IClusterOperations
 		}
 	}
 
+	public async Task<Cluster> GetAsync(
+		string clusterId,
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default)
+	{
+		return await _resources.GetAsync<Cluster>(clusterId, @namespace ?? _options.DefaultNamespace, cancellationToken);
+	}
+
 	public async Task<object> GetStatusAsync(string clusterName, TimeSpan? waitTimeout = null, CancellationToken cancellationToken = default)
 	{
 		// Retrieve cluster resource and return its status object

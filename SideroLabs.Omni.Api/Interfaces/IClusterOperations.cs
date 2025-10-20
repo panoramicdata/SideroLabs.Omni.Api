@@ -15,6 +15,18 @@ public interface IClusterOperations
 		CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Gets a specific cluster by ID
+	/// </summary>
+	/// <param name="clusterId">Cluster ID</param>
+	/// <param name="namespace">Resource namespace (default: "default")</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>The cluster resource</returns>
+	Task<Cluster> GetAsync(
+		string clusterId,
+		string? @namespace = "default",
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Gets cluster status information. Returns an implementation-specific status object.
 	/// </summary>
 	Task<object> GetStatusAsync(

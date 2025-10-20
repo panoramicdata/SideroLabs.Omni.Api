@@ -17,8 +17,8 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 	[Fact]
 	public async Task ListServiceAccounts_ReturnsAccounts()
 	{
-		// Arrange & Act
-		var accounts = await OmniClient.Management.ListServiceAccountsAsync(CancellationToken);
+		// Arrange & Act - NEW API!
+		var accounts = await OmniClient.ServiceAccounts.ListAsync(CancellationToken);
 
 		// Assert
 		Assert.NotNull(accounts);
@@ -46,10 +46,10 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 	[Fact]
 	public async Task ListServiceAccounts_MultipleCallsConsistent()
 	{
-		// Arrange & Act - Call twice
-		var accounts1 = await OmniClient.Management.ListServiceAccountsAsync(CancellationToken);
+		// Arrange & Act - Call twice - NEW API!
+		var accounts1 = await OmniClient.ServiceAccounts.ListAsync(CancellationToken);
 		await Task.Delay(100); // Small delay
-		var accounts2 = await OmniClient.Management.ListServiceAccountsAsync(CancellationToken);
+		var accounts2 = await OmniClient.ServiceAccounts.ListAsync(CancellationToken);
 
 		// Assert - Results should be consistent
 		Assert.Equal(accounts1.Count, accounts2.Count);
@@ -68,10 +68,10 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 
 		// This test would require:
 		// 1. Generating a valid PGP key pair
-		// 2. Creating a service account
-		// 3. Listing to verify it exists
-		// 4. Renewing with a new key
-		// 5. Destroying it
+		// 2. Creating a service account - NEW API: client.ServiceAccounts.CreateAsync()
+		// 3. Listing to verify it exists - NEW API: client.ServiceAccounts.ListAsync()
+		// 4. Renewing with a new key - NEW API: client.ServiceAccounts.RenewAsync()
+		// 5. Destroying it - NEW API: client.ServiceAccounts.DestroyAsync()
 		// 6. Verifying it's gone
 
 		// For now, skip since this requires PGP key generation
@@ -88,15 +88,17 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 
 		// Would need to:
 		// var (publicKey, _) = GenerateTestPgpKeyPair();
-		// var keyId = await OmniClient.Management.CreateServiceAccountAsync(publicKey, true, CancellationToken);
+		// NEW API!
+		// var keyId = await OmniClient.ServiceAccounts.CreateAsync(publicKey, true, CancellationToken);
 		// Assert.NotEmpty(keyId);
-		// Cleanup: await OmniClient.Management.DestroyServiceAccountAsync(accountName, CancellationToken);
+		// Cleanup: await OmniClient.ServiceAccounts.DestroyAsync(accountName, CancellationToken);
 	}
 
 	[Fact(Skip = "Requires valid service account - manual test only")]
 	public async Task RenewServiceAccount_ValidAccount_ReturnsNewKeyId()
 	{
 		// Would need an existing service account to renew
+		// NEW API: await OmniClient.ServiceAccounts.RenewAsync(...)
 		Logger.LogInformation("Renew test requires existing service account");
 	}
 
@@ -104,6 +106,7 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 	public async Task DestroyServiceAccount_ExistingAccount_Succeeds()
 	{
 		// Would need a test service account to destroy
+		// NEW API: await OmniClient.ServiceAccounts.DestroyAsync(...)
 		Logger.LogInformation("Destroy test requires existing service account");
 	}
 
@@ -118,9 +121,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		// Arrange
 		var invalidKey = "not a valid PGP key";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.CreateServiceAccountAsync(invalidKey, CancellationToken));
+			await OmniClient.ServiceAccounts.CreateAsync(invalidKey, cancellationToken: CancellationToken));
 
 		Assert.Equal(StatusCode.InvalidArgument, exception.StatusCode);
 		Logger.LogInformation("✓ Invalid PGP key correctly rejected: {Detail}", exception.Status.Detail);
@@ -137,9 +140,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		// Arrange
 		var emptyKey = "";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.CreateServiceAccountAsync(emptyKey, CancellationToken));
+			await OmniClient.ServiceAccounts.CreateAsync(emptyKey, cancellationToken: CancellationToken));
 
 		Assert.Equal(StatusCode.InvalidArgument, exception.StatusCode);
 		Logger.LogInformation("✓ Empty PGP key correctly rejected");
@@ -156,9 +159,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		// Arrange
 		var nonExistentAccount = $"non-existent-account-{Guid.NewGuid():N}";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.DestroyServiceAccountAsync(nonExistentAccount, CancellationToken));
+			await OmniClient.ServiceAccounts.DestroyAsync(nonExistentAccount, CancellationToken));
 
 		Assert.Equal(StatusCode.NotFound, exception.StatusCode);
 		Logger.LogInformation("✓ Non-existent account correctly returns NotFound");

@@ -7,7 +7,6 @@ using SideroLabs.Omni.Api.Resources;
 using SideroLabs.Omni.Api.Security;
 using SideroLabs.Omni.Api.Services;
 using SideroLabs.Omni.Api.Validation;
-using static Omni.Resources.ResourceService;
 
 namespace SideroLabs.Omni.Api;
 
@@ -31,9 +30,34 @@ public class OmniClient : IOmniClient
 	// Lazy-loaded services
 	private IManagementService? _managementService;
 	private IOmniResourceClient? _resourceClient;
+
+	// Resource-specific operations
 	private IClusterOperations? _clusterOperations;
-	private ITemplateOperations? _templateOperations;
+	private IMachineOperations? _machineOperations;
+	private IClusterMachineOperations? _clusterMachineOperations;
+	private IMachineSetOperations? _machineSetOperations;
+	private IMachineSetNodeOperations? _machineSetNodeOperations;
+	private IMachineClassOperations? _machineClassOperations;
+	private IConfigPatchOperations? _configPatchOperations;
+	private IExtensionsConfigurationOperations? _extensionsConfigurationOperations;
+	private ITalosConfigOperations? _talosConfigOperations;
+	private ILoadBalancerOperations? _loadBalancerOperations;
+	private IControlPlaneOperations? _controlPlaneOperations;
+	private IKubernetesNodeOperations? _kubernetesNodeOperations;
+	private IIdentityOperations? _identityOperations;
 	private IUserManagement? _userManagement;
+	private ITemplateOperations? _templateOperations;
+
+	// Management services
+	private IKubeConfigService? _kubeConfigService;
+	private ITalosConfigService? _talosConfigService;
+	private IOmniConfigService? _omniConfigService;
+	private IServiceAccountService? _serviceAccountService;
+	private IValidationService? _validationService;
+	private IKubernetesService? _kubernetesService;
+	private ISchematicService? _schematicService;
+	private IMachineService? _machineService;
+	private ISupportService? _supportService;
 
 	// JSON handling
 	internal static readonly JsonSerializerOptions JsonSerializerOptions = new()
@@ -67,11 +91,7 @@ public class OmniClient : IOmniClient
 		_logger.LogDebug("Initialized Omni gRPC client for endpoint: {BaseUrl}", _options.BaseUrl);
 	}
 
-	/// <summary>
-	/// Gets the Management Service for administrative and operational tasks
-	/// This is the primary (and only confirmed working) service interface provided by Omni SaaS
-	/// </summary>
-	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
+	// === Low-Level Resource Access ===
 
 	/// <summary>
 	/// Gets the Resource Client for COSI resource operations
@@ -79,39 +99,53 @@ public class OmniClient : IOmniClient
 	/// </summary>
 	public IOmniResourceClient Resources => _resourceClient ??= new CosiStateClientService(_channel, _logger, _options.IsReadOnly, _options, _authenticator);
 
-	/// <summary>
-	/// Gets cluster operations
-	/// </summary>
-	public IClusterOperations Clusters => _clusterOperations ??= new ClusterOperations(Resources, _options);
+	// === Resource-Specific Operations ===
 
-	/// <summary>
-	/// Gets template operations
-	/// </summary>
+	public IClusterOperations Clusters => _clusterOperations ??= new ClusterOperations(Resources, _options);
+	public IMachineOperations Machines => _machineOperations ??= new MachineOperations(Resources, _options);
+	public IClusterMachineOperations ClusterMachines => _clusterMachineOperations ??= new ClusterMachineOperations(Resources, _options);
+	public IMachineSetOperations MachineSets => _machineSetOperations ??= new MachineSetOperations(Resources, _options);
+	public IMachineSetNodeOperations MachineSetNodes => _machineSetNodeOperations ??= new MachineSetNodeOperations(Resources, _options);
+	public IMachineClassOperations MachineClasses => _machineClassOperations ??= new MachineClassOperations(Resources, _options);
+	public IConfigPatchOperations ConfigPatches => _configPatchOperations ??= new ConfigPatchOperations(Resources, _options);
+	public IExtensionsConfigurationOperations ExtensionsConfigurations => _extensionsConfigurationOperations ??= new ExtensionsConfigurationOperations(Resources, _options);
+	public ITalosConfigOperations TalosConfigs => _talosConfigOperations ??= new TalosConfigOperations(Resources, _options);
+	public ILoadBalancerOperations LoadBalancers => _loadBalancerOperations ??= new LoadBalancerOperations(Resources, _options);
+	public IControlPlaneOperations ControlPlanes => _controlPlaneOperations ??= new ControlPlaneOperations(Resources, _options);
+	public IKubernetesNodeOperations KubernetesNodes => _kubernetesNodeOperations ??= new KubernetesNodeOperations(Resources, _options);
+	public IIdentityOperations Identities => _identityOperations ??= new IdentityOperations(Resources, _options);
+	public IUserManagement Users => _userManagement ??= new UserManagement(Resources, _logger);
 	public ITemplateOperations Templates => _templateOperations ??= new TemplateOperations(Resources, _logger);
 
-	/// <summary>
-	/// Gets user management operations
-	/// </summary>
-	public IUserManagement Users => _userManagement ??= new UserManagement(Resources, _logger);
+	// === Management Services ===
+
+	public IKubeConfigService KubeConfig => _kubeConfigService ??= new KubeConfigService(_options, _channel, _authenticator);
+	public ITalosConfigService TalosConfig => _talosConfigService ??= new TalosConfigService(_options, _channel, _authenticator);
+	public IOmniConfigService OmniConfig => _omniConfigService ??= new OmniConfigService(_options, _channel, _authenticator);
+	public IServiceAccountService ServiceAccounts => _serviceAccountService ??= new ServiceAccountService(_options, _channel, _authenticator);
+	public IValidationService Validation => _validationService ??= new ValidationService(_options, _channel, _authenticator);
+	public IKubernetesService Kubernetes => _kubernetesService ??= new KubernetesService(_options, _channel, _authenticator);
+	public ISchematicService Schematics => _schematicService ??= new SchematicService(_options, _channel, _authenticator);
+	public IMachineService MachineManagement => _machineService ??= new MachineService(_options, _channel, _authenticator);
+	public ISupportService Support => _supportService ??= new SupportService(_options, _channel, _authenticator);
+
+	// === Legacy (Deprecated) ===
 
 	/// <summary>
-	/// Gets the gRPC endpoint URL
+	/// Gets the Management Service for administrative and operational tasks
 	/// </summary>
+	/// <remarks>
+	/// ⚠️ DEPRECATED: Use specific services like KubeConfig, ServiceAccounts, etc. instead.
+	/// This property is maintained for backward compatibility but will be removed in a future version.
+	/// </remarks>
+	[Obsolete("Use specific services like KubeConfig, ServiceAccounts, Validation, etc. instead of the monolithic Management service.")]
+	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
+
+	// === Client Properties ===
+
 	public Uri BaseUrl => _options.BaseUrl;
-
-	/// <summary>
-	/// Gets whether TLS is enabled
-	/// </summary>
 	public bool UseTls => _options.UseTls;
-
-	/// <summary>
-	/// Gets whether the client is in read-only mode
-	/// </summary>
 	public bool IsReadOnly => _options.IsReadOnly;
-
-	/// <summary>
-	/// Gets the authentication identity if available
-	/// </summary>
 	public string? Identity => _authenticator?.Identity;
 
 	private void ValidateOptions()

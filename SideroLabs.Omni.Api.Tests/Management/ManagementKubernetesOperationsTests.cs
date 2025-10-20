@@ -21,10 +21,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 	[InlineData("v1.31.0")]
 	public async Task KubernetesUpgradePreChecks_ValidVersion_ReturnsResult(string version)
 	{
-		// Arrange & Act
+		// Arrange & Act - NEW API!
 		var kubernetesUpgradePreCheckResult = await OmniClient
-			.Management
-			.KubernetesUpgradePreChecksAsync(
+			.Kubernetes
+			.UpgradePreChecksAsync(
 				version,
 				CancellationToken);
 
@@ -44,10 +44,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 	[InlineData("1.29.0")] // Missing 'v' prefix
 	public async Task KubernetesUpgradePreChecks_InvalidVersion_ReturnsNotOk(string version)
 	{
-		// Arrange & Act
+		// Arrange & Act - NEW API!
 		try
 		{
-			var kubernetesUpgradePreCheckResult = await OmniClient.Management.KubernetesUpgradePreChecksAsync(
+			var kubernetesUpgradePreCheckResult = await OmniClient.Kubernetes.UpgradePreChecksAsync(
 				version,
 				CancellationToken);
 
@@ -73,9 +73,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Arrange
 		var emptyVersion = "";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		await Assert.ThrowsAnyAsync<Exception>(async () =>
-			await OmniClient.Management.KubernetesUpgradePreChecksAsync(emptyVersion, CancellationToken));
+			await OmniClient.Kubernetes.UpgradePreChecksAsync(emptyVersion, CancellationToken));
 
 		Logger.LogInformation("✓ Empty version correctly rejected");
 	}
@@ -86,10 +86,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Arrange
 		var version = "v1.29.0";
 
-		// Act - Call twice
-		var result1 = await OmniClient.Management.KubernetesUpgradePreChecksAsync(version, CancellationToken);
+		// Act - Call twice - NEW API!
+		var result1 = await OmniClient.Kubernetes.UpgradePreChecksAsync(version, CancellationToken);
 		await Task.Delay(100); // Small delay
-		var result2 = await OmniClient.Management.KubernetesUpgradePreChecksAsync(version, CancellationToken);
+		var result2 = await OmniClient.Kubernetes.UpgradePreChecksAsync(version, CancellationToken);
 
 		// Assert - Results should be consistent
 		Assert.Equal(result1.Ok, result2.Ok);
@@ -110,8 +110,8 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		var syncCount = 0;
 		var skippedCount = 0;
 
-		// Act
-		await foreach (var result in OmniClient.Management.StreamKubernetesSyncManifestsAsync(
+		// Act - NEW API!
+		await foreach (var result in OmniClient.Kubernetes.StreamSyncManifestsAsync(
 			dryRun: true,
 			cancellationToken: cts.Token))
 		{
@@ -157,10 +157,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 		var syncCount = 0;
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		try
 		{
-			await foreach (var result in OmniClient.Management.StreamKubernetesSyncManifestsAsync(
+			await foreach (var result in OmniClient.Kubernetes.StreamSyncManifestsAsync(
 				dryRun: true,
 				cancellationToken: cts.Token))
 			{
@@ -182,12 +182,12 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		var version = "v1.29.0";
 		var tasks = new List<Task<KubernetesUpgradePreCheckResult>>();
 
-		// Act - Make multiple concurrent calls
+		// Act - Make multiple concurrent calls - NEW API!
 		for (int i = 0; i < 5; i++)
 		{
 			tasks.Add(OmniClient
-				.Management
-				.KubernetesUpgradePreChecksAsync(version, CancellationToken)
+				.Kubernetes
+				.UpgradePreChecksAsync(version, CancellationToken)
 				);
 		}
 
@@ -206,10 +206,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Arrange - Try to "upgrade" to an old version
 		var oldVersion = "v1.20.0";
 
-		// Act
+		// Act - NEW API!
 		var kubernetesUpgradePreCheckResult = await OmniClient
-			.Management
-			.KubernetesUpgradePreChecksAsync(
+			.Kubernetes
+			.UpgradePreChecksAsync(
 				oldVersion,
 				CancellationToken);
 

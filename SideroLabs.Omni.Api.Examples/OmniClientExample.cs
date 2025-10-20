@@ -59,31 +59,31 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("=== Configuration Management ===");
 
-		// Get kubeconfig for cluster access
+		// Get kubeconfig for cluster access - NEW API!
 		var kubeconfig = await client
-				.Management
-				.GetKubeConfigAsync(
+				.KubeConfig
+				.GetAsync(
 					true,
 					TimeSpan.FromHours(24),
 					"automation",
 					["system:masters"],
-					cancellationToken);
+					cancellationToken: cancellationToken);
 
 		Console.WriteLine($"Retrieved kubeconfig ({kubeconfig.Length} characters)");
 		File.WriteAllText("kubeconfig.yaml", kubeconfig);
 
-		// Get talosconfig for Talos cluster access
+		// Get talosconfig for Talos cluster access - NEW API!
 		var talosconfig = await client
-			.Management
-			.GetTalosConfigAsync(
+			.TalosConfig
+			.GetAsync(
 				true,
-				cancellationToken);
+				cancellationToken: cancellationToken);
 
 		Console.WriteLine($"Retrieved talosconfig ({talosconfig.Length} characters)");
 		File.WriteAllText("talosconfig.yaml", talosconfig);
 
-		// Get omniconfig for omnictl
-		var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+		// Get omniconfig for omnictl - NEW API!
+		var omniconfig = await client.OmniConfig.GetAsync(cancellationToken);
 		Console.WriteLine($"Retrieved omniconfig ({omniconfig.Length} characters)");
 		File.WriteAllText("omniconfig.yaml", omniconfig);
 	}
@@ -95,7 +95,8 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n=== Service Account Management ===");
 
-		var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+		// NEW API!
+		var serviceAccounts = await client.ServiceAccounts.ListAsync(cancellationToken);
 		Console.WriteLine($"Found {serviceAccounts.Count} service accounts");
 
 		foreach (var account in serviceAccounts)
@@ -119,7 +120,7 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n=== Operational Tasks ===");
 
-		// Validate a configuration file
+		// Validate a configuration file - NEW API!
 		var sampleConfig = """
 			apiVersion: v1
 			kind: ConfigMap
@@ -130,14 +131,14 @@ public static class OmniClientExample
 			""";
 
 		await client
-			.Management
+			.Validation
 			.ValidateConfigAsync(sampleConfig, cancellationToken);
 		Console.WriteLine("Configuration validation successful");
 
-		// Check Kubernetes upgrade readiness
+		// Check Kubernetes upgrade readiness - NEW API!
 		var upgradePreCheckResult = await client
-			.Management
-			.KubernetesUpgradePreChecksAsync(
+			.Kubernetes
+			.UpgradePreChecksAsync(
 				"v1.29.0",
 				cancellationToken);
 
@@ -193,7 +194,8 @@ public static class OmniClientExample
 		var machineId = "machine-001"; // Replace with actual machine ID
 		Console.WriteLine($"Streaming logs from machine: {machineId}");
 
-		await foreach (var logData in client.Management.StreamMachineLogsAsync(
+		// NEW API!
+		await foreach (var logData in client.MachineManagement.StreamLogsAsync(
 			machineId,
 			follow: true,
 			tailLines: 50,
@@ -218,7 +220,8 @@ public static class OmniClientExample
 		Console.WriteLine("\n=== Kubernetes Manifest Sync ===");
 		Console.WriteLine("Streaming manifest sync results (dry run):");
 
-		await foreach (var syncResult in client.Management.StreamKubernetesSyncManifestsAsync(
+		// NEW API!
+		await foreach (var syncResult in client.Kubernetes.StreamSyncManifestsAsync(
 			dryRun: true,
 			cancellationToken))
 		{
@@ -292,17 +295,17 @@ public static class OmniClientExample
 	/// </summary>
 	private static async Task DemonstrateServiceAccountLifecycle(OmniClient client, string pgpPublicKey, CancellationToken cancellationToken)
 	{
-		// Create a new service account
+		// Create a new service account - NEW API!
 		Console.WriteLine("Creating service account...");
-		var publicKeyId = await client.Management.CreateServiceAccountAsync(
+		var publicKeyId = await client.ServiceAccounts.CreateAsync(
 			armoredPgpPublicKey: pgpPublicKey,
 			useUserRole: true, // Use the role of the creating user
 			cancellationToken: cancellationToken);
 
 		Console.WriteLine($"✅ Created service account with public key ID: {publicKeyId}");
 
-		// List service accounts to see the new one
-		var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+		// List service accounts to see the new one - NEW API!
+		var serviceAccounts = await client.ServiceAccounts.ListAsync(cancellationToken);
 		var newAccount = serviceAccounts.FirstOrDefault(sa =>
 			sa.PgpPublicKeys.Any(key => key.Id == publicKeyId));
 
@@ -320,18 +323,18 @@ public static class OmniClientExample
 		Console.WriteLine($"Found new service account: {account.Name}");
 		Console.WriteLine($"  Role: {account.Role}");
 
-		// Renew the service account with a new key
+		// Renew the service account with a new key - NEW API!
 		Console.WriteLine("Renewing service account...");
-		var newPublicKeyId = await client.Management.RenewServiceAccountAsync(
+		var newPublicKeyId = await client.ServiceAccounts.RenewAsync(
 			name: account.Name,
 			armoredPgpPublicKey: pgpPublicKey, // In practice, use a new key
 			cancellationToken: cancellationToken);
 
 		Console.WriteLine($"✅ Renewed service account with new public key ID: {newPublicKeyId}");
 
-		// Clean up - destroy the service account
-		Console.WriteLine("Cleaning up service account...");
-		await client.Management.DestroyServiceAccountAsync(
+		// Clean up - destroy the service account - NEW API!
+		Console.WriteLine("Cleaning up - destroying service account...");
+		await client.ServiceAccounts.DestroyAsync(
 			name: account.Name,
 			cancellationToken: cancellationToken);
 
@@ -377,10 +380,10 @@ public static class OmniClientExample
 	/// </summary>
 	private static async Task CreateAndDisplaySchematic(OmniClient client, CancellationToken cancellationToken)
 	{
-		// Create a schematic for provisioning machines with all available options
+		// Create a schematic for provisioning machines with all available options - NEW API!
 		var schematicResult = await client
-			.Management
-			.CreateSchematicAsync(
+			.Schematics
+			.CreateAsync(
 				extensions:
 				[
 					"siderolabs/iscsi-tools",        // iSCSI storage support
@@ -481,14 +484,15 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n✅ Read operations (allowed):");
 
-		var serviceAccounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+		// NEW API!
+		var serviceAccounts = await client.ServiceAccounts.ListAsync(cancellationToken);
 		Console.WriteLine($"  - Listed {serviceAccounts.Count} service accounts");
 
-		var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+		var omniconfig = await client.OmniConfig.GetAsync(cancellationToken);
 		Console.WriteLine($"  - Retrieved omniconfig ({omniconfig.Length} characters)");
 
 		var sampleConfig = "apiVersion: v1\nkind: Pod";
-		await client.Management.ValidateConfigAsync(sampleConfig, cancellationToken);
+		await client.Validation.ValidateConfigAsync(sampleConfig, cancellationToken);
 		Console.WriteLine("  - Validated configuration");
 	}
 
@@ -499,14 +503,15 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n❌ Write operations (blocked in read-only mode):");
 
+		// NEW API!
 		await TryWriteOperation("CreateServiceAccountAsync",
-			() => client.Management.CreateServiceAccountAsync("test-key", cancellationToken));
+			() => client.ServiceAccounts.CreateAsync("test-key", cancellationToken: cancellationToken));
 
 		await TryWriteOperation("CreateSchematicAsync",
-			() => client.Management.CreateSchematicAsync(["test-extension"], cancellationToken));
+			() => client.Schematics.CreateAsync(["test-extension"], cancellationToken: cancellationToken));
 
 		await TryWriteOperation("GetKubeConfigAsync(serviceAccount=true)",
-			() => client.Management.GetKubeConfigAsync(serviceAccount: true, cancellationToken));
+			() => client.KubeConfig.GetAsync(serviceAccount: true, cancellationToken: cancellationToken));
 	}
 
 	/// <summary>
@@ -591,13 +596,14 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n1️⃣ Configuration Management:");
 
-		var kubeconfig = await client.Management.GetKubeConfigAsync(cancellationToken: cancellationToken);
+		// NEW API!
+		var kubeconfig = await client.KubeConfig.GetAsync(cancellationToken: cancellationToken);
 		Console.WriteLine($"   ✅ Kubeconfig: {kubeconfig.Length} characters");
 
-		var talosconfig = await client.Management.GetTalosConfigAsync(cancellationToken: cancellationToken);
+		var talosconfig = await client.TalosConfig.GetAsync(cancellationToken: cancellationToken);
 		Console.WriteLine($"   ✅ Talosconfig: {talosconfig.Length} characters");
 
-		var omniconfig = await client.Management.GetOmniConfigAsync(cancellationToken);
+		var omniconfig = await client.OmniConfig.GetAsync(cancellationToken);
 		Console.WriteLine($"   ✅ Omniconfig: {omniconfig.Length} characters");
 	}
 
@@ -608,7 +614,8 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n2️⃣ Service Account Management:");
 
-		var accounts = await client.Management.ListServiceAccountsAsync(cancellationToken);
+		// NEW API!
+		var accounts = await client.ServiceAccounts.ListAsync(cancellationToken);
 		Console.WriteLine($"   ✅ Service Accounts: {accounts.Count} found");
 	}
 
@@ -619,7 +626,8 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n3️⃣ Configuration Validation:");
 
-		await client.Management.ValidateConfigAsync("apiVersion: v1\nkind: Pod", cancellationToken);
+		// NEW API!
+		await client.Validation.ValidateConfigAsync("apiVersion: v1\nkind: Pod", cancellationToken);
 		Console.WriteLine("   ✅ Configuration validation successful");
 	}
 
@@ -630,7 +638,8 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n4️⃣ Kubernetes Operations:");
 
-		var upgradePreCheckResult = await client.Management.KubernetesUpgradePreChecksAsync(
+		// NEW API!
+		var upgradePreCheckResult = await client.Kubernetes.UpgradePreChecksAsync(
 			"v1.29.0", cancellationToken);
 		Console.WriteLine($"   ✅ Upgrade check: {(upgradePreCheckResult.Ok ? "Ready" : "Not ready")} - {upgradePreCheckResult.Reason}");
 	}
@@ -642,7 +651,8 @@ public static class OmniClientExample
 	{
 		Console.WriteLine("\n5️⃣ Machine Provisioning:");
 
-		var schematicResult = await client.Management.CreateSchematicAsync(
+		// NEW API!
+		var schematicResult = await client.Schematics.CreateAsync(
 			extensions: ["siderolabs/util-linux-tools"],
 			cancellationToken: cancellationToken);
 		Console.WriteLine($"   ✅ Schematic created: {schematicResult.SchematicId}");

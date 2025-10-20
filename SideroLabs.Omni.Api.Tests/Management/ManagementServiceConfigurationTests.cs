@@ -17,8 +17,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetKubeConfig_Default_ReturnsValidConfig()
 	{
-		// Arrange & Act
-		var kubeconfig = await OmniClient.Management.GetKubeConfigAsync(CancellationToken);
+		// Arrange & Act - NEW API!
+		var kubeconfig = await OmniClient.KubeConfig.GetAsync(CancellationToken);
 
 		// Assert
 		Assert.NotNull(kubeconfig);
@@ -33,8 +33,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetKubeConfig_WithServiceAccount_ReturnsConfigWithToken()
 	{
-		// Arrange & Act
-		var kubeconfig = await OmniClient.Management.GetKubeConfigAsync(
+		// Arrange & Act - NEW API!
+		var kubeconfig = await OmniClient.KubeConfig.GetAsync(
 			serviceAccount: true,
 			serviceAccountTtl: TimeSpan.FromHours(24),
 			cancellationToken: CancellationToken);
@@ -52,8 +52,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		// Arrange
 		var serviceAccountUser = "test-user";
 
-		// Act
-		var kubeconfig = await OmniClient.Management.GetKubeConfigAsync(
+		// Act - NEW API!
+		var kubeconfig = await OmniClient.KubeConfig.GetAsync(
 			serviceAccount: true,
 			serviceAccountTtl: TimeSpan.FromHours(1),
 			serviceAccountUser: serviceAccountUser,
@@ -69,8 +69,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetTalosConfig_Default_ReturnsValidConfig()
 	{
-		// Arrange & Act
-		var talosconfig = await OmniClient.Management.GetTalosConfigAsync(CancellationToken);
+		// Arrange & Act - NEW API!
+		var talosconfig = await OmniClient.TalosConfig.GetAsync(cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotNull(talosconfig);
@@ -83,8 +83,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetTalosConfig_Raw_ReturnsAdminConfig()
 	{
-		// Arrange & Act
-		var talosconfig = await OmniClient.Management.GetTalosConfigAsync(
+		// Arrange & Act - NEW API!
+		var talosconfig = await OmniClient.TalosConfig.GetAsync(
 			raw: true,
 			cancellationToken: CancellationToken);
 
@@ -98,8 +98,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetTalosConfig_WithBreakGlass_ReturnsOperatorConfig()
 	{
-		// Arrange & Act
-		var talosconfig = await OmniClient.Management.GetTalosConfigAsync(
+		// Arrange & Act - NEW API!
+		var talosconfig = await OmniClient.TalosConfig.GetAsync(
 			raw: false,
 			breakGlass: true,
 			cancellationToken: CancellationToken);
@@ -113,8 +113,8 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 	[Fact]
 	public async Task GetOmniConfig_ReturnsValidConfig()
 	{
-		// Arrange & Act
-		var omniconfig = await OmniClient.Management.GetOmniConfigAsync(CancellationToken);
+		// Arrange & Act - NEW API!
+		var omniconfig = await OmniClient.OmniConfig.GetAsync(CancellationToken);
 
 		// Assert
 		Assert.NotNull(omniconfig);
@@ -136,8 +136,8 @@ machine:
     disk: /dev/sda
 ";
 
-		// Act & Assert - Should not throw
-		await OmniClient.Management.ValidateConfigAsync(validConfig, CancellationToken);
+		// Act & Assert - NEW API! - Should not throw
+		await OmniClient.Validation.ValidateConfigAsync(validConfig, CancellationToken);
 		
 		Logger.LogInformation("✓ Valid Talos config validated successfully");
 	}
@@ -148,9 +148,9 @@ machine:
 		// Arrange
 		var invalidConfig = "invalid yaml: [[[[";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.ValidateConfigAsync(invalidConfig, CancellationToken));
+			await OmniClient.Validation.ValidateConfigAsync(invalidConfig, CancellationToken));
 
 		Logger.LogInformation("✓ Invalid YAML rejected: {StatusCode}", exception.StatusCode);
 	}
@@ -161,9 +161,9 @@ machine:
 		// Arrange
 		var emptyConfig = "";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.ValidateConfigAsync(emptyConfig, CancellationToken));
+			await OmniClient.Validation.ValidateConfigAsync(emptyConfig, CancellationToken));
 
 		Logger.LogInformation("✓ Empty config rejected");
 	}
@@ -185,8 +185,8 @@ machine:
   ""age"": 30
 }";
 
-		// Act
-		var result = await OmniClient.Management.ValidateJsonSchemaAsync(data, schema, CancellationToken);
+		// Act - NEW API!
+		var result = await OmniClient.Validation.ValidateJsonSchemaAsync(data, schema, CancellationToken);
 
 		// Assert
 		Assert.True(result.IsValid);
@@ -211,8 +211,8 @@ machine:
   ""age"": ""not a number""
 }";
 
-		// Act
-		var result = await OmniClient.Management.ValidateJsonSchemaAsync(data, schema, CancellationToken);
+		// Act - NEW API!
+		var result = await OmniClient.Validation.ValidateJsonSchemaAsync(data, schema, CancellationToken);
 
 		// Assert
 		Assert.False(result.IsValid);
@@ -242,7 +242,7 @@ machine:
 }";
 
 		// Act
-		var result = await OmniClient.Management.ValidateJsonSchemaAsync(data, schema, CancellationToken);
+		var result = await OmniClient.Validation.ValidateJsonSchemaAsync(data, schema, CancellationToken);
 
 		// Assert
 		Assert.False(result.IsValid);
@@ -280,7 +280,7 @@ machine:
 }";
 
 		// Act
-		var result = await OmniClient.Management.ValidateJsonSchemaAsync(data, schema, CancellationToken);
+		var result = await OmniClient.Validation.ValidateJsonSchemaAsync(data, schema, CancellationToken);
 
 		// Assert
 		Assert.False(result.IsValid);
@@ -320,7 +320,7 @@ machine:
 }";
 
 		// Act
-		var result = await OmniClient.Management.ValidateJsonSchemaAsync(data, schema, CancellationToken);
+		var result = await OmniClient.Validation.ValidateJsonSchemaAsync(data, schema, CancellationToken);
 
 		// Assert
 		Assert.True(result.IsValid);

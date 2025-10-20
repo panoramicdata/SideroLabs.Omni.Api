@@ -23,9 +23,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			return;
 		}
 
-		// Arrange & Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
-			CancellationToken);
+		// Arrange & Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -53,10 +53,10 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			"siderolabs/util-linux-tools"
 		};
 
-		// Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
-			extensions,
-			CancellationToken);
+		// Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
+			extensions: extensions,
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -83,11 +83,11 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			"panic=10"
 		};
 
-		// Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
+		// Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
 			extensions: null,
 			extraKernelArgs: kernelArgs,
-			CancellationToken);
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -113,12 +113,12 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			{ 0x0b, "datacenter-west" }
 		};
 
-		// Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
+		// Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: metaValues,
-			CancellationToken);
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -141,17 +141,17 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var kernelArgs = new[] { "console=ttyS0" };
 		var metaValues = new Dictionary<uint, string> { { 0x0a, "test" } };
 
-		// Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
-			extensions,
-			kernelArgs,
-			metaValues,
+		// Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
+			extensions: extensions,
+			extraKernelArgs: kernelArgs,
+			metaValues: metaValues,
 			talosVersion: "v1.6.0",
 			mediaId: null,
 			secureBoot: false,
 			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,
 			joinToken: null,
-			CancellationToken);
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -171,8 +171,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			return;
 		}
 
-		// Arrange & Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
+		// Arrange & Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: null,
@@ -181,7 +181,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			secureBoot: true,
 			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,
 			joinToken: null,
-			CancellationToken);
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -200,8 +200,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			return;
 		}
 
-		// Arrange & Act
-		var result = await OmniClient.Management.CreateSchematicAsync(
+		// Arrange & Act - NEW API!
+		var result = await OmniClient.Schematics.CreateAsync(
 			extensions: null,
 			extraKernelArgs: null,
 			metaValues: null,
@@ -210,7 +210,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			secureBoot: false,
 			siderolinkGrpcTunnelMode: tunnelMode,
 			joinToken: null,
-			CancellationToken);
+			cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -230,8 +230,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var tokenName = $"test-token-{GenerateUniqueId()}";
 		var expiration = DateTimeOffset.UtcNow.AddHours(24);
 
-		// Act
-		var tokenId = await OmniClient.Management.CreateJoinTokenAsync(
+		// Act - NEW API!
+		var tokenId = await OmniClient.MachineManagement.CreateJoinTokenAsync(
 			tokenName,
 			expiration,
 			CancellationToken);
@@ -258,8 +258,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var tokenName = $"test-short-ttl-{GenerateUniqueId()}";
 		var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
 
-		// Act
-		var tokenId = await OmniClient.Management.CreateJoinTokenAsync(
+		// Act - NEW API!
+		var tokenId = await OmniClient.MachineManagement.CreateJoinTokenAsync(
 			tokenName,
 			expiration,
 			CancellationToken);
@@ -281,9 +281,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var tokenName = "test-expired";
 		var pastExpiration = DateTimeOffset.UtcNow.AddHours(-1); // In the past
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		var exception = await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.CreateJoinTokenAsync(tokenName, pastExpiration, CancellationToken));
+			await OmniClient.MachineManagement.CreateJoinTokenAsync(tokenName, pastExpiration, CancellationToken));
 
 		Assert.Equal(StatusCode.InvalidArgument, exception.StatusCode);
 		Logger.LogInformation("✓ Past expiration time correctly rejected");
@@ -301,9 +301,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var emptyName = "";
 		var expiration = DateTimeOffset.UtcNow.AddHours(1);
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		await Assert.ThrowsAnyAsync<Exception>(async () =>
-			await OmniClient.Management.CreateJoinTokenAsync(emptyName, expiration, CancellationToken));
+			await OmniClient.MachineManagement.CreateJoinTokenAsync(emptyName, expiration, CancellationToken));
 
 		Logger.LogInformation("✓ Empty token name correctly rejected");
 	}
@@ -314,7 +314,8 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		// This test requires a valid join token created first
 		// var joinToken = "valid-token-id";
 
-		// var config = await OmniClient.Management.GetMachineJoinConfigAsync(
+		// NEW API!
+		// var config = await OmniClient.MachineManagement.GetJoinConfigAsync(
 		//     useGrpcTunnel: true,
 		//     joinToken: joinToken,
 		//     CancellationToken);
@@ -332,9 +333,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		// Arrange
 		var invalidToken = "invalid-token-that-does-not-exist";
 
-		// Act & Assert
+		// Act & Assert - NEW API!
 		await Assert.ThrowsAsync<RpcException>(async () =>
-			await OmniClient.Management.GetMachineJoinConfigAsync(
+			await OmniClient.MachineManagement.GetJoinConfigAsync(
 				useGrpcTunnel: true,
 				joinToken: invalidToken,
 				CancellationToken));

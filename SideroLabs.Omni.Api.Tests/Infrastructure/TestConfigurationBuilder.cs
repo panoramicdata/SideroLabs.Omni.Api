@@ -97,15 +97,18 @@ public class TestConfigurationBuilder(ILogger logger)
 	{
 		configuration.GetSection("Omni").Bind(options);
 
-		// Extract PGP key from test file for non-destructive testing
-		var testPgpKey = ExtractTestPgpKey();
-		if (testPgpKey.HasValue)
+		// Only try to extract PGP key from test file if no credentials are configured
+		if (string.IsNullOrWhiteSpace(options.AuthToken) && 
+		    string.IsNullOrWhiteSpace(options.PgpPrivateKey) &&
+		    string.IsNullOrWhiteSpace(options.PgpKeyFilePath))
 		{
-			options.Identity = testPgpKey.Value.Identity;
-			options.PgpPrivateKey = testPgpKey.Value.PgpKey;
-			// Clear other auth methods since we're using direct key content
-			options.PgpKeyFilePath = null;
-			options.AuthToken = null;
+			// Extract PGP key from test file for non-destructive testing
+			var testPgpKey = ExtractTestPgpKey();
+			if (testPgpKey.HasValue)
+			{
+				options.Identity = testPgpKey.Value.Identity;
+				options.PgpPrivateKey = testPgpKey.Value.PgpKey;
+			}
 		}
 
 		// Set logger for OmniClient

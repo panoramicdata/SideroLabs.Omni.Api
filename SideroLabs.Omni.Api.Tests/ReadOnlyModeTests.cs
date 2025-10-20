@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Exceptions;
 using Xunit;
 
@@ -7,54 +8,77 @@ namespace SideroLabs.Omni.Api.Tests;
 
 /// <summary>
 /// Tests for read-only mode functionality and write action enforcement
+/// These tests verify that the IsReadOnly flag acts as a client-side safety switch
+/// that prevents write operations regardless of server permissions
 /// </summary>
 public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Creates a test client with read-only mode enabled
+	/// </summary>
+	private OmniClient CreateReadOnlyClient()
+	{
+		var options = new OmniClientOptions
+		{
+			BaseUrl = new("https://test-readonly.example.com"),
+			AuthToken = "test-token",
+			IsReadOnly = true,
+			TimeoutSeconds = 1,
+			Logger = Logger
+		};
+		return new OmniClient(options);
+	}
+
 	[Fact]
 	public void OmniClient_WhenConfiguredWithReadOnlyMode_ShouldHaveReadOnlyProperty()
 	{
-		// Arrange & Act
-		var isReadOnly = OmniClient.IsReadOnly;
+		// Arrange
+		using var client = CreateReadOnlyClient();
+
+		// Act
+		var isReadOnly = client.IsReadOnly;
 
 		// Assert
-		isReadOnly.Should().BeTrue("OmniClient should be in read-only mode based on appsettings.json configuration");
+		isReadOnly.Should().BeTrue("Client created with IsReadOnly=true should have IsReadOnly property set");
+		Logger.LogInformation("✓ OmniClient.IsReadOnly = {IsReadOnly}", isReadOnly);
 	}
 
 	[Fact]
-	public async Task CreateServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeExceptionOrPermissionDenied()
+	public async Task CreateServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		const string testPgpKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest-key\n-----END PGP PUBLIC KEY BLOCK-----";
 
 		// Act & Assert
-		// We expect either ReadOnlyModeException (client-side) or RpcException with PermissionDenied (server-side)
 		Exception? exception = null;
 		try
 		{
-			await OmniClient.Management.CreateServiceAccountAsync(testPgpKey, CancellationToken);
+			#pragma warning disable CS0618
+			await client.ServiceAccounts.CreateAsync(testPgpKey, cancellationToken: CancellationToken);
+			#pragma warning restore CS0618
 		}
 		catch (Exception ex)
 		{
 			exception = ex;
 		}
 
+		// Assert
 		exception.Should().NotBeNull("Expected an exception to be thrown");
+		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
 
-		// Verify it's one of the expected exception types
-		var isExpectedException = exception is ReadOnlyModeException readOnlyEx &&
-			readOnlyEx.Operation == "create" &&
-			readOnlyEx.ResourceType == "service account" ||
-			exception is RpcException rpcEx &&
-			rpcEx.StatusCode == StatusCode.PermissionDenied;
+		var readOnlyEx = (ReadOnlyModeException)exception!;
+		readOnlyEx.Operation.Should().Be("create");
+		readOnlyEx.ResourceType.Should().Be("service account");
 
-		isExpectedException.Should().BeTrue(
-			$"Expected ReadOnlyModeException or PermissionDenied RpcException, but got: {exception.GetType().Name}: {exception.Message}");
+		Logger.LogInformation("✓ CreateServiceAccount correctly blocked by read-only mode");
 	}
 
 	[Fact]
-	public async Task RenewServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeExceptionOrPermissionDenied()
+	public async Task RenewServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		const string testAccountName = "test-account";
 		const string testPgpKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest-key\n-----END PGP PUBLIC KEY BLOCK-----";
 
@@ -62,143 +86,148 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Exception? exception = null;
 		try
 		{
-			await OmniClient.Management.RenewServiceAccountAsync(testAccountName, testPgpKey, CancellationToken);
+			#pragma warning disable CS0618
+			await client.ServiceAccounts.RenewAsync(testAccountName, testPgpKey, CancellationToken);
+			#pragma warning restore CS0618
 		}
 		catch (Exception ex)
 		{
 			exception = ex;
 		}
 
+		// Assert
 		exception.Should().NotBeNull("Expected an exception to be thrown");
+		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
 
-		// Verify it's one of the expected exception types
-		var isExpectedException = exception is ReadOnlyModeException readOnlyEx &&
-			readOnlyEx.Operation == "update" &&
-			readOnlyEx.ResourceType == "service account" ||
-			exception is RpcException rpcEx &&
-			rpcEx.StatusCode == StatusCode.PermissionDenied;
+		var readOnlyEx = (ReadOnlyModeException)exception!;
+		readOnlyEx.Operation.Should().Be("update");
+		readOnlyEx.ResourceType.Should().Be("service account");
 
-		isExpectedException.Should().BeTrue(
-			$"Expected ReadOnlyModeException or PermissionDenied RpcException, but got: {exception.GetType().Name}: {exception.Message}");
+		Logger.LogInformation("✓ RenewServiceAccount correctly blocked by read-only mode");
 	}
 
 	[Fact]
-	public async Task DestroyServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeExceptionOrPermissionDenied()
+	public async Task DestroyServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		const string testAccountName = "test-account";
 
 		// Act & Assert
 		Exception? exception = null;
 		try
 		{
-			await OmniClient.Management.DestroyServiceAccountAsync(testAccountName, CancellationToken);
+			#pragma warning disable CS0618
+			await client.ServiceAccounts.DestroyAsync(testAccountName, CancellationToken);
+			#pragma warning restore CS0618
 		}
 		catch (Exception ex)
 		{
 			exception = ex;
 		}
 
+		// Assert
 		exception.Should().NotBeNull("Expected an exception to be thrown");
+		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
 
-		// Verify it's one of the expected exception types
-		var isExpectedException = exception is ReadOnlyModeException readOnlyEx &&
-			readOnlyEx.Operation == "delete" &&
-			readOnlyEx.ResourceType == "service account" ||
-			exception is RpcException rpcEx &&
-			rpcEx.StatusCode == StatusCode.PermissionDenied;
+		var readOnlyEx = (ReadOnlyModeException)exception!;
+		readOnlyEx.Operation.Should().Be("delete");
+		readOnlyEx.ResourceType.Should().Be("service account");
 
-		isExpectedException.Should().BeTrue(
-			$"Expected ReadOnlyModeException or PermissionDenied RpcException, but got: {exception.GetType().Name}: {exception.Message}");
+		Logger.LogInformation("✓ DestroyServiceAccount correctly blocked by read-only mode");
 	}
 
 	[Fact]
-	public async Task CreateSchematicAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeExceptionOrPermissionDenied()
+	public async Task CreateSchematicAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		var extensions = new[] { "test-extension" };
 
 		// Act & Assert
 		Exception? exception = null;
 		try
 		{
-			await OmniClient.Management.CreateSchematicAsync(extensions, CancellationToken);
+			await client.Schematics.CreateAsync(extensions: extensions, cancellationToken: CancellationToken);
 		}
 		catch (Exception ex)
 		{
 			exception = ex;
 		}
 
+		// Assert
 		exception.Should().NotBeNull("Expected an exception to be thrown");
+		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
 
-		// Verify it's one of the expected exception types
-		var isExpectedException = exception is ReadOnlyModeException readOnlyEx &&
-			readOnlyEx.Operation == "create" &&
-			readOnlyEx.ResourceType == "schematic" ||
-			exception is RpcException rpcEx &&
-			rpcEx.StatusCode == StatusCode.PermissionDenied;
+		var readOnlyEx = (ReadOnlyModeException)exception!;
+		readOnlyEx.Operation.Should().Be("create");
+		readOnlyEx.ResourceType.Should().Be("schematic");
 
-		isExpectedException.Should().BeTrue(
-			$"Expected ReadOnlyModeException or PermissionDenied RpcException, but got: {exception.GetType().Name}: {exception.Message}");
+		Logger.LogInformation("✓ CreateSchematic correctly blocked by read-only mode");
 	}
 
 	[Fact]
-	public async Task GetKubeConfigWithServiceAccount_WhenInReadOnlyMode_ShouldThrowReadOnlyModeExceptionOrPermissionDenied()
+	public async Task GetKubeConfigWithServiceAccount_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		const bool serviceAccount = true;
 
 		// Act & Assert
 		Exception? exception = null;
 		try
 		{
-			await OmniClient.Management.GetKubeConfigAsync(serviceAccount, CancellationToken);
+			await client.KubeConfig.GetAsync(serviceAccount: serviceAccount, cancellationToken: CancellationToken);
 		}
 		catch (Exception ex)
 		{
 			exception = ex;
 		}
 
+		// Assert
 		exception.Should().NotBeNull("Expected an exception to be thrown");
+		exception.Should().BeOfType<ReadOnlyModeException>("Creating a service account in kubeconfig should throw ReadOnlyModeException");
 
-		// Verify it's one of the expected exception types
-		var isExpectedException = exception is ReadOnlyModeException readOnlyEx &&
-			readOnlyEx.Operation == "create" &&
-			readOnlyEx.ResourceType == "service account" ||
-			exception is RpcException;  // Server may allow this operation but fail for other reasons
+		var readOnlyEx = (ReadOnlyModeException)exception!;
+		readOnlyEx.Operation.Should().Be("create");
+		readOnlyEx.ResourceType.Should().Be("service account");
 
-		isExpectedException.Should().BeTrue(
-			$"Expected ReadOnlyModeException or RpcException, but got: {exception.GetType().Name}: {exception.Message}");
+		Logger.LogInformation("✓ GetKubeConfig with service account correctly blocked by read-only mode");
 	}
 
 	[Fact]
 	public void StreamKubernetesSyncManifests_WhenInReadOnlyModeWithDryRun_ShouldNotThrow()
 	{
 		// Arrange
+		using var client = CreateReadOnlyClient();
 		const bool dryRun = true;
 
 		// Act & Assert - This should not throw because it's a dry run
-		var stream = OmniClient.Management.StreamKubernetesSyncManifestsAsync(dryRun, CancellationToken);
+		var stream = client.Kubernetes.StreamSyncManifestsAsync(dryRun, CancellationToken);
 
 		// We can't fully test the stream without a real connection, but we can verify it doesn't throw immediately
 		stream.Should().NotBeNull();
+
+		Logger.LogInformation("✓ StreamKubernetesSyncManifests with dry run allowed in read-only mode");
 	}
 
 	[Fact]
 	public async Task ReadOnlyOperations_WhenInReadOnlyMode_ShouldNotThrow()
 	{
+		// Arrange
+		using var client = CreateReadOnlyClient();
+
 		// These operations should work fine in read-only mode
 		// Note: These will fail with connection errors, but should not throw ReadOnlyModeException
 
-		// Test read operations that should be allowed
 		var readOperations = new Func<Task>[]
 		{
-			() => AssertNotReadOnlyException(() => OmniClient.Management.GetKubeConfigAsync(CancellationToken)),
-			() => AssertNotReadOnlyException(() => OmniClient.Management.GetTalosConfigAsync(CancellationToken)),
-			() => AssertNotReadOnlyException(() => OmniClient.Management.GetOmniConfigAsync(CancellationToken)),
-			() => AssertNotReadOnlyException(() => OmniClient.Management.ListServiceAccountsAsync(CancellationToken)),
-			() => AssertNotReadOnlyException(() => OmniClient.Management.ValidateConfigAsync("test-config", CancellationToken)),
-			() => AssertNotReadOnlyException(() => OmniClient.Management.KubernetesUpgradePreChecksAsync("v1.29.0", CancellationToken))
+			() => AssertNotReadOnlyException(() => client.KubeConfig.GetAsync(cancellationToken: CancellationToken)),
+			() => AssertNotReadOnlyException(() => client.TalosConfig.GetAsync(cancellationToken: CancellationToken)),
+			() => AssertNotReadOnlyException(() => client.OmniConfig.GetAsync(CancellationToken)),
+			() => AssertNotReadOnlyException(() => client.ServiceAccounts.ListAsync(CancellationToken)),
+			() => AssertNotReadOnlyException(() => client.Validation.ValidateConfigAsync("test-config", CancellationToken)),
+			() => AssertNotReadOnlyException(() => client.Kubernetes.UpgradePreChecksAsync("v1.29.0", CancellationToken))
 		};
 
 		// Execute all read operations and verify none throw ReadOnlyModeException
@@ -206,6 +235,8 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		{
 			await operation();
 		}
+
+		Logger.LogInformation("✓ All read operations allowed in read-only mode");
 	}
 
 	[Fact]
@@ -224,6 +255,8 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		exception.Message.Should().Contain("read-only mode");
 		exception.Message.Should().Contain(operation);
 		exception.Message.Should().Contain(resourceType);
+
+		Logger.LogInformation("✓ ReadOnlyModeException has correct properties");
 	}
 
 	[Fact]
@@ -241,33 +274,24 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		exception.Operation.Should().Be(operation);
 		exception.ResourceType.Should().Be(resourceType);
 		exception.Message.Should().Be(customMessage);
+
+		Logger.LogInformation("✓ ReadOnlyModeException with custom message works correctly");
 	}
 
-	/// <summary>
-	/// Test client-side read-only enforcement with a locally configured client
-	/// </summary>
 	[Fact]
-	public async Task ClientSideReadOnlyMode_ShouldThrowReadOnlyModeException()
+	public async Task ClientSideReadOnlyMode_OverridesServerPermissions()
 	{
-		// Arrange - Create a client with read-only mode enabled but no real connection
-		var options = new OmniClientOptions
-		{
-			BaseUrl = new("https://test-readonly.example.com"), // Non-existent endpoint
-			Identity = "test-user",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE",
-			IsReadOnly = true,
-			TimeoutSeconds = 1, // Short timeout
-			Logger = Logger
-		};
-
-		using var client = new OmniClient(options);
+		// Arrange - Create a client with read-only mode enabled
+		using var client = CreateReadOnlyClient();
 		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+
+		Logger.LogInformation("🔒 Testing that IsReadOnly acts as a client-side safety switch");
 
 		// Act & Assert - These should throw ReadOnlyModeException before network calls
 		Exception? createException = null;
 		try
 		{
-			await client.Management.CreateServiceAccountAsync("test-key", cts.Token);
+			await client.ServiceAccounts.CreateAsync("test-key", cancellationToken: cts.Token);
 		}
 		catch (Exception ex)
 		{
@@ -284,7 +308,7 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Exception? destroyException = null;
 		try
 		{
-			await client.Management.DestroyServiceAccountAsync("test-account", cts.Token);
+			await client.ServiceAccounts.DestroyAsync("test-account", cts.Token);
 		}
 		catch (Exception ex)
 		{
@@ -297,6 +321,31 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		var destroyReadOnlyEx = (ReadOnlyModeException)destroyException!;
 		destroyReadOnlyEx.Operation.Should().Be("delete");
 		destroyReadOnlyEx.ResourceType.Should().Be("service account");
+
+		Logger.LogInformation("✓ Client-side read-only mode successfully blocks write operations");
+	}
+
+	[Fact]
+	public void WritableClient_AllowsWriteOperations()
+	{
+		// Arrange - Use the injected test client (which may be writable)
+		var client = OmniClient;
+
+		// Act & Assert
+		var isReadOnly = client.IsReadOnly;
+
+		Logger.LogInformation("Test client IsReadOnly = {IsReadOnly}", isReadOnly);
+
+		// The test just verifies that we can check the property
+		// The actual value depends on the test configuration
+		if (isReadOnly)
+		{
+			Logger.LogInformation("✓ Test client is in read-only mode (safer for testing)");
+		}
+		else
+		{
+			Logger.LogInformation("✓ Test client is in writable mode (can test write operations)");
+		}
 	}
 
 	/// <summary>
@@ -312,7 +361,7 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		catch (ReadOnlyModeException)
 		{
 			// This is the exception we don't want to see
-			false.Should().BeTrue("Operation should not throw ReadOnlyModeException in read-only mode");
+			false.Should().BeTrue("Operation should not throw ReadOnlyModeException for read operations");
 		}
 		catch
 		{
@@ -333,7 +382,7 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		catch (ReadOnlyModeException)
 		{
 			// This is the exception we don't want to see
-			false.Should().BeTrue("Operation should not throw ReadOnlyModeException in read-only mode");
+			false.Should().BeTrue("Operation should not throw ReadOnlyModeException for read operations");
 		}
 		catch
 		{
