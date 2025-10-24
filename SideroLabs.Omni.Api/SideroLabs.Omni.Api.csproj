@@ -51,7 +51,7 @@
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
 		<PackageReference Include="FluentValidation" Version="12.0.0" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.115">
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.8.118">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
@@ -61,9 +61,9 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Google.Protobuf" Version="3.32.1" />
+		<PackageReference Include="Google.Protobuf" Version="3.33.0" />
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
