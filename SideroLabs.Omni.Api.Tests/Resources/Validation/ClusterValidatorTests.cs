@@ -5,8 +5,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Validation;
 
+/// <summary>
+/// Unit tests for ClusterValidator FluentValidation rules.
+/// </summary>
 public class ClusterValidatorTests
 {
+	/// <summary>
+	/// Verifies that a fully populated valid Cluster passes all validation rules.
+	/// </summary>
 	[Fact]
 	public void Validate_WithValidCluster_ReturnsSuccess()
 	{
@@ -24,6 +30,9 @@ public class ClusterValidatorTests
 		Assert.Empty(result.Errors);
 	}
 
+	/// <summary>
+	/// Verifies that a Cluster missing a Kubernetes version fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithoutKubernetesVersion_ReturnsError()
 	{
@@ -45,6 +54,9 @@ public class ClusterValidatorTests
 		Assert.Contains(result.Errors, e => e.PropertyName == "Spec.KubernetesVersion");
 	}
 
+	/// <summary>
+	/// Verifies that a Kubernetes version missing the 'v' prefix (e.g. '1.29.0') fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidKubernetesVersionFormat_ReturnsError()
 	{
@@ -69,6 +81,9 @@ public class ClusterValidatorTests
 			e.ErrorMessage.Contains("vX.Y.Z"));
 	}
 
+	/// <summary>
+	/// Verifies that a cluster ID containing uppercase letters or underscores fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidClusterId_ReturnsError()
 	{
@@ -93,6 +108,9 @@ public class ClusterValidatorTests
 			e.ErrorMessage.Contains("DNS-1123"));
 	}
 
+	/// <summary>
+	/// Verifies that a Cluster missing a Talos version fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithoutTalosVersion_ReturnsError()
 	{
@@ -114,6 +132,9 @@ public class ClusterValidatorTests
 		Assert.Contains(result.Errors, e => e.PropertyName == "Spec.TalosVersion");
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow throws ValidationException for an invalid Cluster.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithInvalidCluster_ThrowsValidationException()
 	{
@@ -132,6 +153,9 @@ public class ClusterValidatorTests
 		Assert.Throws<ValidationException>(() => cluster.ValidateAndThrow());
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow does not throw for a fully valid Cluster.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithValidCluster_DoesNotThrow()
 	{

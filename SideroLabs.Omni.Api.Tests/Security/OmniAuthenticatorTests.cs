@@ -7,8 +7,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Security;
 
+/// <summary>
+/// Unit tests for OmniAuthenticator PGP key loading and authentication info generation.
+/// </summary>
 public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Verifies that a valid base64-encoded PGP key file is loaded correctly and produces the expected identity and fingerprint.
+	/// </summary>
 	[Fact]
 	public async Task FromFileAsync_WithValidPgpKeyFile_ReturnsCorrectInfo()
 	{
@@ -52,6 +58,9 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		Logger.LogInformation("Generated Auth Info: {AuthInfo}", authInfo);
 	}
 
+	/// <summary>
+	/// Verifies that providing a non-existent file path throws FileNotFoundException.
+	/// </summary>
 	[Fact]
 	public async Task FromFileAsync_WithNonExistentFile_ThrowsException()
 	{
@@ -65,6 +74,9 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		await action.Should().ThrowAsync<FileNotFoundException>();
 	}
 
+	/// <summary>
+	/// Verifies that a file containing invalid Base64 content throws InvalidOperationException.
+	/// </summary>
 	[Fact]
 	public async Task FromFileAsync_WithInvalidBase64Content_ThrowsInvalidOperationException()
 	{
@@ -89,6 +101,9 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that a JSON payload missing the 'name' property throws InvalidOperationException.
+	/// </summary>
 	[Fact]
 	public async Task FromFileAsync_WithMissingNameProperty_ThrowsInvalidOperationException()
 	{

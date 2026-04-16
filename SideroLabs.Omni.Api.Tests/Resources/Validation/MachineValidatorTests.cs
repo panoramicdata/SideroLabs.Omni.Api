@@ -6,8 +6,14 @@ using Machine = SideroLabs.Omni.Api.Resources.Machine;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Validation;
 
+/// <summary>
+/// Unit tests for MachineValidator FluentValidation rules.
+/// </summary>
 public class MachineValidatorTests
 {
+	/// <summary>
+	/// Verifies that a Machine with a valid UUID ID and a recognized role passes all validation rules.
+	/// </summary>
 	[Fact]
 	public void Validate_WithValidMachine_ReturnsSuccess()
 	{
@@ -33,6 +39,9 @@ public class MachineValidatorTests
 		Assert.Empty(result.Errors);
 	}
 
+	/// <summary>
+	/// Verifies that a Machine without a role fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithoutRole_ReturnsError()
 	{
@@ -55,6 +64,9 @@ public class MachineValidatorTests
 		Assert.Contains(result.Errors, e => e.PropertyName == "Spec.Role");
 	}
 
+	/// <summary>
+	/// Verifies that a Machine with an unrecognized role value fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidRole_ReturnsError()
 	{
@@ -83,6 +95,9 @@ public class MachineValidatorTests
 			e.ErrorMessage.Contains("worker"));
 	}
 
+	/// <summary>
+	/// Verifies that a Machine with a non-UUID ID fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidMachineId_ReturnsError()
 	{
@@ -110,6 +125,9 @@ public class MachineValidatorTests
 			e.ErrorMessage.Contains("UUID"));
 	}
 
+	/// <summary>
+	/// Verifies that machines with 'controlplane' and 'worker' roles pass validation.
+	/// </summary>
 	[Theory]
 	[InlineData("controlplane")]
 	[InlineData("worker")]
@@ -136,6 +154,9 @@ public class MachineValidatorTests
 		Assert.True(result.IsValid);
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow throws ValidationException for an invalid Machine.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithInvalidMachine_ThrowsValidationException()
 	{

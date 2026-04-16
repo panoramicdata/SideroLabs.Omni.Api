@@ -13,6 +13,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "Streaming")]
 public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that establishes a watch stream on Cluster resources and verifies a Created event is received after creating a cluster.
+	/// </summary>
 	[Fact]
 	public async Task Watch_Cluster_ReceivesCreatedEvent()
 	{

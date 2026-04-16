@@ -12,6 +12,12 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "COSIState")]
 public class CosiStateSpecFormatTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that retrieves a Cluster and logs the available spec format to diagnose COSI State spec serialization.
+	/// </summary>
+	/// <summary>
+	/// Integration test that retrieves a Cluster and logs the available spec format to diagnose COSI State spec serialization.
+	/// </summary>
 	[Fact]
 	public async Task CheckSpecFormat_Cluster_LogsAvailableFormats()
 	{

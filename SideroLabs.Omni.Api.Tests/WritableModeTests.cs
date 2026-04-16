@@ -20,6 +20,9 @@ public class WritableModeTests
 		_logger = loggerFactory.CreateLogger<WritableModeTests>();
 	}
 
+	/// <summary>
+	/// Verifies that a client constructed with IsReadOnly=false reports IsReadOnly as false.
+	/// </summary>
 	[Fact]
 	public void OmniClient_WhenConfiguredWithWritableMode_ShouldNotBeReadOnly()
 	{
@@ -40,6 +43,9 @@ public class WritableModeTests
 		client.IsReadOnly.Should().BeFalse("OmniClient should not be in read-only mode when IsReadOnly is false");
 	}
 
+	/// <summary>
+	/// Verifies that write operations in writable mode do not throw ReadOnlyModeException (they may throw other exceptions due to missing network).
+	/// </summary>
 	[Fact]
 	public async Task WriteOperations_WhenInWritableMode_ShouldNotThrowReadOnlyModeException()
 	{
@@ -84,6 +90,9 @@ public class WritableModeTests
 		await AssertNotReadOnlyExceptionOnStream(stream);
 	}
 
+	/// <summary>
+	/// Verifies that the client's IsReadOnly property reflects the value set in OmniClientOptions.
+	/// </summary>
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -106,6 +115,9 @@ public class WritableModeTests
 		client.IsReadOnly.Should().Be(isReadOnly);
 	}
 
+	/// <summary>
+	/// Verifies that IsReadOnly defaults to false when not explicitly set.
+	/// </summary>
 	[Fact]
 	public void OmniClientOptions_DefaultIsReadOnly_ShouldBeFalse()
 	{

@@ -14,6 +14,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "Filtering")]
 public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that filters the cluster list using a label selector and verifies only matching clusters are returned.
+	/// </summary>
 	[Fact]
 	public async Task List_WithSelector_FiltersResults()
 	{

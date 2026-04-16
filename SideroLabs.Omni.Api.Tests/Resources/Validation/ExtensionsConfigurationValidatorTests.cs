@@ -5,8 +5,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Validation;
 
+/// <summary>
+/// Unit tests for ExtensionsConfigurationValidator FluentValidation rules.
+/// </summary>
 public class ExtensionsConfigurationValidatorTests
 {
+	/// <summary>
+	/// Verifies that a fully populated valid ExtensionsConfiguration passes all validation rules.
+	/// </summary>
 	[Fact]
 	public void Validate_WithValidConfiguration_ReturnsSuccess()
 	{
@@ -24,6 +30,9 @@ public class ExtensionsConfigurationValidatorTests
 		Assert.Empty(result.Errors);
 	}
 
+	/// <summary>
+	/// Verifies that an ExtensionsConfiguration with an empty extension list fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithoutExtensions_ReturnsError()
 	{
@@ -45,6 +54,9 @@ public class ExtensionsConfigurationValidatorTests
 		Assert.Contains(result.Errors, e => e.PropertyName == "Spec.Extensions");
 	}
 
+	/// <summary>
+	/// Verifies that an ExtensionsConfiguration containing an empty extension name string fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithEmptyExtensionName_ReturnsError()
 	{
@@ -68,6 +80,9 @@ public class ExtensionsConfigurationValidatorTests
 			e.ErrorMessage.Contains("empty"));
 	}
 
+	/// <summary>
+	/// Verifies that a configuration ID containing uppercase letters or underscores fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidConfigId_ReturnsError()
 	{
@@ -91,6 +106,9 @@ public class ExtensionsConfigurationValidatorTests
 			e.ErrorMessage.Contains("DNS-1123"));
 	}
 
+	/// <summary>
+	/// Verifies that a Talos version missing the 'v' prefix fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidTalosVersion_ReturnsError()
 	{
@@ -115,6 +133,9 @@ public class ExtensionsConfigurationValidatorTests
 			e.ErrorMessage.Contains("vX.Y.Z"));
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow throws ValidationException for an invalid ExtensionsConfiguration.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithInvalidConfiguration_ThrowsValidationException()
 	{
@@ -132,6 +153,9 @@ public class ExtensionsConfigurationValidatorTests
 		Assert.Throws<ValidationException>(() => config.ValidateAndThrow());
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow does not throw for a fully valid ExtensionsConfiguration.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithValidConfiguration_DoesNotThrow()
 	{

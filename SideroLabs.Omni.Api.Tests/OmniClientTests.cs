@@ -13,11 +13,17 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 	/// <summary>
 	/// Tests for the OmniClient constructor
 	/// </summary>
+	/// <summary>
+	/// Verifies that passing null options to the OmniClient constructor throws ArgumentNullException.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithNullOptions_ThrowsArgumentNullException() =>
 		// Act & Assert
 		((Action)(() => _ = new OmniClient(null!))).Should().Throw<ArgumentNullException>();
 
+	/// <summary>
+	/// Verifies that all service properties are non-null and correctly typed after construction.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithValidOptions_SetsProperties()
 	{
@@ -47,6 +53,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.ClusterMachines.Should().NotBeNull();
 	}
 
+	/// <summary>
+	/// Verifies that a negative timeout value throws OmniConfigurationException with the appropriate validation error.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithInvalidTimeoutSeconds_ThrowsOmniConfigurationException()
 	{
@@ -63,6 +72,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		exception.Which.ValidationErrors.Should().Contain("TimeoutSeconds must be positive");
 	}
 
+	/// <summary>
+	/// Verifies that all focused service properties (KubeConfig, TalosConfig, etc.) are non-null and implement their expected interfaces.
+	/// </summary>
 	[Fact]
 	public void FocusedServices_AreNotNull()
 	{
@@ -99,6 +111,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.Support.Should().BeAssignableTo<Interfaces.ISupportService>();
 	}
 
+	/// <summary>
+	/// Verifies that all resource operation properties (Machines, Clusters, etc.) are non-null and implement their expected interfaces.
+	/// </summary>
 	[Fact]
 	public void ResourceOperations_AreNotNull()
 	{
@@ -122,6 +137,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.MachineSetNodes.Should().BeAssignableTo<Interfaces.IMachineSetNodeOperations>();
 	}
 
+	/// <summary>
+	/// Verifies that the deprecated Management service property is still accessible and implements IManagementService.
+	/// </summary>
 	[Fact]
 	public void LegacyManagementService_StillWorks()
 	{
@@ -135,6 +153,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 #pragma warning restore CS0618 // Type or member is obsolete
 	}
 
+	/// <summary>
+	/// Verifies that BaseUrl, UseTls, IsReadOnly, and Identity return the expected values from test configuration.
+	/// </summary>
 	[Fact]
 	public void Properties_ReturnCorrectValues()
 	{
@@ -149,6 +170,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.Identity.Should().Be("nuget-dev"); // From test config
 	}
 
+	/// <summary>
+	/// Verifies that calling Dispose on the client does not throw.
+	/// </summary>
 	[Fact]
 	public void Dispose_DoesNotThrow()
 	{
@@ -168,6 +192,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		((Action)(() => client.Dispose())).Should().NotThrow();
 	}
 
+	/// <summary>
+	/// Verifies that constructing a client without any authentication credentials throws OmniConfigurationException.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithoutCredentials_ThrowsOmniConfigurationException()
 	{
@@ -184,6 +211,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		exception.Which.ValidationErrors.Should().Contain("One of PgpPrivateKey, PgpKeyFilePath, or AuthToken must be provided for authentication");
 	}
 
+	/// <summary>
+	/// Verifies that an auth token is a sufficient credential to construct the client.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithAuthToken_CreatesClientSuccessfully()
 	{
@@ -207,6 +237,9 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.IsReadOnly.Should().BeFalse(); // Default when not specified
 	}
 
+	/// <summary>
+	/// Verifies that the constructor correctly sets IsReadOnly when the option is true.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithReadOnlyMode_SetsIsReadOnlyCorrectly()
 	{

@@ -52,6 +52,12 @@ public partial class ResourceServiceDiagnosticTests(ITestOutputHelper testOutput
 		return null;
 	}
 
+	/// <summary>
+	/// Integration diagnostic test that lists Cluster resources and captures any HTTP response body for debugging.
+	/// </summary>
+	/// <summary>
+	/// Integration diagnostic test that lists Cluster resources and captures any HTTP response body for debugging.
+	/// </summary>
 	[Fact]
 	public async Task ResourceService_ListClusters_CaptureHttpResponseBody()
 	{

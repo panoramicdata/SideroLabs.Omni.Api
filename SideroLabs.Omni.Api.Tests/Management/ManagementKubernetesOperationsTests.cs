@@ -15,6 +15,9 @@ namespace SideroLabs.Omni.Api.Tests.Management;
 [Trait("Category", "Kubernetes")]
 public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that runs Kubernetes upgrade pre-checks for a valid version and logs the result.
+	/// </summary>
 	[Theory]
 	[InlineData("v1.29.0")]
 	[InlineData("v1.30.0")]
@@ -38,6 +41,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		Assert.NotNull(kubernetesUpgradePreCheckResult.Reason);
 	}
 
+	/// <summary>
+	/// Integration test that verifies invalid Kubernetes version strings are rejected or return a not-OK result.
+	/// </summary>
 	[Theory]
 	[InlineData("invalid-version")]
 	[InlineData("v999.999.999")]
@@ -67,6 +73,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		}
 	}
 
+	/// <summary>
+	/// Integration test that verifies an empty version string throws an exception.
+	/// </summary>
 	[Fact]
 	public async Task KubernetesUpgradePreChecks_EmptyVersion_ThrowsInvalidArgument()
 	{
@@ -80,6 +89,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Empty version correctly rejected");
 	}
 
+	/// <summary>
+	/// Integration test that verifies consecutive upgrade pre-check calls for the same version return consistent results.
+	/// </summary>
 	[Fact]
 	public async Task KubernetesUpgradePreChecks_MultipleVersions_Consistent()
 	{
@@ -97,6 +109,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Upgrade pre-check results are consistent");
 	}
 
+	/// <summary>
+	/// Skipped test that streams Kubernetes manifest sync results in dry-run mode.
+	/// </summary>
 	[Fact(Skip = "Modifies cluster state - manual test only")]
 	public async Task StreamKubernetesSyncManifests_DryRun_ShowsChanges()
 	{
@@ -135,6 +150,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 			syncCount, skippedCount);
 	}
 
+	/// <summary>
+	/// Skipped test for behavior when no manifests are present.
+	/// </summary>
 	[Fact(Skip = "Requires active cluster - manual test only")]
 	public async Task StreamKubernetesSyncManifests_DryRun_HandlesEmptyCluster()
 	{
@@ -142,6 +160,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Requires specific cluster configuration
 	}
 
+	/// <summary>
+	/// Skipped destructive test that would actually apply manifest changes to a cluster.
+	/// </summary>
 	[Fact(Skip = "DESTRUCTIVE - Actually syncs manifests to cluster")]
 	public async Task StreamKubernetesSyncManifests_NotDryRun_AppliesChanges()
 	{

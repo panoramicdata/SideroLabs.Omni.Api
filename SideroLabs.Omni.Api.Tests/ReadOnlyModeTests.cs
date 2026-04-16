@@ -29,6 +29,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		return new OmniClient(options);
 	}
 
+	/// <summary>
+	/// Verifies that a client created with IsReadOnly=true reports IsReadOnly as true.
+	/// </summary>
 	[Fact]
 	public void OmniClient_WhenConfiguredWithReadOnlyMode_ShouldHaveReadOnlyProperty()
 	{
@@ -43,6 +46,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ OmniClient.IsReadOnly = {IsReadOnly}", isReadOnly);
 	}
 
+	/// <summary>
+	/// Verifies that CreateServiceAccountAsync throws ReadOnlyModeException when the client is in read-only mode.
+	/// </summary>
 	[Fact]
 	public async Task CreateServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
@@ -74,6 +80,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ CreateServiceAccount correctly blocked by read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that RenewServiceAccountAsync throws ReadOnlyModeException when the client is in read-only mode.
+	/// </summary>
 	[Fact]
 	public async Task RenewServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
@@ -106,6 +115,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ RenewServiceAccount correctly blocked by read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that DestroyServiceAccountAsync throws ReadOnlyModeException when the client is in read-only mode.
+	/// </summary>
 	[Fact]
 	public async Task DestroyServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
@@ -137,6 +149,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ DestroyServiceAccount correctly blocked by read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that CreateSchematicAsync throws ReadOnlyModeException when the client is in read-only mode.
+	/// </summary>
 	[Fact]
 	public async Task CreateSchematicAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
@@ -166,6 +181,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ CreateSchematic correctly blocked by read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that GetKubeConfigAsync with serviceAccount=true throws ReadOnlyModeException when the client is in read-only mode.
+	/// </summary>
 	[Fact]
 	public async Task GetKubeConfigWithServiceAccount_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
@@ -195,6 +213,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ GetKubeConfig with service account correctly blocked by read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that StreamSyncManifestsAsync with dryRun=true is permitted in read-only mode.
+	/// </summary>
 	[Fact]
 	public void StreamKubernetesSyncManifests_WhenInReadOnlyModeWithDryRun_ShouldNotThrow()
 	{
@@ -211,6 +232,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ StreamKubernetesSyncManifests with dry run allowed in read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that read-only operations (GetAsync, ListAsync, etc.) do not throw ReadOnlyModeException.
+	/// </summary>
 	[Fact]
 	public async Task ReadOnlyOperations_WhenInReadOnlyMode_ShouldNotThrow()
 	{
@@ -239,6 +263,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ All read operations allowed in read-only mode");
 	}
 
+	/// <summary>
+	/// Verifies that ReadOnlyModeException exposes the correct operation and resource type in its properties and message.
+	/// </summary>
 	[Fact]
 	public void ReadOnlyModeException_ShouldHaveCorrectProperties()
 	{
@@ -259,6 +286,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ ReadOnlyModeException has correct properties");
 	}
 
+	/// <summary>
+	/// Verifies that ReadOnlyModeException uses the provided custom message when one is supplied.
+	/// </summary>
 	[Fact]
 	public void ReadOnlyModeException_WithCustomMessage_ShouldUseCustomMessage()
 	{
@@ -278,6 +308,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ ReadOnlyModeException with custom message works correctly");
 	}
 
+	/// <summary>
+	/// Verifies that client-side read-only mode blocks write operations before any network call is made.
+	/// </summary>
 	[Fact]
 	public async Task ClientSideReadOnlyMode_OverridesServerPermissions()
 	{
@@ -325,6 +358,9 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✓ Client-side read-only mode successfully blocks write operations");
 	}
 
+	/// <summary>
+	/// Verifies that a writable client allows write operations.
+	/// </summary>
 	[Fact]
 	public void WritableClient_AllowsWriteOperations()
 	{
@@ -371,7 +407,7 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	}
 
 	/// <summary>
-	/// Helper method for testing generic Task<T> operations
+	/// Helper method for testing generic <c>Task&lt;T&gt;</c> operations.
 	/// </summary>
 	private static async Task AssertNotReadOnlyException<T>(Func<Task<T>> operation)
 	{

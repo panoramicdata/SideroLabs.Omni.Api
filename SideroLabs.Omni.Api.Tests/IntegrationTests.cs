@@ -80,6 +80,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		return shouldRun;
 	}
 
+	/// <summary>
+	/// Integration test that retrieves the omniconfig from the real Omni gRPC API using configured credentials.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetOmniconfig_WithSideroLabsCredentials()
 	{
@@ -112,6 +115,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("  Content: {Content}", omniconfig.Length > 200 ? omniconfig[..200] + "..." : omniconfig);
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a kubeconfig from the real Omni gRPC API.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetKubeconfig_WithSideroLabsCredentials()
 	{
@@ -152,6 +158,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a kubeconfig with all available parameters including grant type and break-glass flag.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetKubeconfig_WithAllParameters()
 	{
@@ -198,6 +207,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a talosconfig using break-glass mode.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetTalosconfig_WithBreakGlass()
 	{
@@ -236,6 +248,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that creates a schematic using all available parameters.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_CreateSchematic_WithAllParameters()
 	{
@@ -285,6 +300,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that lists service accounts from the real Omni API.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ListServiceAccounts_WithSideroLabsCredentials()
 	{
@@ -343,6 +361,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that validates a machine configuration against the real Omni API.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ValidateConfig_WithSideroLabsCredentials()
 	{
@@ -382,6 +403,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("📊 Config validation completed successfully");
 	}
 
+	/// <summary>
+	/// Integration test that validates a JSON schema with valid data and expects success.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ValidateJsonSchema_WithValidData()
 	{
@@ -428,6 +452,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("✅ JSON schema validation succeeded for valid data!");
 	}
 
+	/// <summary>
+	/// Integration test that validates a JSON schema with invalid data and expects validation errors.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ValidateJsonSchema_WithInvalidData()
 	{
@@ -476,6 +503,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("{ErrorSummary}", result.GetErrorSummary());
 	}
 
+	/// <summary>
+	/// Integration test that validates a complex nested JSON schema.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ValidateJsonSchema_WithComplexSchema()
 	{
@@ -544,6 +574,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that generates a support bundle for a cluster.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetSupportBundle_WithCluster()
 	{
@@ -628,6 +661,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that reads the audit log for a date range.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ReadAuditLog_WithDateRange()
 	{
@@ -700,6 +736,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that initiates a maintenance upgrade on a machine.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_MaintenanceUpgrade_WithMachine()
 	{
@@ -753,6 +792,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a machine join configuration with gRPC tunnel mode.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_GetMachineJoinConfig_WithGrpcTunnel()
 	{
@@ -802,6 +844,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that creates a join token with an expiration.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_CreateJoinToken_WithExpiration()
 	{
@@ -849,6 +894,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that tears down a locked cluster.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_TearDownLockedCluster_WithClusterId()
 	{
@@ -894,6 +942,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that runs Kubernetes upgrade pre-checks against the real Omni API.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_KubernetesUpgradePreChecks_WithSideroLabsCredentials()
 	{
@@ -936,6 +987,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that verifies read-only mode prevents write operations.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ReadOnlyMode_PreventsWriteOperations()
 	{
@@ -963,6 +1017,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		Logger.LogInformation("Note: Write operation protection will be implemented when needed for specific gRPC operations");
 	}
 
+	/// <summary>
+	/// Integration test that exercises all management service operations comprehensively.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_ComprehensiveManagementService_WithSideroLabsCredentials()
 	{
@@ -1250,6 +1307,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that streams machine logs for configured machines.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_StreamMachineLogs_WithConfiguredMachines()
 	{
@@ -1321,6 +1381,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Integration test that validates input for machine log streaming.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_MachineLogStreaming_ValidatesInput()
 	{

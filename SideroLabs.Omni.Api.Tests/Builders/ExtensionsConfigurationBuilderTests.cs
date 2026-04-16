@@ -4,8 +4,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Builders;
 
+/// <summary>
+/// Unit tests for the ExtensionsConfigurationBuilder fluent API.
+/// </summary>
 public class ExtensionsConfigurationBuilderTests
 {
+	/// <summary>
+	/// Verifies that building with a valid extension and Talos version produces a correctly populated ExtensionsConfiguration resource.
+	/// </summary>
 	[Fact]
 	public void Build_WithValidConfiguration_CreatesExtensionsConfiguration()
 	{
@@ -28,6 +34,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("omni.sidero.dev/v1alpha1", config.ApiVersion);
 	}
 
+	/// <summary>
+	/// Verifies that building without specifying any extensions throws InvalidOperationException.
+	/// </summary>
 	[Fact]
 	public void Build_WithoutExtensions_ThrowsInvalidOperationException()
 	{
@@ -38,6 +47,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Throws<InvalidOperationException>(() => builder.Build());
 	}
 
+	/// <summary>
+	/// Verifies that multiple extensions are added to the spec.
+	/// </summary>
 	[Fact]
 	public void WithExtensions_AddsMultipleExtensions()
 	{
@@ -57,6 +69,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Contains("siderolabs/iscsi-tools", config.Spec.Extensions);
 	}
 
+	/// <summary>
+	/// Verifies that a single label is added to configuration metadata.
+	/// </summary>
 	[Fact]
 	public void WithLabel_AddsLabel()
 	{
@@ -72,6 +87,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("production", config.Metadata.Labels["environment"]);
 	}
 
+	/// <summary>
+	/// Verifies that a dictionary of labels is added to configuration metadata.
+	/// </summary>
 	[Fact]
 	public void WithLabels_AddsMultipleLabels()
 	{
@@ -95,6 +113,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("us-west-2", config.Metadata.Labels["region"]);
 	}
 
+	/// <summary>
+	/// Verifies that the specified namespace is set in configuration metadata.
+	/// </summary>
 	[Fact]
 	public void InNamespace_SetsNamespace()
 	{
@@ -108,6 +129,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("production", config.Metadata.Namespace);
 	}
 
+	/// <summary>
+	/// Verifies that a single annotation is added to configuration metadata.
+	/// </summary>
 	[Fact]
 	public void WithAnnotation_AddsAnnotation()
 	{
@@ -123,6 +147,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("Test extensions", config.Metadata.Annotations["description"]);
 	}
 
+	/// <summary>
+	/// Verifies that an ExtensionsConfigurationBuilder can be implicitly converted to an ExtensionsConfiguration resource.
+	/// </summary>
 	[Fact]
 	public void ImplicitConversion_ConvertsToExtensionsConfiguration()
 	{
@@ -138,6 +165,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal("test-config", config.Metadata.Id);
 	}
 
+	/// <summary>
+	/// Verifies that passing null as the configuration ID throws ArgumentException.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithNullConfigId_ThrowsArgumentException()
 	{
@@ -145,6 +175,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Throws<ArgumentException>(() => new ExtensionsConfigurationBuilder(null!));
 	}
 
+	/// <summary>
+	/// Verifies that an empty or whitespace configuration ID throws ArgumentException.
+	/// </summary>
 	[Theory]
 	[InlineData("")]
 	[InlineData("   ")]
@@ -154,6 +187,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Throws<ArgumentException>(() => new ExtensionsConfigurationBuilder(configId));
 	}
 
+	/// <summary>
+	/// Verifies that the ExtensionCount property returns the correct number of configured extensions.
+	/// </summary>
 	[Fact]
 	public void ExtensionCount_ReturnsCorrectCount()
 	{
@@ -168,6 +204,9 @@ public class ExtensionsConfigurationBuilderTests
 		Assert.Equal(2, config.ExtensionCount);
 	}
 
+	/// <summary>
+	/// Verifies that a versioned extension name (with @version suffix) is stored correctly.
+	/// </summary>
 	[Fact]
 	public void WithExtension_WithVersionedExtension_StoresCorrectly()
 	{

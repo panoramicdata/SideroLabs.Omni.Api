@@ -5,8 +5,14 @@ using Machine = SideroLabs.Omni.Api.Resources.Machine;
 
 namespace SideroLabs.Omni.Api.Tests.Builders;
 
+/// <summary>
+/// Unit tests for the MachineBuilder fluent API.
+/// </summary>
 public class MachineBuilderTests
 {
+	/// <summary>
+	/// Verifies that building with a valid role and installer image produces a correctly populated Machine resource.
+	/// </summary>
 	[Fact]
 	public void Build_WithValidConfiguration_CreatesMachine()
 	{
@@ -27,6 +33,9 @@ public class MachineBuilderTests
 		Assert.Equal("omni.sidero.dev/v1alpha1", machine.ApiVersion);
 	}
 
+	/// <summary>
+	/// Verifies that building without specifying a machine role throws InvalidOperationException.
+	/// </summary>
 	[Fact]
 	public void Build_WithoutRole_ThrowsInvalidOperationException()
 	{
@@ -38,6 +47,9 @@ public class MachineBuilderTests
 		Assert.Throws<InvalidOperationException>(() => builder.Build());
 	}
 
+	/// <summary>
+	/// Verifies that a label is added to machine metadata.
+	/// </summary>
 	[Fact]
 	public void WithLabel_AddsMetadataLabel()
 	{
@@ -53,6 +65,9 @@ public class MachineBuilderTests
 		Assert.Equal("rack-1", machine.Metadata.Labels["rack"]);
 	}
 
+	/// <summary>
+	/// Verifies that a label is added to the machine spec labels (hardware selection labels).
+	/// </summary>
 	[Fact]
 	public void WithSpecLabel_AddsSpecLabel()
 	{
@@ -68,6 +83,9 @@ public class MachineBuilderTests
 		Assert.Equal("nvidia-a100", machine.Spec.Labels["gpu"]);
 	}
 
+	/// <summary>
+	/// Verifies that a dictionary of labels is added to machine metadata.
+	/// </summary>
 	[Fact]
 	public void WithLabels_AddsMultipleLabels()
 	{
@@ -91,6 +109,9 @@ public class MachineBuilderTests
 		Assert.Equal("zone-a", machine.Metadata.Labels["zone"]);
 	}
 
+	/// <summary>
+	/// Verifies that the specified namespace is set in machine metadata.
+	/// </summary>
 	[Fact]
 	public void InNamespace_SetsNamespace()
 	{
@@ -104,6 +125,9 @@ public class MachineBuilderTests
 		Assert.Equal("fleet", machine.Metadata.Namespace);
 	}
 
+	/// <summary>
+	/// Verifies that a single annotation is added to machine metadata.
+	/// </summary>
 	[Fact]
 	public void WithAnnotation_AddsAnnotation()
 	{
@@ -119,6 +143,9 @@ public class MachineBuilderTests
 		Assert.Equal("team-platform", machine.Metadata.Annotations["owner"]);
 	}
 
+	/// <summary>
+	/// Verifies that a MachineBuilder can be implicitly converted to a Machine resource.
+	/// </summary>
 	[Fact]
 	public void ImplicitConversion_ConvertsToMachine()
 	{
@@ -134,6 +161,9 @@ public class MachineBuilderTests
 		Assert.Equal("machine-001", machine.Metadata.Id);
 	}
 
+	/// <summary>
+	/// Verifies that passing null as the machine ID throws ArgumentException.
+	/// </summary>
 	[Fact]
 	public void Constructor_WithNullMachineId_ThrowsArgumentException()
 	{
@@ -141,6 +171,9 @@ public class MachineBuilderTests
 		Assert.Throws<ArgumentException>(() => new MachineBuilder(null!));
 	}
 
+	/// <summary>
+	/// Verifies that an empty or whitespace machine ID throws ArgumentException.
+	/// </summary>
 	[Theory]
 	[InlineData("")]
 	[InlineData("   ")]

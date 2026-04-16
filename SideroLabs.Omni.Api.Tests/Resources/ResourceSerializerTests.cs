@@ -5,8 +5,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources;
 
+/// <summary>
+/// Unit tests for ResourceSerializer JSON and YAML round-trip serialization.
+/// </summary>
 public class ResourceSerializerTests
 {
+	/// <summary>
+	/// Verifies that a Cluster resource survives a JSON serialization/deserialization round-trip with data integrity.
+	/// </summary>
 	[Fact]
 	public void JsonRoundtrip_Cluster()
 	{
@@ -26,6 +32,9 @@ public class ResourceSerializerTests
 		Assert.True(deserialized.Status?.Ready);
 	}
 
+	/// <summary>
+	/// Verifies that a Cluster resource survives a YAML serialization/deserialization round-trip with data integrity.
+	/// </summary>
 	[Fact]
 	public void YamlRoundtrip_Cluster()
 	{
@@ -44,6 +53,9 @@ public class ResourceSerializerTests
 		deserialized.Spec.KubernetesVersion.Should().Be(cluster.Spec.KubernetesVersion);
 	}
 
+	/// <summary>
+	/// Verifies that a custom proto type name can be registered and retrieved for a resource type.
+	/// </summary>
 	[Fact]
 	public void ResourceTypeRegistry_RegisterAndGetName()
 	{

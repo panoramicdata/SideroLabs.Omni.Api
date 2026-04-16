@@ -14,6 +14,9 @@ namespace SideroLabs.Omni.Api.Tests.Management;
 [Trait("Category", "ServiceAccounts")]
 public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that lists all service accounts and verifies each has a name, role, and PGP keys.
+	/// </summary>
 	[Fact]
 	public async Task ListServiceAccounts_ReturnsAccounts()
 	{
@@ -43,6 +46,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		}
 	}
 
+	/// <summary>
+	/// Integration test that verifies the service account list is consistent across consecutive calls.
+	/// </summary>
 	[Fact]
 	public async Task ListServiceAccounts_MultipleCallsConsistent()
 	{
@@ -57,6 +63,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("✓ Service account list is consistent across calls");
 	}
 
+	/// <summary>
+	/// Skipped destructive test covering the full service account create/list/renew/destroy lifecycle.
+	/// </summary>
 	[Fact(Skip = "Destructive test - creates service account. Enable for manual testing only.")]
 	public async Task ServiceAccount_FullLifecycle_Success()
 	{
@@ -78,6 +87,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("Service account lifecycle test skipped - requires PGP key generation");
 	}
 
+	/// <summary>
+	/// Skipped test that would create a service account with User role and verify the returned key ID.
+	/// </summary>
 	[Fact(Skip = "Requires PGP key generation - manual test only")]
 	public async Task CreateServiceAccount_WithUserRole_ReturnsKeyId()
 	{
@@ -94,6 +106,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		// Cleanup: await OmniClient.ServiceAccounts.DestroyAsync(accountName, CancellationToken);
 	}
 
+	/// <summary>
+	/// Skipped test that would renew an existing service account with a new PGP key.
+	/// </summary>
 	[Fact(Skip = "Requires valid service account - manual test only")]
 	public async Task RenewServiceAccount_ValidAccount_ReturnsNewKeyId()
 	{
@@ -102,6 +117,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("Renew test requires existing service account");
 	}
 
+	/// <summary>
+	/// Skipped destructive test that would destroy an existing service account.
+	/// </summary>
 	[Fact(Skip = "Destructive - requires valid service account")]
 	public async Task DestroyServiceAccount_ExistingAccount_Succeeds()
 	{
@@ -110,6 +128,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("Destroy test requires existing service account");
 	}
 
+	/// <summary>
+	/// Integration test that verifies the API rejects an invalid PGP key with InvalidArgument status.
+	/// </summary>
 	[Fact]
 	public async Task CreateServiceAccount_InvalidPgpKey_ThrowsInvalidArgument()
 	{
@@ -129,6 +150,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("✓ Invalid PGP key correctly rejected: {Detail}", exception.Status.Detail);
 	}
 
+	/// <summary>
+	/// Integration test that verifies the API rejects an empty PGP key with InvalidArgument status.
+	/// </summary>
 	[Fact]
 	public async Task CreateServiceAccount_EmptyPgpKey_ThrowsInvalidArgument()
 	{

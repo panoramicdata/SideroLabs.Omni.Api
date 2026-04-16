@@ -15,6 +15,12 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "ProofOfConcept")]
 public class CosiStateServiceProofOfConceptTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration proof-of-concept test that calls the COSI State /cosi.resource.State/List endpoint directly via raw gRPC to verify accessibility.
+	/// </summary>
+	/// <summary>
+	/// Integration proof-of-concept test that calls the COSI State /cosi.resource.State/List endpoint directly via raw gRPC to verify accessibility.
+	/// </summary>
 	[Fact]
 	public async Task CosiStateService_ListClusters_Works()
 	{

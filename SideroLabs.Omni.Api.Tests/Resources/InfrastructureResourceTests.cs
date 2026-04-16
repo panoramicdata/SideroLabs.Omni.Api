@@ -13,6 +13,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "Infrastructure")]
 public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that lists MachineSet resources and verifies metadata integrity.
+	/// </summary>
 	[Fact]
 	public async Task MachineSet_List_ReturnsResults()
 	{
@@ -59,6 +62,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Integration test that lists ControlPlane resources and verifies metadata integrity.
+	/// </summary>
 	[Fact]
 	public async Task ControlPlane_List_ReturnsResults()
 	{

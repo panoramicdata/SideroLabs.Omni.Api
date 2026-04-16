@@ -15,6 +15,9 @@ namespace SideroLabs.Omni.Api.Tests.Management;
 [Trait("Category", "Provisioning")]
 public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Skipped test that creates a default Talos installer schematic and verifies the returned ID and PXE URL.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_Default_ReturnsSchematicInfo()
 	{
@@ -38,6 +41,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  gRPC Tunnel: {Enabled}", result.GrpcTunnelEnabled);
 	}
 
+	/// <summary>
+	/// Skipped test that creates a schematic with ISCSI and util-linux extensions.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_WithExtensions_ReturnsSchematicInfo()
 	{
@@ -68,6 +74,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
+	/// <summary>
+	/// Skipped test that creates a schematic with custom kernel arguments.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_WithKernelArgs_ReturnsSchematicInfo()
 	{
@@ -98,6 +107,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
+	/// <summary>
+	/// Skipped test that creates a schematic with custom SMBIOS meta values.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_WithMetaValues_ReturnsSchematicInfo()
 	{
@@ -128,6 +140,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  Schematic ID: {Id}", result.SchematicId);
 	}
 
+	/// <summary>
+	/// Skipped test that creates a schematic with extensions, kernel args, and meta values combined.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_WithAllOptions_ReturnsSchematicInfo()
 	{

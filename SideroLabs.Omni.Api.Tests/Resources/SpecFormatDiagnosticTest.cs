@@ -12,6 +12,12 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "Diagnostic")]
 public class SpecFormatDiagnosticTest(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration diagnostic test that retrieves the first Cluster resource and logs its spec content to verify COSI deserialization.
+	/// </summary>
+	/// <summary>
+	/// Integration diagnostic test that retrieves the first Cluster resource and logs its spec content to verify COSI deserialization.
+	/// </summary>
 	[Fact]
 	public async Task CheckSpecFormat_LogsWhatServerReturns()
 	{

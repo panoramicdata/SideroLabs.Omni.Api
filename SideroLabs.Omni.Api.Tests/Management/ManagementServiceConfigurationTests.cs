@@ -14,6 +14,9 @@ namespace SideroLabs.Omni.Api.Tests.Management;
 [Trait("Category", "ManagementService")]
 public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that retrieves the default kubeconfig and verifies it contains required YAML fields.
+	/// </summary>
 	[Fact]
 	public async Task GetKubeConfig_Default_ReturnsValidConfig()
 	{
@@ -30,6 +33,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved kubeconfig: {Length} bytes", kubeconfig.Length);
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a kubeconfig with a service account token.
+	/// </summary>
 	[Fact]
 	public async Task GetKubeConfig_WithServiceAccount_ReturnsConfigWithToken()
 	{
@@ -46,6 +52,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved service account kubeconfig with token");
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a kubeconfig scoped to a specific service account user.
+	/// </summary>
 	[Fact]
 	public async Task GetKubeConfig_WithServiceAccountAndUser_ReturnsConfig()
 	{
@@ -66,6 +75,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved kubeconfig for service account user: {User}", serviceAccountUser);
 	}
 
+	/// <summary>
+	/// Integration test that retrieves the default talosconfig and verifies it contains required fields.
+	/// </summary>
 	[Fact]
 	public async Task GetTalosConfig_Default_ReturnsValidConfig()
 	{
@@ -80,6 +92,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved talosconfig: {Length} bytes", talosconfig.Length);
 	}
 
+	/// <summary>
+	/// Integration test that retrieves the raw (admin) talosconfig.
+	/// </summary>
 	[Fact]
 	public async Task GetTalosConfig_Raw_ReturnsAdminConfig()
 	{
@@ -95,6 +110,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved raw talosconfig (admin mode)");
 	}
 
+	/// <summary>
+	/// Integration test that retrieves the break-glass talosconfig for emergency operator access.
+	/// </summary>
 	[Fact]
 	public async Task GetTalosConfig_WithBreakGlass_ReturnsOperatorConfig()
 	{
@@ -110,6 +128,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogWarning("⚠️ Retrieved break-glass talosconfig (operator mode)");
 	}
 
+	/// <summary>
+	/// Integration test that retrieves the omniconfig and verifies it contains context information.
+	/// </summary>
 	[Fact]
 	public async Task GetOmniConfig_ReturnsValidConfig()
 	{
@@ -124,6 +145,9 @@ public class ManagementServiceConfigurationTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ Retrieved omniconfig: {Length} bytes", omniconfig.Length);
 	}
 
+	/// <summary>
+	/// Integration test that validates a well-formed Talos machine configuration without errors.
+	/// </summary>
 	[Fact]
 	public async Task ValidateConfig_ValidTalosConfig_Succeeds()
 	{
@@ -142,6 +166,9 @@ machine:
 		Logger.LogInformation("✓ Valid Talos config validated successfully");
 	}
 
+	/// <summary>
+	/// Integration test that verifies invalid YAML is rejected by the Talos config validator.
+	/// </summary>
 	[Fact]
 	public async Task ValidateConfig_InvalidYaml_ThrowsException()
 	{
@@ -155,6 +182,9 @@ machine:
 		Logger.LogInformation("✓ Invalid YAML rejected: {StatusCode}", exception.StatusCode);
 	}
 
+	/// <summary>
+	/// Integration test that verifies an empty config string is rejected by the Talos config validator.
+	/// </summary>
 	[Fact]
 	public async Task ValidateConfig_EmptyConfig_ThrowsException()
 	{
@@ -168,6 +198,9 @@ machine:
 		Logger.LogInformation("✓ Empty config rejected");
 	}
 
+	/// <summary>
+	/// Integration test that validates JSON data against a schema and verifies it passes.
+	/// </summary>
 	[Fact]
 	public async Task ValidateJsonSchema_ValidData_ReturnsSuccess()
 	{
@@ -196,6 +229,9 @@ machine:
 		Logger.LogInformation("✓ Valid JSON data passed schema validation");
 	}
 
+	/// <summary>
+	/// Integration test that validates JSON data against a schema and verifies validation errors are returned.
+	/// </summary>
 	[Fact]
 	public async Task ValidateJsonSchema_InvalidData_ReturnsErrors()
 	{
@@ -226,6 +262,9 @@ machine:
 		Logger.LogInformation("Validation errors:\n{Summary}", summary);
 	}
 
+	/// <summary>
+	/// Integration test that verifies missing required fields are reported as validation errors.
+	/// </summary>
 	[Fact]
 	public async Task ValidateJsonSchema_MissingRequiredField_ReturnsErrors()
 	{
@@ -255,6 +294,9 @@ machine:
 		Logger.LogInformation("Validation errors:\n{Summary}", summary);
 	}
 
+	/// <summary>
+	/// Integration test that verifies nested property validation errors are returned with full detail.
+	/// </summary>
 	[Fact]
 	public async Task ValidateJsonSchema_NestedErrors_ReturnsDetailedErrors()
 	{

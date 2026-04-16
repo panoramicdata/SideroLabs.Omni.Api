@@ -11,6 +11,9 @@ namespace SideroLabs.Omni.Api.Tests;
 /// </summary>
 public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Verifies that AddOmniClient with a configure action registers OmniClientOptions and OmniClient in the service container.
+	/// </summary>
 	[Fact]
 	public void AddOmniClient_WithConfigureAction_RegistersServices()
 	{
@@ -38,6 +41,9 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		omniClient.Should().NotBeNull();
 	}
 
+	/// <summary>
+	/// Verifies that AddOmniClient with an options instance registers all settings including custom timeout.
+	/// </summary>
 	[Fact]
 	public void AddOmniClient_WithOptionsInstance_RegistersServices()
 	{
@@ -68,6 +74,9 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		omniClient.Should().NotBeNull();
 	}
 
+	/// <summary>
+	/// Verifies that options configured via the action delegate are correctly bound to the registered OmniClientOptions.
+	/// </summary>
 	[Fact]
 	public void AddOmniClient_WithAction_ConfiguresOptions()
 	{

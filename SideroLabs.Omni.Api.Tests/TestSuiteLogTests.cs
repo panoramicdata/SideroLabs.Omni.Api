@@ -8,6 +8,9 @@ namespace SideroLabs.Omni.Api.Tests;
 /// </summary>
 public class TestSuiteLogTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Verifies that each log level endpoint (Trace through Critical) can be invoked without throwing.
+	/// </summary>
 	[Theory]
 	[InlineData(LogLevel.Trace)]
 	[InlineData(LogLevel.Debug)]

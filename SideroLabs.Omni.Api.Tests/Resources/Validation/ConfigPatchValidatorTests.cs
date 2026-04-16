@@ -5,8 +5,14 @@ using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Validation;
 
+/// <summary>
+/// Unit tests for ConfigPatchValidator FluentValidation rules.
+/// </summary>
 public class ConfigPatchValidatorTests
 {
+	/// <summary>
+	/// Verifies that a fully populated valid ConfigPatch passes all validation rules.
+	/// </summary>
 	[Fact]
 	public void Validate_WithValidConfigPatch_ReturnsSuccess()
 	{
@@ -23,6 +29,9 @@ public class ConfigPatchValidatorTests
 		Assert.Empty(result.Errors);
 	}
 
+	/// <summary>
+	/// Verifies that a ConfigPatch with no patch data fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithoutData_ReturnsError()
 	{
@@ -41,6 +50,9 @@ public class ConfigPatchValidatorTests
 		Assert.Contains(result.Errors, e => e.PropertyName == "Spec.Data");
 	}
 
+	/// <summary>
+	/// Verifies that a ConfigPatch with syntactically invalid YAML fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidYamlData_ReturnsError()
 	{
@@ -64,6 +76,9 @@ public class ConfigPatchValidatorTests
 			e.ErrorMessage.Contains("valid YAML"));
 	}
 
+	/// <summary>
+	/// Verifies that a patch ID containing uppercase letters or underscores fails validation.
+	/// </summary>
 	[Fact]
 	public void Validate_WithInvalidPatchId_ReturnsError()
 	{
@@ -87,6 +102,9 @@ public class ConfigPatchValidatorTests
 			e.ErrorMessage.Contains("DNS-1123"));
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow throws ValidationException for an invalid ConfigPatch.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithInvalidConfigPatch_ThrowsValidationException()
 	{
@@ -102,6 +120,9 @@ public class ConfigPatchValidatorTests
 		Assert.Throws<ValidationException>(() => configPatch.ValidateAndThrow());
 	}
 
+	/// <summary>
+	/// Verifies that ValidateAndThrow does not throw for a fully valid ConfigPatch.
+	/// </summary>
 	[Fact]
 	public void ValidateAndThrow_WithValidConfigPatch_DoesNotThrow()
 	{

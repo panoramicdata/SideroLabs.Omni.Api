@@ -15,6 +15,12 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "Resources")]
 public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that lists all Cluster resources via the COSI State service and verifies each has required metadata.
+	/// </summary>
+	/// <summary>
+	/// Integration test that lists all Cluster resources via the COSI State service and verifies each has required metadata.
+	/// </summary>
 	[Fact]
 	public async Task ListClusters_ReturnsClusterList()
 	{
@@ -43,6 +49,12 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		}
 	}
 
+	/// <summary>
+	/// Integration test that lists all Machine resources via the COSI State service.
+	/// </summary>
+	/// <summary>
+	/// Integration test that lists all Machine resources via the COSI State service.
+	/// </summary>
 	[Fact]
 	public async Task ListMachines_ReturnsMachineList()
 	{
@@ -69,6 +81,12 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves a specific Cluster by ID from the COSI State service.
+	/// </summary>
+	/// <summary>
+	/// Integration test that retrieves a specific Cluster by ID from the COSI State service.
+	/// </summary>
 	[Fact]
 	public async Task GetCluster_ExistingCluster_ReturnsCluster()
 	{

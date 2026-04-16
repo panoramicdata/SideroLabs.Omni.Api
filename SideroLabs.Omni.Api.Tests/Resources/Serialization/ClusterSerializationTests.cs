@@ -6,8 +6,14 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SideroLabs.Omni.Api.Tests.Resources.Serialization;
 
+/// <summary>
+/// Unit tests for Cluster resource YAML and JSON serialization.
+/// </summary>
 public class ClusterSerializationTests
 {
+	/// <summary>
+	/// Verifies that a Cluster with metadata, spec, and labels serializes to valid YAML containing all expected fields.
+	/// </summary>
 	[Fact]
 	public void ToYaml_WithValidCluster_ProducesValidYaml()
 	{
@@ -33,6 +39,9 @@ public class ClusterSerializationTests
 		Assert.Contains("region: us-west-2", yaml);
 	}
 
+	/// <summary>
+	/// Verifies that a Cluster's status object is included in the YAML output.
+	/// </summary>
 	[Fact]
 	public void ToYaml_WithStatus_IncludesStatusInYaml()
 	{
@@ -61,6 +70,9 @@ public class ClusterSerializationTests
 		Assert.Contains("workerCount: 5", yaml);
 	}
 
+	/// <summary>
+	/// Verifies that a Cluster with metadata, spec, and labels serializes to valid JSON containing all expected fields.
+	/// </summary>
 	[Fact]
 	public void ToJson_WithValidCluster_ProducesValidJson()
 	{
@@ -83,6 +95,9 @@ public class ClusterSerializationTests
 		Assert.Contains("\"talosVersion\":\"v1.7.0\"", json);
 	}
 
+	/// <summary>
+	/// Verifies that valid YAML can be deserialized back into a Cluster document structure.
+	/// </summary>
 	[Fact]
 	public void FromYaml_WithValidYaml_DeserializesCluster()
 	{

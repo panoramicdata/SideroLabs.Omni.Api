@@ -13,6 +13,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "CRUD")]
 public class ResourceApplyTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that applies a new Cluster resource using the declarative apply API.
+	/// </summary>
 	[Fact]
 	public async Task Apply_NewResource_CreatesResource()
 	{
@@ -54,6 +57,9 @@ public class ResourceApplyTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Integration test that applies an updated Cluster resource and verifies the resource is updated.
+	/// </summary>
 	[Fact]
 	public async Task Apply_ExistingResource_UpdatesResource()
 	{

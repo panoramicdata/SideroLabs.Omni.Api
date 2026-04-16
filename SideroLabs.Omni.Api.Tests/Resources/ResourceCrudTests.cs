@@ -15,6 +15,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 {
 	#region Cluster CRUD Tests
 
+	/// <summary>
+	/// Integration test that creates a test Cluster resource and verifies all fields are set correctly.
+	/// </summary>
 	[Fact]
 	public async Task Cluster_Create_Success()
 	{
@@ -59,6 +62,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves an existing Cluster resource by ID.
+	/// </summary>
 	[Fact]
 	public async Task Cluster_Get_ReturnsCluster()
 	{

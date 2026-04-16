@@ -13,6 +13,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "ErrorHandling")]
 public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that verifies getting a non-existent cluster ID throws RpcException with NotFound status.
+	/// </summary>
 	[Fact]
 	public async Task Get_NonExistentResource_ThrowsNotFound()
 	{
@@ -39,6 +42,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		Logger.LogInformation("✅ NotFound exception thrown as expected");
 	}
 
+	/// <summary>
+	/// Integration test that verifies deleting a non-existent cluster ID throws RpcException with NotFound status.
+	/// </summary>
 	[Fact]
 	public async Task Delete_NonExistentResource_ThrowsNotFound()
 	{
@@ -65,6 +71,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		Logger.LogInformation("✅ NotFound exception thrown as expected");
 	}
 
+	/// <summary>
+	/// Integration test that verifies listing with a malformed selector string throws an error.
+	/// </summary>
 	[Fact]
 	public async Task List_WithInvalidSelector_ThrowsError()
 	{

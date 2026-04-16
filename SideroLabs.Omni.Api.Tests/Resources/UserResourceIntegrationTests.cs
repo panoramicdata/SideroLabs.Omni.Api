@@ -14,6 +14,12 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "CRUD")]
 public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that creates a user, reads it back, updates its role, lists all users, and then deletes it.
+	/// </summary>
+	/// <summary>
+	/// Integration test that creates a user, reads it back, updates its role, lists all users, and then deletes it.
+	/// </summary>
 	[Fact]
 	public async Task User_FullCRUDLifecycle_Success()
 	{

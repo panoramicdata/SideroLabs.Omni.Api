@@ -14,6 +14,9 @@ namespace SideroLabs.Omni.Api.Tests.Operations;
 [Trait("Category", "ClusterOperations")]
 public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that lists all clusters and verifies each has required metadata fields.
+	/// </summary>
 	[Fact]
 	public async Task ListAsync_ReturnsAllClusters()
 	{
@@ -59,6 +62,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Integration test that lists clusters filtered to the 'default' namespace.
+	/// </summary>
 	[Fact]
 	public async Task ListAsync_WithCustomNamespace_ReturnsFilteredClusters()
 	{
@@ -91,6 +97,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Integration test that retrieves an existing cluster by ID.
+	/// </summary>
 	[Fact]
 	public async Task GetAsync_ExistingCluster_ReturnsCluster()
 	{

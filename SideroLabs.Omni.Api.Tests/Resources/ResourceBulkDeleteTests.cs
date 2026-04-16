@@ -14,6 +14,9 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Trait("Category", "CRUD")]
 public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
+	/// <summary>
+	/// Integration test that bulk-deletes multiple Cluster resources matching a label selector.
+	/// </summary>
 	[Fact]
 	public async Task DeleteMany_WithSelector_DeletesMatchingResources()
 	{
