@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # SideroLabs Omni API Client
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4f7bad7c811949dcb03008b3f799b12b)](https://app.codacy.com/gh/panoramicdata/SideroLabs.Omni.Api/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)

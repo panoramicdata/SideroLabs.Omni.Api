@@ -1,94 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<WarningsAsErrors />
-		<MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
-		
-		<!-- Suppress protobuf compiler warnings -->
-		<NoWarn>$(NoWarn);Protobuf1591</NoWarn>
-
-		<!-- Package Information -->
-		<PackageId>SideroLabs.Omni.Api</PackageId>
-		<Title>SideroLabs Omni gRPC API Client</Title>
-		<Authors>Panoramic Data Limited</Authors>
-		<Company>Panoramic Data Limited</Company>
-		<Product>SideroLabs.Omni.Api</Product>
-		<Description>A .NET gRPC client library for the SideroLabs Omni Management API. Provides native gRPC implementations of Omni services with PGP authentication.</Description>
-		<Copyright>Panoramic Data Limited 2025</Copyright>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>siderolabs;omni;grpc;api;kubernetes;talos;management;pgp</PackageTags>
-		<PackageReleaseNotes>Client implementation for SideroLabs Omni Management API via gRPC</PackageReleaseNotes>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<PackageIcon>Logo.png</PackageIcon>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <Compile Remove="Models\Requests\**" />
-	  <Compile Remove="Models\Responses\**" />
-	  <EmbeddedResource Remove="Models\Requests\**" />
-	  <EmbeddedResource Remove="Models\Responses\**" />
-	  <None Remove="Models\Requests\**" />
-	  <None Remove="Models\Responses\**" />
-	</ItemGroup>
-
-	<!-- Expose internals to test project -->
-	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>SideroLabs.Omni.Api.Tests</_Parameter1>
-		</AssemblyAttribute>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
-		<PackageReference Include="FluentValidation" Version="12.0.0" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.8.118">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-		<PackageReference Include="Grpc.Core.Api" Version="2.71.0" />
-		<PackageReference Include="Grpc.Tools" Version="2.72.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Google.Protobuf" Version="3.33.0" />
-		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
-		<PackageReference Include="YamlDotNet" Version="16.3.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="..\README.md" Pack="true" PackagePath="\" />
-		<None Include="Logo.png" Pack="true" PackagePath="" />
-	</ItemGroup>
-
-	<!-- Enable protobuf compilation with proper include paths -->
-	<ItemGroup>
-		<Protobuf Include="Protos\management.proto" GrpcServices="Client" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\omni\resources\resources.proto" GrpcServices="Client" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\v1alpha1\resource.proto" GrpcServices="None" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\v1alpha1\state.proto" GrpcServices="Client" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\common\common.proto" GrpcServices="None" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\omni.proto" GrpcServices="None" ProtoRoot="Protos" />
-		<Protobuf Include="Protos\google\rpc\status.proto" GrpcServices="None" ProtoRoot="Protos" />
-		
-		<!-- Talos machine proto (required by omni specs) -->
-		<Protobuf Include="Protos\talos\machine\machine.proto" GrpcServices="None" ProtoRoot="Protos" />
-		
-		<!-- Omni resource spec definitions -->
-		<Protobuf Include="Protos\omni\specs\*.proto" GrpcServices="None" ProtoRoot="Protos" />
-	</ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <!-- Suppress protobuf compiler warnings -->
+    <NoWarn>$(NoWarn);Protobuf1591</NoWarn>
+    <!-- Package Information -->
+    <PackageId>SideroLabs.Omni.Api</PackageId>
+    <Title>SideroLabs Omni gRPC API Client</Title>
+    <Authors>Panoramic Data Limited</Authors>
+    <Company>Panoramic Data Limited</Company>
+    <Product>SideroLabs.Omni.Api</Product>
+    <Description>A .NET gRPC client library for the SideroLabs Omni Management API. Provides native gRPC implementations of Omni services with PGP authentication.</Description>
+    <Copyright>Panoramic Data Limited 2025</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>siderolabs;omni;grpc;api;kubernetes;talos;management;pgp</PackageTags>
+    <PackageReleaseNotes>Client implementation for SideroLabs Omni Management API via gRPC</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageIcon>Logo.png</PackageIcon>
+    <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Models\Requests\**" />
+    <Compile Remove="Models\Responses\**" />
+    <EmbeddedResource Remove="Models\Requests\**" />
+    <EmbeddedResource Remove="Models\Responses\**" />
+    <None Remove="Models\Requests\**" />
+    <None Remove="Models\Responses\**" />
+  </ItemGroup>
+  <!-- Expose internals to test project -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>SideroLabs.Omni.Api.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Nerdbank.GitVersioning">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Core.Api" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.ClientFactory" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="Logo.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <!-- Enable protobuf compilation with proper include paths -->
+  <ItemGroup>
+    <Protobuf Include="Protos\management.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\omni\resources\resources.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\v1alpha1\resource.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\v1alpha1\state.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\common\common.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\omni.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\google\rpc\status.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <!-- Talos machine proto (required by omni specs) -->
+    <Protobuf Include="Protos\talos\machine\machine.proto" GrpcServices="None" ProtoRoot="Protos" />
+    <!-- Omni resource spec definitions -->
+    <Protobuf Include="Protos\omni\specs\*.proto" GrpcServices="None" ProtoRoot="Protos" />
+  </ItemGroup>
 </Project>

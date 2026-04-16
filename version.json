@@ -1,13 +1,14 @@
 {
-	"$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-	"version": "1.1",
-	"publicReleaseRefSpec": [
-		"^refs/heads/main$",
-		"^refs/heads/master$"
-	],
-	"cloudBuild": {
-		"buildNumber": {
-			"enabled": true
-		}
-	}
+  "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
+  "version": "1.1",
+  "publicReleaseRefSpec": [
+    "^refs/heads/main$",
+    "^refs/heads/master$",
+    "^refs/tags/\\d\u002B\\.\\d\u002B\\.\\d\u002B$"
+  ],
+  "cloudBuild": {
+    "buildNumber": {
+      "enabled": true
+    }
+  }
 }

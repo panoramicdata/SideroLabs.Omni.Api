@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -12,6 +13,12 @@
     <File Path="Release.ps1" />
     <File Path="SideroLabs.Omni.Api.dic" />
     <File Path="version.json" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="Publish.ps1" />
+    <File Path="SECURITY.md" />
   </Folder>
   <Project Path="SideroLabs.Omni.Api.Examples/SideroLabs.Omni.Api.Examples.csproj" />
   <Project Path="SideroLabs.Omni.Api.Tests/SideroLabs.Omni.Api.Tests.csproj" />
