@@ -7,6 +7,9 @@ namespace SideroLabs.Omni.Api.Resources.Validation;
 /// </summary>
 public class ExtensionsConfigurationValidator : AbstractValidator<ExtensionsConfiguration>
 {
+	/// <summary>
+	/// Initializes validation rules for <see cref="ExtensionsConfiguration"/> resources and extension image references.
+	/// </summary>
 	public ExtensionsConfigurationValidator()
 	{
 		RuleFor(x => x.Metadata.Id)

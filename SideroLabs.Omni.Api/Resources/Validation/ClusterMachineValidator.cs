@@ -7,6 +7,9 @@ namespace SideroLabs.Omni.Api.Resources.Validation;
 /// </summary>
 public class ClusterMachineValidator : AbstractValidator<ClusterMachine>
 {
+	/// <summary>
+	/// Initializes validation rules for <see cref="ClusterMachine"/> resources before create or update operations.
+	/// </summary>
 	public ClusterMachineValidator()
 	{
 		RuleFor(x => x.Metadata.Id)

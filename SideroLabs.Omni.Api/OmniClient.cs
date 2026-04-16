@@ -97,36 +97,61 @@ public class OmniClient : IOmniClient
 	/// Gets the Resource Client for COSI resource operations
 	/// Now uses the COSI v1alpha1 State service which works on Omni SaaS!
 	/// </summary>
+	/// <inheritdoc/>
 	public IOmniResourceClient Resources => _resourceClient ??= new CosiStateClientService(_channel, _logger, _options.IsReadOnly, _options, _authenticator);
 
 	// === Resource-Specific Operations ===
 
+	/// <inheritdoc/>
 	public IClusterOperations Clusters => _clusterOperations ??= new ClusterOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IMachineOperations Machines => _machineOperations ??= new MachineOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IClusterMachineOperations ClusterMachines => _clusterMachineOperations ??= new ClusterMachineOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IMachineSetOperations MachineSets => _machineSetOperations ??= new MachineSetOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IMachineSetNodeOperations MachineSetNodes => _machineSetNodeOperations ??= new MachineSetNodeOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IMachineClassOperations MachineClasses => _machineClassOperations ??= new MachineClassOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IConfigPatchOperations ConfigPatches => _configPatchOperations ??= new ConfigPatchOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IExtensionsConfigurationOperations ExtensionsConfigurations => _extensionsConfigurationOperations ??= new ExtensionsConfigurationOperations(Resources, _options);
+	/// <inheritdoc/>
 	public ITalosConfigOperations TalosConfigs => _talosConfigOperations ??= new TalosConfigOperations(Resources, _options);
+	/// <inheritdoc/>
 	public ILoadBalancerOperations LoadBalancers => _loadBalancerOperations ??= new LoadBalancerOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IControlPlaneOperations ControlPlanes => _controlPlaneOperations ??= new ControlPlaneOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IKubernetesNodeOperations KubernetesNodes => _kubernetesNodeOperations ??= new KubernetesNodeOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IIdentityOperations Identities => _identityOperations ??= new IdentityOperations(Resources, _options);
+	/// <inheritdoc/>
 	public IUserManagement Users => _userManagement ??= new UserManagement(Resources, _logger);
+	/// <inheritdoc/>
 	public ITemplateOperations Templates => _templateOperations ??= new TemplateOperations(Resources, _logger);
 
 	// === Management Services ===
 
+	/// <inheritdoc/>
 	public IKubeConfigService KubeConfig => _kubeConfigService ??= new KubeConfigService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public ITalosConfigService TalosConfig => _talosConfigService ??= new TalosConfigService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public IOmniConfigService OmniConfig => _omniConfigService ??= new OmniConfigService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public IServiceAccountService ServiceAccounts => _serviceAccountService ??= new ServiceAccountService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public IValidationService Validation => _validationService ??= new ValidationService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public IKubernetesService Kubernetes => _kubernetesService ??= new KubernetesService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public ISchematicService Schematics => _schematicService ??= new SchematicService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public IMachineService MachineManagement => _machineService ??= new MachineService(_options, _channel, _authenticator);
+	/// <inheritdoc/>
 	public ISupportService Support => _supportService ??= new SupportService(_options, _channel, _authenticator);
 
 	// === Legacy (Deprecated) ===
@@ -138,14 +163,19 @@ public class OmniClient : IOmniClient
 	/// ⚠️ DEPRECATED: Use specific services like KubeConfig, ServiceAccounts, etc. instead.
 	/// This property is maintained for backward compatibility but will be removed in a future version.
 	/// </remarks>
+	/// <inheritdoc/>
 	[Obsolete("Use specific services like KubeConfig, ServiceAccounts, Validation, etc. instead of the monolithic Management service.")]
 	public IManagementService Management => _managementService ??= new OmniManagementService(_options, _channel, _authenticator);
 
 	// === Client Properties ===
 
+	/// <inheritdoc/>
 	public Uri BaseUrl => _options.BaseUrl;
+	/// <inheritdoc/>
 	public bool UseTls => _options.UseTls;
+	/// <inheritdoc/>
 	public bool IsReadOnly => _options.IsReadOnly;
+	/// <inheritdoc/>
 	public string? Identity => _authenticator?.Identity;
 
 	private void ValidateOptions()

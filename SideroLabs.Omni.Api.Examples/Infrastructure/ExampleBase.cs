@@ -6,6 +6,9 @@ namespace SideroLabs.Omni.Api.Examples.Infrastructure;
 /// <param name="output">Output interface</param>
 public abstract class ExampleBase(IExampleOutput output)
 {
+	/// <summary>
+	/// Gets the output sink used by examples for status, result, and error messages.
+	/// </summary>
 	protected readonly IExampleOutput Output = output ?? throw new ArgumentNullException(nameof(output));
 
 	/// <summary>

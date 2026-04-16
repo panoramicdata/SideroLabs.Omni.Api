@@ -3,141 +3,167 @@ using SideroLabs.Omni.Api.Resources;
 namespace SideroLabs.Omni.Api.Interfaces;
 
 /// <summary>
-/// Operations for MachineSet resources
+/// Defines namespaced read and watch operations for Omni COSI resources.
 /// </summary>
-public interface IMachineSetOperations
+/// <typeparam name="TResource">The concrete Omni resource type.</typeparam>
+public interface INamespacedResourceReadOperations<TResource>
+	where TResource : IOmniResource
 {
-	IAsyncEnumerable<MachineSet> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineSet> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineSet> CreateAsync(MachineSet machineSet, CancellationToken cancellationToken = default);
-	Task<MachineSet> UpdateAsync(MachineSet machineSet, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<MachineSet>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<MachineSet> ApplyAsync(MachineSet machineSet, bool dryRun = false, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Lists resources in a namespace.
+	/// </summary>
+	/// <param name="namespace">The COSI namespace to query. Defaults to <c>default</c>.</param>
+	/// <param name="cancellationToken">A token that can cancel the asynchronous stream.</param>
+	/// <returns>An asynchronous stream of matching resources.</returns>
+	IAsyncEnumerable<TResource> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets a resource by identifier from a namespace.
+	/// </summary>
+	/// <param name="id">The resource identifier.</param>
+	/// <param name="namespace">The COSI namespace to query. Defaults to <c>default</c>.</param>
+	/// <param name="cancellationToken">A token that can cancel the operation.</param>
+	/// <returns>The resolved resource.</returns>
+	Task<TResource> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Watches resources for add, update, and delete events.
+	/// </summary>
+	/// <param name="namespace">The COSI namespace to watch. Defaults to <c>default</c>.</param>
+	/// <param name="id">Optional identifier filter for a single resource.</param>
+	/// <param name="cancellationToken">A token that can cancel the asynchronous stream.</param>
+	/// <returns>An asynchronous stream of resource events.</returns>
+	IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for MachineSetNode resources
+/// Defines create, update, and delete operations for Omni COSI resources.
 /// </summary>
-public interface IMachineSetNodeOperations
+/// <typeparam name="TResource">The concrete Omni resource type.</typeparam>
+public interface INamespacedResourceWriteOperations<TResource>
+	where TResource : IOmniResource
 {
-	IAsyncEnumerable<MachineSetNode> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineSetNode> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineSetNode> CreateAsync(MachineSetNode node, CancellationToken cancellationToken = default);
-	Task<MachineSetNode> UpdateAsync(MachineSetNode node, string? currentVersion = null, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Creates a new resource.
+	/// </summary>
+	/// <param name="resource">The resource payload to create.</param>
+	/// <param name="cancellationToken">A token that can cancel the operation.</param>
+	/// <returns>The created resource as returned by Omni.</returns>
+	Task<TResource> CreateAsync(TResource resource, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Updates an existing resource.
+	/// </summary>
+	/// <param name="resource">The resource payload containing desired state.</param>
+	/// <param name="currentVersion">Optional optimistic-lock version from metadata.</param>
+	/// <param name="cancellationToken">A token that can cancel the operation.</param>
+	/// <returns>The updated resource.</returns>
+	Task<TResource> UpdateAsync(TResource resource, string? currentVersion = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Deletes a resource by identifier.
+	/// </summary>
+	/// <param name="id">The resource identifier.</param>
+	/// <param name="namespace">The COSI namespace containing the resource. Defaults to <c>default</c>.</param>
+	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<MachineSetNode>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<MachineSetNode> ApplyAsync(MachineSetNode node, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for ConfigPatch resources
+/// Defines apply operations for Omni COSI resources.
 /// </summary>
-public interface IConfigPatchOperations
+/// <typeparam name="TResource">The concrete Omni resource type.</typeparam>
+public interface INamespacedResourceApplyOperations<TResource>
+	where TResource : IOmniResource
 {
-	IAsyncEnumerable<ConfigPatch> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ConfigPatch> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ConfigPatch> CreateAsync(ConfigPatch configPatch, CancellationToken cancellationToken = default);
-	Task<ConfigPatch> UpdateAsync(ConfigPatch configPatch, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<ConfigPatch>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<ConfigPatch> ApplyAsync(ConfigPatch configPatch, bool dryRun = false, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Applies desired resource state using Omni apply semantics.
+	/// </summary>
+	/// <param name="resource">The desired resource state.</param>
+	/// <param name="dryRun"><see langword="true"/> to validate without persisting.</param>
+	/// <param name="cancellationToken">A token that can cancel the operation.</param>
+	/// <returns>The applied resource.</returns>
+	Task<TResource> ApplyAsync(TResource resource, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for ExtensionsConfiguration resources
+/// Defines full CRUD, apply, and watch operations for a namespaced Omni COSI resource.
 /// </summary>
-public interface IExtensionsConfigurationOperations
+/// <typeparam name="TResource">The concrete Omni resource type.</typeparam>
+public interface INamespacedResourceOperations<TResource> :
+	INamespacedResourceReadOperations<TResource>,
+	INamespacedResourceWriteOperations<TResource>,
+	INamespacedResourceApplyOperations<TResource>
+	where TResource : IOmniResource
 {
-	IAsyncEnumerable<ExtensionsConfiguration> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ExtensionsConfiguration> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ExtensionsConfiguration> CreateAsync(ExtensionsConfiguration config, CancellationToken cancellationToken = default);
-	Task<ExtensionsConfiguration> UpdateAsync(ExtensionsConfiguration config, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<ExtensionsConfiguration>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<ExtensionsConfiguration> ApplyAsync(ExtensionsConfiguration config, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for Identity resources
+/// Operations for <see cref="MachineSet"/> resources.
 /// </summary>
-public interface IIdentityOperations
+public interface IMachineSetOperations : INamespacedResourceOperations<MachineSet>
 {
-	IAsyncEnumerable<Identity> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<Identity> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<Identity> CreateAsync(Identity identity, CancellationToken cancellationToken = default);
-	Task<Identity> UpdateAsync(Identity identity, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<Identity>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<Identity> ApplyAsync(Identity identity, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for ControlPlane resources
+/// Operations for <see cref="MachineSetNode"/> resources.
 /// </summary>
-public interface IControlPlaneOperations
+public interface IMachineSetNodeOperations : INamespacedResourceOperations<MachineSetNode>
 {
-	IAsyncEnumerable<ControlPlane> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ControlPlane> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<ControlPlane> CreateAsync(ControlPlane controlPlane, CancellationToken cancellationToken = default);
-	Task<ControlPlane> UpdateAsync(ControlPlane controlPlane, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<ControlPlane>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<ControlPlane> ApplyAsync(ControlPlane controlPlane, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for LoadBalancerConfig resources
+/// Operations for <see cref="ConfigPatch"/> resources.
 /// </summary>
-public interface ILoadBalancerOperations
+public interface IConfigPatchOperations : INamespacedResourceOperations<ConfigPatch>
 {
-	IAsyncEnumerable<LoadBalancerConfig> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<LoadBalancerConfig> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<LoadBalancerConfig> CreateAsync(LoadBalancerConfig config, CancellationToken cancellationToken = default);
-	Task<LoadBalancerConfig> UpdateAsync(LoadBalancerConfig config, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<LoadBalancerConfig>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<LoadBalancerConfig> ApplyAsync(LoadBalancerConfig config, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for TalosConfig resources
+/// Operations for <see cref="ExtensionsConfiguration"/> resources.
 /// </summary>
-public interface ITalosConfigOperations
+public interface IExtensionsConfigurationOperations : INamespacedResourceOperations<ExtensionsConfiguration>
 {
-	IAsyncEnumerable<TalosConfig> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<TalosConfig> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<TalosConfig> CreateAsync(TalosConfig config, CancellationToken cancellationToken = default);
-	Task<TalosConfig> UpdateAsync(TalosConfig config, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<TalosConfig>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<TalosConfig> ApplyAsync(TalosConfig config, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for KubernetesNode resources
+/// Operations for <see cref="Identity"/> resources.
 /// </summary>
-public interface IKubernetesNodeOperations
+public interface IIdentityOperations : INamespacedResourceOperations<Identity>
 {
-	IAsyncEnumerable<KubernetesNode> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<KubernetesNode> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<KubernetesNode> CreateAsync(KubernetesNode node, CancellationToken cancellationToken = default);
-	Task<KubernetesNode> UpdateAsync(KubernetesNode node, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<KubernetesNode>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<KubernetesNode> ApplyAsync(KubernetesNode node, bool dryRun = false, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-/// Operations for MachineClass resources
+/// Operations for <see cref="ControlPlane"/> resources.
 /// </summary>
-public interface IMachineClassOperations
+public interface IControlPlaneOperations : INamespacedResourceOperations<ControlPlane>
 {
-	IAsyncEnumerable<MachineClass> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineClass> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	Task<MachineClass> CreateAsync(MachineClass machineClass, CancellationToken cancellationToken = default);
-	Task<MachineClass> UpdateAsync(MachineClass machineClass, string? currentVersion = null, CancellationToken cancellationToken = default);
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
-	IAsyncEnumerable<ResourceEvent<MachineClass>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
-	Task<MachineClass> ApplyAsync(MachineClass machineClass, bool dryRun = false, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Operations for <see cref="LoadBalancerConfig"/> resources.
+/// </summary>
+public interface ILoadBalancerOperations : INamespacedResourceOperations<LoadBalancerConfig>
+{
+}
+
+/// <summary>
+/// Operations for <see cref="TalosConfig"/> resources.
+/// </summary>
+public interface ITalosConfigOperations : INamespacedResourceOperations<TalosConfig>
+{
+}
+
+/// <summary>
+/// Operations for <see cref="KubernetesNode"/> resources.
+/// </summary>
+public interface IKubernetesNodeOperations : INamespacedResourceOperations<KubernetesNode>
+{
+}
+
+/// <summary>
+/// Operations for <see cref="MachineClass"/> resources.
+/// </summary>
+public interface IMachineClassOperations : INamespacedResourceOperations<MachineClass>
+{
 }

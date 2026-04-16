@@ -7,6 +7,9 @@ namespace SideroLabs.Omni.Api.Resources.Validation;
 /// </summary>
 public class ClusterValidator : AbstractValidator<Cluster>
 {
+	/// <summary>
+	/// Initializes validation rules for <see cref="Cluster"/> resources, including version and metadata constraints.
+	/// </summary>
 	public ClusterValidator()
 	{
 		RuleFor(x => x.Metadata.Id)

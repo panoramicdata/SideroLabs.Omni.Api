@@ -12,7 +12,14 @@ public class ExtensionsConfiguration : OmniResource<ExtensionsConfigurationSpec,
 {
 	private static readonly ExtensionsConfigurationValidator _validator = new();
 
+	/// <summary>
+	/// Gets the Omni resource kind for extensions configuration resources.
+	/// </summary>
 	public override string Kind => "ExtensionsConfiguration";
+
+	/// <summary>
+	/// Gets the Omni API version used for extensions configuration resources.
+	/// </summary>
 	public override string ApiVersion => "omni.sidero.dev/v1alpha1";
 
 	/// <summary>

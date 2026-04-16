@@ -10,7 +10,14 @@ public class ClusterMachine : OmniResource<ClusterMachineSpec, ClusterMachineSta
 {
 	private static readonly ClusterMachineValidator _validator = new();
 
+	/// <summary>
+	/// Gets the Omni resource kind for cluster-machine membership resources.
+	/// </summary>
 	public override string Kind => "ClusterMachine";
+
+	/// <summary>
+	/// Gets the Omni API version used for cluster-machine resources.
+	/// </summary>
 	public override string ApiVersion => "omni.sidero.dev/v1alpha1";
 
 	/// <summary>

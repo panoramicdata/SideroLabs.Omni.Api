@@ -14,7 +14,6 @@ namespace SideroLabs.Omni.Api.Services;
 /// Initializes a new instance of the OmniServiceBase class
 /// </remarks>
 /// <param name="options">Client options</param>
-/// <param name="logger">Logger instance</param>
 /// <param name="channel">gRPC channel</param>
 /// <param name="authenticator">Authentication provider</param>
 public abstract class OmniServiceBase(
@@ -22,9 +21,24 @@ public abstract class OmniServiceBase(
 	GrpcChannel channel,
 	OmniAuthenticator? authenticator)
 {
+	/// <summary>
+	/// Gets client configuration options shared by service implementations.
+	/// </summary>
 	protected readonly OmniClientOptions Options = options ?? throw new ArgumentNullException(nameof(options));
+
+	/// <summary>
+	/// Gets the logger instance used for service diagnostics.
+	/// </summary>
 	protected readonly ILogger Logger = options.Logger;
+
+	/// <summary>
+	/// Gets the gRPC channel used to invoke Omni endpoints.
+	/// </summary>
 	protected readonly GrpcChannel Channel = channel ?? throw new ArgumentNullException(nameof(channel));
+
+	/// <summary>
+	/// Gets the optional PGP authenticator used to sign outgoing requests.
+	/// </summary>
 	protected readonly OmniAuthenticator? Authenticator = authenticator;
 
 	/// <summary>

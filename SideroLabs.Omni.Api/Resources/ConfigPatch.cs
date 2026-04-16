@@ -12,7 +12,14 @@ public class ConfigPatch : OmniResource<ConfigPatchSpec, ConfigPatchStatus>
 {
 	private static readonly ConfigPatchValidator _validator = new();
 
+	/// <summary>
+	/// Gets the Omni resource kind for Talos config patch resources.
+	/// </summary>
 	public override string Kind => "ConfigPatch";
+
+	/// <summary>
+	/// Gets the Omni API version used for config patch resources.
+	/// </summary>
 	public override string ApiVersion => "omni.sidero.dev/v1alpha1";
 
 	/// <summary>

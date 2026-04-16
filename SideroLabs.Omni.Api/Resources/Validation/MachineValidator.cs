@@ -7,6 +7,9 @@ namespace SideroLabs.Omni.Api.Resources.Validation;
 /// </summary>
 public class MachineValidator : AbstractValidator<Machine>
 {
+	/// <summary>
+	/// Initializes validation rules for <see cref="Machine"/> resources, including role and identity constraints.
+	/// </summary>
 	public MachineValidator()
 	{
 		RuleFor(x => x.Metadata.Id)

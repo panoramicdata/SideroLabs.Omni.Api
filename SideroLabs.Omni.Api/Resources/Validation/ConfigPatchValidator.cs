@@ -7,6 +7,9 @@ namespace SideroLabs.Omni.Api.Resources.Validation;
 /// </summary>
 public class ConfigPatchValidator : AbstractValidator<ConfigPatch>
 {
+	/// <summary>
+	/// Initializes validation rules for <see cref="ConfigPatch"/> resources, including YAML patch content checks.
+	/// </summary>
 	public ConfigPatchValidator()
 	{
 		RuleFor(x => x.Metadata.Id)
