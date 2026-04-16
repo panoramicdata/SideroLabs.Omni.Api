@@ -124,6 +124,9 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("? Successfully retrieved cluster: {Id}", cluster.Metadata.Id);
 	}
 
+	/// <summary>
+	/// Verifies that an existing machine can be retrieved by its ID via the COSI State service.
+	/// </summary>
 	[Fact]
 	public async Task GetMachine_ExistingMachine_ReturnsMachine()
 	{
@@ -159,6 +162,9 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("? Successfully retrieved machine: {Id}", machine.Metadata.Id);
 	}
 
+	/// <summary>
+	/// Verifies that requesting a non-existent cluster throws a <see cref="Grpc.Core.StatusCode.NotFound"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task GetCluster_NonExistent_ThrowsNotFound()
 	{
@@ -179,6 +185,9 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("? Correctly returned NotFound for non-existent cluster");
 	}
 
+	/// <summary>
+	/// Verifies that requesting a non-existent machine throws a <see cref="Grpc.Core.StatusCode.NotFound"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task GetMachine_NonExistent_ThrowsNotFound()
 	{
@@ -199,6 +208,9 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("? Correctly returned NotFound for non-existent machine");
 	}
 
+	/// <summary>
+	/// Verifies that listing resources with an explicit default namespace returns resources correctly namespaced.
+	/// </summary>
 	[Fact]
 	public async Task ListWithNamespace_DefaultNamespace_ReturnsResources()
 	{
@@ -219,6 +231,9 @@ public class CosiStateBasicOperationsTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("?? Found {Count} clusters in 'default' namespace", clusterCount);
 	}
 
+	/// <summary>
+	/// Comprehensive integration test that proves the COSI State service endpoint is accessible and functional.
+	/// </summary>
 	[Fact]
 	public async Task ComprehensiveTest_ProveCosiStateWorks()
 	{

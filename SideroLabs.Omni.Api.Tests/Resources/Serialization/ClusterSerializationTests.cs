@@ -138,6 +138,9 @@ spec:
 		Assert.Equal("v1.7.0", spec["talosVersion"]);
 	}
 
+	/// <summary>
+	/// Verifies that serializing a cluster to YAML and deserializing it back preserves all data fields.
+	/// </summary>
 	[Fact]
 	public void RoundTrip_YamlToObjectToYaml_PreservesData()
 	{

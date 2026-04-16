@@ -110,6 +110,9 @@ public class ResourceApplyTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that applying a well-formed YAML document creates the described resource successfully.
+	/// </summary>
 	[Fact]
 	public async Task ApplyYaml_ValidYaml_CreatesResource()
 	{
@@ -163,6 +166,9 @@ spec:
 		}
 	}
 
+	/// <summary>
+	/// Verifies that applying a malformed YAML string throws an exception rather than silently failing.
+	/// </summary>
 	[Fact]
 	public async Task ApplyYaml_InvalidYaml_ThrowsException()
 	{
@@ -191,6 +197,9 @@ this is not: valid yaml
 		Logger.LogInformation("✅ Correctly rejected invalid YAML");
 	}
 
+	/// <summary>
+	/// Verifies that applying a resource from a valid YAML file creates the described resource successfully.
+	/// </summary>
 	[Fact]
 	public async Task ApplyFile_ValidFile_CreatesResource()
 	{
@@ -247,6 +256,9 @@ spec:
 		}
 	}
 
+	/// <summary>
+	/// Verifies that attempting to apply from a non-existent file path throws a <see cref="FileNotFoundException"/>.
+	/// </summary>
 	[Fact]
 	public async Task ApplyFile_NonExistentFile_ThrowsException()
 	{
@@ -270,6 +282,9 @@ spec:
 		Logger.LogInformation("✅ Correctly rejected non-existent file");
 	}
 
+	/// <summary>
+	/// Verifies that applying the same resource multiple times produces the same result (idempotent behavior).
+	/// </summary>
 	[Fact]
 	public async Task Apply_Idempotent_MultipleApplicationsSameResult()
 	{

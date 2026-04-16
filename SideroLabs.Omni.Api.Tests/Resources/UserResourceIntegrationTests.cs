@@ -115,6 +115,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		}
 	}
 
+	/// <summary>
+	/// Verifies that a user can be created using the builder pattern and the resource is persisted correctly.
+	/// </summary>
 	[Fact]
 	public async Task User_Create_WithBuilder_Success()
 	{
@@ -164,6 +167,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		}
 	}
 
+	/// <summary>
+	/// Verifies that when a user update fails midway, cleanup still removes the user resources correctly.
+	/// </summary>
 	[Fact]
 	public async Task User_Update_FailsMidway_CleansUpProperly()
 	{
@@ -213,6 +219,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		}
 	}
 
+	/// <summary>
+	/// Verifies that creating a user with an invalid role name throws an <see cref="ArgumentException"/>.
+	/// </summary>
 	[Fact]
 	public async Task User_CreateWithInvalidRole_ThrowsException()
 	{
@@ -233,6 +242,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		Logger.LogInformation("✅ Invalid role correctly rejected");
 	}
 
+	/// <summary>
+	/// Verifies that creating a user with an email that already exists throws a gRPC <see cref="Grpc.Core.RpcException"/>.
+	/// </summary>
 	[Fact]
 	public async Task User_CreateDuplicate_ThrowsException()
 	{
@@ -263,6 +275,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		}
 	}
 
+	/// <summary>
+	/// Verifies that retrieving a non-existent user throws a <see cref="Grpc.Core.RpcException"/> with a NotFound status.
+	/// </summary>
 	[Fact]
 	public async Task User_GetNonExistent_ThrowsNotFoundException()
 	{
@@ -283,6 +298,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		Logger.LogInformation("✅ Non-existent user correctly returns NotFound");
 	}
 
+	/// <summary>
+	/// Verifies that deleting a non-existent user completes successfully (idempotent delete).
+	/// </summary>
 	[Fact]
 	public async Task User_DeleteNonExistent_Succeeds()
 	{
@@ -302,6 +320,10 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		Logger.LogInformation("✅ Deleting non-existent user succeeds (idempotent)");
 	}
 
+	/// <summary>
+	/// Verifies that a user can be created with each of the supported roles (Admin, Operator, Reader, None).
+	/// </summary>
+	/// <param name="role">The role to assign to the user being created.</param>
 	[Theory]
 	[InlineData("Admin")]
 	[InlineData("Operator")]
@@ -339,6 +361,9 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing all users returns a non-empty collection of user records.
+	/// </summary>
 	[Fact]
 	public async Task User_List_ReturnsAllUsers()
 	{

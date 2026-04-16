@@ -80,6 +80,9 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that watching resources with a label selector only yields events for resources matching the selector.
+	/// </summary>
 	[Fact]
 	public async Task Watch_WithSelector_FiltersEvents()
 	{
@@ -132,6 +135,9 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that watching with tail events replays recent event history before emitting live events.
+	/// </summary>
 	[Fact]
 	public async Task Watch_TailEvents_ReplaysHistory()
 	{
@@ -178,6 +184,9 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that cancelling a watch stream correctly stops the streaming and does not throw unexpected exceptions.
+	/// </summary>
 	[Fact]
 	public async Task Watch_Cancellation_StopsStreaming()
 	{

@@ -171,6 +171,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		Logger.LogWarning("⚠️ This test is DESTRUCTIVE and should only be run manually");
 	}
 
+	/// <summary>
+	/// Verifies that streaming Kubernetes sync manifests stops cleanly when the cancellation token is triggered.
+	/// </summary>
 	[Fact(Skip = "Requires active cluster")]
 	public async Task StreamKubernetesSyncManifests_Cancellation_StopsStream()
 	{
@@ -196,6 +199,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		}
 	}
 
+	/// <summary>
+	/// Verifies that multiple concurrent calls to the Kubernetes upgrade pre-checks API all complete successfully.
+	/// </summary>
 	[Fact]
 	public async Task KubernetesUpgradePreChecks_ConcurrentCalls_HandleCorrectly()
 	{
@@ -221,6 +227,9 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		Logger.LogInformation("✓ {Count} concurrent upgrade checks completed successfully", results.Length);
 	}
 
+	/// <summary>
+	/// Verifies that requesting a Kubernetes upgrade to an older version returns a non-OK pre-check result.
+	/// </summary>
 	[Fact]
 	public async Task KubernetesUpgradePreChecks_DowngradeVersion_ReturnsNotOk()
 	{

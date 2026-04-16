@@ -334,6 +334,9 @@ machine:
 		Logger.LogInformation("Validation errors:\n{Summary}", summary);
 	}
 
+	/// <summary>
+	/// Verifies that a complex JSON schema with nested object and array definitions is validated correctly.
+	/// </summary>
 	[Fact]
 	public async Task ValidateJsonSchema_ComplexSchema_ValidatesCorrectly()
 	{

@@ -1196,6 +1196,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		results.SuccessRate.Should().BeGreaterThan(0.5, "At least 50% of gRPC operations should succeed with valid credentials");
 	}
 
+	/// <summary>
+	/// Verifies that <see cref="OmniClientOptions.IsReadOnly"/> defaults to <c>false</c>.
+	/// </summary>
 	[Fact]
 	public void ClientOptions_IsReadOnlyDefault_IsFalse()
 	{
@@ -1209,6 +1212,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		options.IsReadOnly.Should().BeFalse("IsReadOnly should default to false");
 	}
 
+	/// <summary>
+	/// Verifies that <see cref="OmniClientOptions.IsReadOnly"/> can be set to <c>true</c>.
+	/// </summary>
 	[Fact]
 	public void ClientOptions_IsReadOnlyCanBeSet()
 	{
@@ -1223,6 +1229,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		options.IsReadOnly.Should().BeTrue("IsReadOnly should be settable to true");
 	}
 
+	/// <summary>
+	/// Verifies that the configured auth token decodes to valid JSON containing identity and PGP key fields.
+	/// </summary>
 	[Fact]
 	public void AuthToken_DecodesCorrectly()
 	{
@@ -1429,6 +1438,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Verifies that streaming logs for a non-existent machine returns a NotFound gRPC error or completes gracefully.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_MachineLogStreaming_HandlesNonExistentMachine()
 	{
@@ -1478,6 +1490,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Verifies that machine log streaming in follow mode correctly streams logs and supports cancellation.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_MachineLogStreaming_SupportsFollowMode()
 	{
@@ -1542,6 +1557,9 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 		}
 	}
 
+	/// <summary>
+	/// Verifies that machine log streaming correctly limits results using the tail lines parameter.
+	/// </summary>
 	[Fact]
 	public async Task RealWorld_MachineLogStreaming_SupportsTailLines()
 	{

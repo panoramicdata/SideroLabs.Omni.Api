@@ -88,6 +88,9 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 		}
 	}
 
+	/// <summary>
+	/// Verifies that <c>DeleteMany</c> returns the correct count of deleted resources when matches exist.
+	/// </summary>
 	[Fact]
 	public async Task DeleteMany_ReturnsCorrectCount()
 	{
@@ -146,6 +149,9 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 		}
 	}
 
+	/// <summary>
+	/// Verifies that <c>DeleteMany</c> returns zero when the selector matches no resources.
+	/// </summary>
 	[Fact]
 	public async Task DeleteMany_NoMatches_ReturnsZero()
 	{
@@ -177,6 +183,9 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 		}
 	}
 
+	/// <summary>
+	/// Verifies that <c>DeleteMany</c> continues processing remaining resources even if an individual delete fails.
+	/// </summary>
 	[Fact]
 	public async Task DeleteMany_ContinuesOnError()
 	{
@@ -210,6 +219,9 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 		}
 	}
 
+	/// <summary>
+	/// Verifies that <c>DeleteAll</c> removes all resources of the specified type within a given namespace.
+	/// </summary>
 	[Fact]
 	public async Task DeleteAll_RemovesAllResourcesInNamespace()
 	{
@@ -255,6 +267,9 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 		}
 	}
 
+	/// <summary>
+	/// Verifies that calling <c>DeleteAll</c> against the default namespace is handled safely without throwing unexpected errors.
+	/// </summary>
 	[Fact]
 	public async Task DeleteAll_InDefaultNamespace_HandledSafely()
 	{

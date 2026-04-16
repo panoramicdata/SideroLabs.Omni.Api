@@ -178,6 +178,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("  gRPC Tunnel: {Enabled}", result.GrpcTunnelEnabled);
 	}
 
+	/// <summary>
+	/// Verifies that creating a schematic with secure boot enabled returns valid schematic information.
+	/// </summary>
 	[Fact(Skip = "Creates schematic - manual test only")]
 	public async Task CreateSchematic_WithSecureBoot_ReturnsSchematicInfo()
 	{
@@ -203,6 +206,10 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("✓ Created schematic with secure boot enabled: {Id}", result.SchematicId);
 	}
 
+	/// <summary>
+	/// Verifies that creating a schematic with the specified gRPC tunnel mode returns valid schematic information.
+	/// </summary>
+	/// <param name="tunnelMode">The gRPC tunnel mode to use when creating the schematic.</param>
 	[Theory(Skip = "Creates schematics - manual test only")]
 	[InlineData(SiderolinkGrpcTunnelMode.Auto)]
 	[InlineData(SiderolinkGrpcTunnelMode.Enabled)]
@@ -233,6 +240,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 			tunnelMode, result.GrpcTunnelEnabled);
 	}
 
+	/// <summary>
+	/// Verifies that creating a join token with valid parameters returns a non-empty token ID.
+	/// </summary>
 	[Fact(Skip = "Creates join token - manual test only")]
 	public async Task CreateJoinToken_ValidParameters_ReturnsTokenId()
 	{
@@ -261,6 +271,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		// Note: Would need to delete the token in cleanup
 	}
 
+	/// <summary>
+	/// Verifies that creating a join token with a short TTL (5 minutes) returns a valid token ID.
+	/// </summary>
 	[Fact(Skip = "Creates join token - manual test only")]
 	public async Task CreateJoinToken_ShortTTL_ReturnsTokenId()
 	{
@@ -284,6 +297,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("✓ Created short-lived join token (5 min): {TokenId}", tokenId);
 	}
 
+	/// <summary>
+	/// Verifies that creating a join token with an expiration time in the past throws an <see cref="StatusCode.InvalidArgument"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task CreateJoinToken_PastExpiration_ThrowsInvalidArgument()
 	{
@@ -304,6 +320,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("✓ Past expiration time correctly rejected");
 	}
 
+	/// <summary>
+	/// Verifies that creating a join token with an empty name throws an <see cref="StatusCode.InvalidArgument"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task CreateJoinToken_EmptyName_ThrowsInvalidArgument()
 	{
@@ -323,6 +342,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("✓ Empty token name correctly rejected");
 	}
 
+	/// <summary>
+	/// Verifies that retrieving the machine join configuration with a valid token returns a non-null config.
+	/// </summary>
 	[Fact(Skip = "Requires valid join token - manual test only")]
 	public async Task GetMachineJoinConfig_ValidToken_ReturnsConfig()
 	{
@@ -342,6 +364,9 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		Logger.LogInformation("Join config test requires valid token");
 	}
 
+	/// <summary>
+	/// Verifies that retrieving the machine join configuration with an invalid token throws an <see cref="RpcException"/>.
+	/// </summary>
 	[Fact]
 	public async Task GetMachineJoinConfig_InvalidToken_ThrowsException()
 	{

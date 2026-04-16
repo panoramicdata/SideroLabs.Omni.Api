@@ -169,6 +169,9 @@ public class ExtensionsConfigurationValidatorTests
 		config.ValidateAndThrow();
 	}
 
+	/// <summary>
+	/// Verifies that an extensions configuration containing a versioned extension reference passes validation successfully.
+	/// </summary>
 	[Fact]
 	public void Validate_WithVersionedExtension_ReturnsSuccess()
 	{
@@ -184,6 +187,9 @@ public class ExtensionsConfigurationValidatorTests
 		Assert.True(result.IsValid);
 	}
 
+	/// <summary>
+	/// Verifies that an extensions configuration containing multiple extension references passes validation successfully.
+	/// </summary>
 	[Fact]
 	public void Validate_WithMultipleExtensions_ReturnsSuccess()
 	{

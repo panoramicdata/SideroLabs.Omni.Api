@@ -172,6 +172,9 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 		Logger.LogInformation("✓ Empty PGP key correctly rejected");
 	}
 
+	/// <summary>
+	/// Verifies that attempting to destroy a service account that does not exist throws a <see cref="StatusCode.NotFound"/> gRPC error.
+	/// </summary>
 	[Fact(Skip = "Requires non-existent account name")]
 	public async Task DestroyServiceAccount_NonExistent_ThrowsNotFound()
 	{

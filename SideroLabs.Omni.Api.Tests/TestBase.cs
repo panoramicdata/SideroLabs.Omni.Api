@@ -27,6 +27,9 @@ public abstract class TestBase : IDisposable
 	private readonly ServiceProvider _serviceProvider;
 	private bool _disposed;
 
+	/// <summary>
+	/// Gets the logger for writing test output.
+	/// </summary>
 	protected ILogger Logger { get; }
 
 	/// <summary>

@@ -111,6 +111,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that a list operation with a very short timeout throws a deadline-exceeded or cancellation error.
+	/// </summary>
 	[Fact]
 	public async Task Get_WithShortTimeout_ThrowsDeadlineExceeded()
 	{
@@ -149,6 +152,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that creating a resource with invalid data (malformed version strings) throws a validation error.
+	/// </summary>
 	[Fact]
 	public async Task Create_WithInvalidData_ThrowsValidationError()
 	{
@@ -198,6 +204,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that updating a resource with a cleared version string correctly handles optimistic locking behavior.
+	/// </summary>
 	[Fact]
 	public async Task Update_WithoutVersion_HandlesOptimisticLocking()
 	{
@@ -251,6 +260,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that cancelling a list enumeration in progress stops the stream and throws <see cref="OperationCanceledException"/>.
+	/// </summary>
 	[Fact]
 	public async Task List_WithCancellation_StopsEnumeration()
 	{
@@ -292,6 +304,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that creating a resource that already exists throws an <see cref="Grpc.Core.StatusCode.AlreadyExists"/> or equivalent gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task Create_DuplicateResource_ThrowsAlreadyExists()
 	{
@@ -342,6 +357,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that using an invalid auth token causes an unauthenticated or permission-denied gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task InvalidAuthToken_ThrowsUnauthenticated()
 	{
@@ -381,6 +399,9 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 		}
 	}
 
+	/// <summary>
+	/// Verifies that attempting to get a resource with an empty ID throws an <see cref="ArgumentException"/>.
+	/// </summary>
 	[Fact]
 	public async Task Get_WithEmptyId_ThrowsInvalidArgument()
 	{

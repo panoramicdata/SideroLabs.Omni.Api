@@ -107,6 +107,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that updating an existing cluster modifies the resource and returns the updated version.
+	/// </summary>
 	[Fact]
 	public async Task Cluster_Update_ModifiesCluster()
 	{
@@ -154,6 +157,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that deleting an existing cluster removes it and a subsequent get throws NotFound.
+	/// </summary>
 	[Fact]
 	public async Task Cluster_Delete_RemovesCluster()
 	{
@@ -189,6 +195,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✅ Successfully deleted cluster: {ClusterId}", clusterId);
 	}
 
+	/// <summary>
+	/// Verifies that listing clusters returns multiple results when more than one cluster exists.
+	/// </summary>
 	[Fact]
 	public async Task Cluster_List_ReturnsMultipleClusters()
 	{
@@ -230,6 +239,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 
 	#region Machine CRUD Tests
 
+	/// <summary>
+	/// Verifies that a new machine resource can be created successfully via the Resources API.
+	/// </summary>
 	[Fact]
 	public async Task Machine_Create_Success()
 	{
@@ -270,6 +282,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that an existing machine can be retrieved by ID and returns the expected resource.
+	/// </summary>
 	[Fact]
 	public async Task Machine_Get_ReturnsMachine()
 	{
@@ -311,6 +326,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that updating an existing machine resource modifies the resource and returns the updated version.
+	/// </summary>
 	[Fact]
 	public async Task Machine_Update_ModifiesMachine()
 	{
@@ -360,6 +378,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that deleting an existing machine resource removes it from the store.
+	/// </summary>
 	[Fact]
 	public async Task Machine_Delete_RemovesMachine()
 	{
@@ -395,6 +416,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✅ Successfully deleted machine: {MachineId}", machineId);
 	}
 
+	/// <summary>
+	/// Verifies that listing machines returns multiple results when more than one machine exists.
+	/// </summary>
 	[Fact]
 	public async Task Machine_List_ReturnsMultipleMachines()
 	{
@@ -436,6 +460,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 
 	#region ConfigPatch CRUD Tests
 
+	/// <summary>
+	/// Verifies that a new config patch resource can be created successfully via the Resources API.
+	/// </summary>
 	[Fact]
 	public async Task ConfigPatch_Create_Success()
 	{
@@ -478,6 +505,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that an existing config patch can be retrieved by ID and returns the expected resource.
+	/// </summary>
 	[Fact]
 	public async Task ConfigPatch_Get_ReturnsConfigPatch()
 	{
@@ -520,6 +550,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that updating an existing config patch modifies the resource and returns the updated version.
+	/// </summary>
 	[Fact]
 	public async Task ConfigPatch_Update_ModifiesConfigPatch()
 	{
@@ -567,6 +600,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that deleting an existing config patch removes it from the store.
+	/// </summary>
 	[Fact]
 	public async Task ConfigPatch_Delete_RemovesConfigPatch()
 	{
@@ -602,6 +638,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✅ Successfully deleted config patch: {PatchId}", patchId);
 	}
 
+	/// <summary>
+	/// Verifies that listing config patches returns multiple results when more than one patch exists.
+	/// </summary>
 	[Fact]
 	public async Task ConfigPatch_List_ReturnsMultipleConfigPatches()
 	{
@@ -643,6 +682,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 
 	#region ExtensionsConfiguration CRUD Tests
 
+	/// <summary>
+	/// Verifies that a new extensions configuration resource can be created successfully via the Resources API.
+	/// </summary>
 	[Fact]
 	public async Task ExtensionsConfiguration_Create_Success()
 	{
@@ -686,6 +728,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that an existing extensions configuration can be retrieved by ID and returns the expected resource.
+	/// </summary>
 	[Fact]
 	public async Task ExtensionsConfiguration_Get_ReturnsExtensionsConfiguration()
 	{
@@ -728,6 +773,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that updating an existing extensions configuration modifies the resource and returns the updated version.
+	/// </summary>
 	[Fact]
 	public async Task ExtensionsConfiguration_Update_ModifiesExtensionsConfiguration()
 	{
@@ -776,6 +824,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	/// <summary>
+	/// Verifies that deleting an existing extensions configuration removes it from the store.
+	/// </summary>
 	[Fact]
 	public async Task ExtensionsConfiguration_Delete_RemovesExtensionsConfiguration()
 	{
@@ -811,6 +862,9 @@ public class ResourceCrudTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		Logger.LogInformation("✅ Successfully deleted extensions configuration: {ConfigId}", configId);
 	}
 
+	/// <summary>
+	/// Verifies that listing extensions configurations returns multiple results when more than one configuration exists.
+	/// </summary>
 	[Fact]
 	public async Task ExtensionsConfiguration_List_ReturnsMultipleExtensionsConfigurations()
 	{

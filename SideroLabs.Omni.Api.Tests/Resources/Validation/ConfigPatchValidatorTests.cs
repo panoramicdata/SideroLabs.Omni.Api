@@ -135,6 +135,9 @@ public class ConfigPatchValidatorTests
 		configPatch.ValidateAndThrow();
 	}
 
+	/// <summary>
+	/// Verifies that a config patch containing complex but valid YAML passes validation successfully.
+	/// </summary>
 	[Fact]
 	public void Validate_WithComplexValidYaml_ReturnsSuccess()
 	{

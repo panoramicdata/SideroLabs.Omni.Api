@@ -153,6 +153,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that attempting to get a non-existent cluster throws a <see cref="Grpc.Core.StatusCode.NotFound"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task GetAsync_NonExistentCluster_ThrowsNotFound()
 	{
@@ -185,6 +188,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that getting the status for an existing cluster returns a non-null status object.
+	/// </summary>
 	[Fact]
 	public async Task GetStatus_ExistingCluster_ReturnsStatus()
 	{
@@ -235,6 +241,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that getting the status for a non-existent cluster throws a <see cref="Grpc.Core.StatusCode.NotFound"/> gRPC error.
+	/// </summary>
 	[Fact]
 	public async Task GetStatus_NonExistentCluster_ThrowsNotFound()
 	{
@@ -267,6 +276,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that a cluster can be created successfully via the cluster Operations API.
+	/// </summary>
 	[Fact]
 	public async Task CreateCluster_ViaOperations_Success()
 	{
@@ -308,6 +320,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that a cluster can be deleted successfully via the cluster Operations API.
+	/// </summary>
 	[Fact]
 	public async Task DeleteCluster_ViaOperations_Success()
 	{
@@ -353,6 +368,9 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies the complete lock and unlock cycle for a machine, ensuring both operations succeed.
+	/// </summary>
 	[Fact]
 	public async Task LockUnlockMachine_FullCycle_Success()
 	{

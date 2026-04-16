@@ -167,6 +167,9 @@ public partial class ResourceServiceDiagnosticTests(ITestOutputHelper testOutput
 		}
 	}
 
+	/// <summary>
+	/// Baseline integration test that verifies the ManagementService is reachable and returns a valid Omni config.
+	/// </summary>
 	[Fact]
 	public async Task ManagementService_Baseline_Success()
 	{

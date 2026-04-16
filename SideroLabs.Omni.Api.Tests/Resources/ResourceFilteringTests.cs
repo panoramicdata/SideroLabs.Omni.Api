@@ -82,6 +82,9 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing resources with a regex filter returns only resources whose IDs match the pattern.
+	/// </summary>
 	[Fact]
 	public async Task List_WithRegex_MatchesIds()
 	{
@@ -139,6 +142,9 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing resources with pagination parameters returns the correct page of results.
+	/// </summary>
 	[Fact]
 	public async Task List_WithPagination_ReturnsCorrectPage()
 	{
@@ -176,6 +182,9 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing resources with a sort order parameter returns results in the specified sorted order.
+	/// </summary>
 	[Fact]
 	public async Task List_WithSorting_ReturnsSortedResults()
 	{
@@ -214,6 +223,9 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing resources with a search term returns only resources matching the search query.
+	/// </summary>
 	[Fact]
 	public async Task List_WithSearch_FindsMatches()
 	{
@@ -269,6 +281,9 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that combining multiple filter options (selector, pagination, sort, search) applies all constraints correctly.
+	/// </summary>
 	[Fact]
 	public async Task List_CombinedFilters_AppliesAll()
 	{

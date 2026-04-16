@@ -131,6 +131,9 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that loading an auth token file that is missing the <c>pgp_key</c> JSON property throws an <see cref="InvalidOperationException"/>.
+	/// </summary>
 	[Fact]
 	public async Task FromFileAsync_WithMissingPgpKeyProperty_ThrowsInvalidOperationException()
 	{
@@ -158,6 +161,9 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 		}
 	}
 
+	/// <summary>
+	/// Verifies that signing a gRPC request with a valid PGP key file populates the expected authentication headers.
+	/// </summary>
 	[Fact]
 	public async Task SignRequest_WithValidPgpKeyFile_SignsGrpcRequest()
 	{

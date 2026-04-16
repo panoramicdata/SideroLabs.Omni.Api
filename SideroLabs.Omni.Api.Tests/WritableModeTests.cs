@@ -13,6 +13,10 @@ public class WritableModeTests
 {
 	private readonly ILogger _logger;
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="WritableModeTests"/> with xUnit test output.
+	/// </summary>
+	/// <param name="testOutputHelper">The xUnit test output helper for capturing log output.</param>
 	public WritableModeTests(ITestOutputHelper testOutputHelper)
 	{
 		var loggerFactory = new LoggerFactory()

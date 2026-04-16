@@ -111,6 +111,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing <see cref="Api.Resources.LoadBalancerConfig"/> resources returns results without error.
+	/// </summary>
 	[Fact]
 	public async Task LoadBalancerConfig_List_ReturnsResults()
 	{
@@ -157,6 +160,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing <see cref="Api.Resources.TalosConfig"/> resources returns results without error.
+	/// </summary>
 	[Fact]
 	public async Task TalosConfig_List_ReturnsResults()
 	{
@@ -203,6 +209,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing <see cref="Api.Resources.KubernetesNode"/> resources returns results without error.
+	/// </summary>
 	[Fact]
 	public async Task KubernetesNode_List_ReturnsResults()
 	{
@@ -249,6 +258,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Verifies that listing <see cref="Api.Resources.MachineClass"/> resources returns results without error.
+	/// </summary>
 	[Fact]
 	public async Task MachineClass_List_ReturnsResults()
 	{
@@ -295,6 +307,9 @@ public class InfrastructureResourceTests(ITestOutputHelper testOutputHelper) : T
 		}
 	}
 
+	/// <summary>
+	/// Verifies that the Watch API can be initialized for infrastructure resource types without throwing an exception.
+	/// </summary>
 	[Fact]
 	public async Task InfrastructureResources_Watch_CanBeInitialized()
 	{
