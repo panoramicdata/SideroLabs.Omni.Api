@@ -16,6 +16,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SideroLabs.Omni.Api\SideroLabs.Omni.Api.csproj" />
