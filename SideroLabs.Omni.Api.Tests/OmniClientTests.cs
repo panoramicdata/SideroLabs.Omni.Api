@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Microsoft.Extensions.Configuration;
 using SideroLabs.Omni.Api.Exceptions;
 using Xunit;
 
@@ -34,7 +35,7 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		// Assert
 		client.BaseUrl.Should().NotBeNull();
 		client.UseTls.Should().BeTrue();
-		client.IsReadOnly.Should().BeFalse(); // Admin account has write access
+		client.IsReadOnly.Should().Be(Configuration.GetValue<bool>("Omni:IsReadOnly"));
 		
 		// Verify new focused services are available
 		client.KubeConfig.Should().NotBeNull();
@@ -166,8 +167,13 @@ public class OmniClientTests(ITestOutputHelper testOutputHelper) : TestBase(test
 		client.BaseUrl.Should().NotBeNull();
 		client.BaseUrl.ToString().Should().NotBeNullOrEmpty();
 		client.UseTls.Should().BeTrue();
-		client.IsReadOnly.Should().BeFalse(); // Admin account has write access
-		client.Identity.Should().Be("nuget-dev"); // From test config
+		client.IsReadOnly.Should().Be(Configuration.GetValue<bool>("Omni:IsReadOnly"));
+		// Identity comes from the PGP key; when no key file is present (as on CI) it is null,
+		// so only assert it where the key is expected to exist.
+		if (TestExpectations.ExpectedKeyFileExists)
+		{
+			client.Identity.Should().Be(TestExpectations.ExpectedIdentity);
+		}
 	}
 
 	/// <summary>
