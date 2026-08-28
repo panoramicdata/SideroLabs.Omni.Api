@@ -14,6 +14,7 @@ namespace SideroLabs.Omni.Api.Tests;
 /// These tests require proper configuration in appsettings.json
 /// Tests only the real gRPC ManagementService operations
 /// </summary>
+[Trait("Category", "Integration")]
 public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
 	private OmniClientOptions GetClientOptions(bool? isReadOnlyOverride = null)
