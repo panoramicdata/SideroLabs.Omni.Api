@@ -24,6 +24,12 @@ jobs:
     - name: Restore
       run: dotnet restore
 
+    - name: Provide test configuration
+      # appsettings.json is gitignored, but the test fixtures require its TestExpectations
+      # section - without it 38 tests fail with "Failed to load TestExpectations from
+      # configuration". The committed example supplies CI-appropriate values.
+      run: cp SideroLabs.Omni.Api.Tests/appsettings.example.json SideroLabs.Omni.Api.Tests/appsettings.json
+
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
