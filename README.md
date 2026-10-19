@@ -56,7 +56,7 @@ This library provides **full parity with omnictl** through two complementary gRP
 - `CreateSchematicAsync()` - Machine provisioning
 - `ValidateConfigAsync()` / `KubernetesUpgradePreChecksAsync()`
 
-> **🎉 Breakthrough Discovery**: After deep investigation of the omnictl source code, we discovered that it uses the COSI v1alpha1 State service (`/cosi.resource.State/*`), NOT the ResourceService (`/omni.resources.ResourceService/*`). This library now implements the correct service, providing full parity with omnictl! See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for details.
+> **🎉 Breakthrough Discovery**: After deep investigation of the omnictl source code, we discovered that it uses the COSI v1alpha1 State service (`/cosi.resource.State/*`), NOT the ResourceService (`/omni.resources.ResourceService/*`). This library now implements the correct service, providing full parity with omnictl! See [BREAKTHROUGH_COSI_STATE_SERVICE.md](docs/history/BREAKTHROUGH_COSI_STATE_SERVICE.md) for details.
 
 ### 🛡️ **Enterprise Features**
 
@@ -135,7 +135,7 @@ OmniClient
 - **COSI State API** (`/cosi.resource.State/*`) for resource operations
 - **ManagementService API** (`/management.ManagementService/*`) for administrative tasks
 
-See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for the technical discovery process.
+See [BREAKTHROUGH_COSI_STATE_SERVICE.md](docs/history/BREAKTHROUGH_COSI_STATE_SERVICE.md) for the technical discovery process.
 
 
 
@@ -239,8 +239,6 @@ var options = new OmniClientOptions
     AuthToken = Environment.GetEnvironmentVariable("OMNI_AUTH_TOKEN")
 };
 ```
-
-See [QUICK_START_AUTH_TOKEN.md](QUICK_START_AUTH_TOKEN.md) for auth token setup.
 
 ### Read-Only Mode
 
@@ -486,7 +484,7 @@ OmniClient
 
 This means we have **full parity with omnictl** for both resource and administrative operations!
 
-See [BREAKTHROUGH_COSI_STATE_SERVICE.md](BREAKTHROUGH_COSI_STATE_SERVICE.md) for the complete technical discovery.
+See [BREAKTHROUGH_COSI_STATE_SERVICE.md](docs/history/BREAKTHROUGH_COSI_STATE_SERVICE.md) for the complete technical discovery.
 
 ## Compatibility
 
@@ -553,9 +551,8 @@ dotnet pack --configuration Release
 
 For integration testing against a real Omni instance:
 
-1. See [INTEGRATION_TEST_SETUP.md](INTEGRATION_TEST_SETUP.md) for quick start
-2. See [SideroLabs.Omni.Api.Tests/INTEGRATION_TESTING.md](SideroLabs.Omni.Api.Tests/INTEGRATION_TESTING.md) for detailed guide
-3. Run helper script: `cd SideroLabs.Omni.Api.Tests && .\Create-ServiceAccount.ps1`
+1. Copy `SideroLabs.Omni.Api.Tests/appsettings.example.json` to `appsettings.json` in the same folder (it is git-ignored).
+2. Fill in the `Omni` section for your instance, or set the same keys with `dotnet user-secrets` (UserSecretsId `SideroLabs.Omni.Api.Tests`).
 
 The setup includes:
 - ✅ Service account creation with Admin role
