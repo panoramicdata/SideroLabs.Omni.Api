@@ -22,43 +22,34 @@ This is a .NET 9 SDK for the **Omni API** by Sidero Labs - a Kubernetes cluster 
 
 ### Primary Documents (Start Here!)
 
-1. **[MISSION_COMPLETE_90_PERCENT.md](../MISSION_COMPLETE_90_PERCENT.md)** ⭐ **READ FIRST**
+1. **[MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)** ⭐ **READ FIRST**
    - Complete achievement summary
    - Final statistics and metrics
    - All 4 phases documented
    - What was accomplished
 
-2. **[CODE_COVERAGE_MASTER_PLAN.md](../CODE_COVERAGE_MASTER_PLAN.md)** 📋 **Master Plan**
+2. **[CODE_COVERAGE_MASTER_PLAN.md](../docs/history/CODE_COVERAGE_MASTER_PLAN.md)** 📋 **Master Plan**
    - Single source of truth for coverage
    - Current status: 90% ✅
    - All phase details
    - Quick reference commands
 
-3. **[NEXT_ACTIONS.md](../NEXT_ACTIONS.md)** 🚀 **Quick Reference**
+3. **[NEXT_ACTIONS.md](../docs/history/NEXT_ACTIONS.md)** 🚀 **Quick Reference**
    - Mission complete notice
    - Optional next steps
    - Commands cheat sheet
 
 ### Progress Tracking
 
-4. **[TEST_COVERAGE_PROGRESS.md](../TEST_COVERAGE_PROGRESS.md)** 📊
+4. **[TEST_COVERAGE_PROGRESS.md](../docs/history/TEST_COVERAGE_PROGRESS.md)** 📊
    - Detailed progress metrics
    - Phase-by-phase breakdown
    - Coverage by component
 
-5. **[DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md)** 📖
+5. **[DOCUMENTATION_GUIDE.md](../docs/history/DOCUMENTATION_GUIDE.md)** 📖
    - How to navigate all docs
    - Update workflow
    - Best practices
-
-### Phase Summaries
-
-6. **[PHASES_2_AND_3_COMPLETE_SUMMARY.md](../PHASES_2_AND_3_COMPLETE_SUMMARY.md)**
-   - Phases 2 & 3 achievements
-   - Detailed breakdown
-
-7. **[CONSOLIDATION_COMPLETE.md](../CONSOLIDATION_COMPLETE.md)**
-   - Documentation consolidation summary
 
 ---
 
@@ -89,10 +80,10 @@ SideroLabs.Omni.Api/
 │   └── TestBase.cs                    # Base test infrastructure
 │
 └── Documentation/                     # Project documentation
-    ├── MISSION_COMPLETE_90_PERCENT.md # Achievement summary ⭐
-    ├── CODE_COVERAGE_MASTER_PLAN.md   # Master plan 📋
-    ├── NEXT_ACTIONS.md                # Quick reference 🚀
-    ├── TEST_COVERAGE_PROGRESS.md      # Progress tracking 📊
+    ├── docs/history/MISSION_COMPLETE_90_PERCENT.md # Achievement summary ⭐
+    ├── docs/history/CODE_COVERAGE_MASTER_PLAN.md   # Master plan 📋
+    ├── docs/history/NEXT_ACTIONS.md                # Quick reference 🚀
+    ├── docs/history/TEST_COVERAGE_PROGRESS.md      # Progress tracking 📊
     └── archive/                       # Historical docs
 ```
 
@@ -367,8 +358,8 @@ Alternatively, set:
 
 ### Understanding the SDK
 1. Start with `README.md` - Project overview
-2. Read `MISSION_COMPLETE_90_PERCENT.md` - What we've achieved
-3. Review `CODE_COVERAGE_MASTER_PLAN.md` - Current state
+2. Read `docs/history/MISSION_COMPLETE_90_PERCENT.md` - What we've achieved
+3. Review `docs/history/CODE_COVERAGE_MASTER_PLAN.md` - Current state
 4. Check test files for usage examples
 
 ### Omni API Documentation
@@ -408,16 +399,16 @@ Alternatively, set:
 ## 📞 Quick Help
 
 **Need to understand current state?**
-→ Read [MISSION_COMPLETE_90_PERCENT.md](../MISSION_COMPLETE_90_PERCENT.md)
+→ Read [MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)
 
 **Adding new tests?**
 → Follow patterns in [ResourceFilteringTests.cs](../SideroLabs.Omni.Api.Tests/Resources/ResourceFilteringTests.cs)
 
 **Understanding the project structure?**
-→ Check [DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md)
+→ Check [DOCUMENTATION_GUIDE.md](../docs/history/DOCUMENTATION_GUIDE.md)
 
 **Want to see progress history?**
-→ Review [TEST_COVERAGE_PROGRESS.md](../TEST_COVERAGE_PROGRESS.md)
+→ Review [TEST_COVERAGE_PROGRESS.md](../docs/history/TEST_COVERAGE_PROGRESS.md)
 
 ---
 

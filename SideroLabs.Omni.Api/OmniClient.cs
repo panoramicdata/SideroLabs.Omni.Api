@@ -18,7 +18,7 @@ namespace SideroLabs.Omni.Api;
 /// ✅ ManagementService - Administrative and operational tasks (configs, service accounts, schematics, etc.)
 /// ✅ COSI State Service - Resource operations (clusters, machines, users, etc.) via /cosi.resource.State/*
 /// ❌ ResourceService - NOT available on Omni SaaS (returns HTTP 405) - use State service instead
-/// See BREAKTHROUGH_COSI_STATE_SERVICE.md for detailed analysis.
+/// See docs/history/BREAKTHROUGH_COSI_STATE_SERVICE.md for detailed analysis.
 /// </remarks>
 public class OmniClient : IOmniClient
 {
