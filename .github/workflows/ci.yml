@@ -19,7 +19,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
 
     - name: Restore
       run: dotnet restore
@@ -78,7 +78,7 @@ jobs:
       env:
         DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
 
     - name: Provide test configuration
       # appsettings.json is gitignored, but the test fixtures need its TestExpectations section.
@@ -134,7 +134,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 11.0.x
 
     - name: Login to NuGet
       id: login
