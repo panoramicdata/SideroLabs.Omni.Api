@@ -91,7 +91,7 @@ jobs:
     # directly (Microsoft.Testing.Extensions.CodeCoverage). On Linux it has no .exe extension. It runs
     # from its output directory because the fixtures read appsettings.json from the current directory.
     - name: Run tests with coverage
-      working-directory: SideroLabs.Omni.Api.Tests/bin/Debug/net10.0
+      working-directory: SideroLabs.Omni.Api.Tests/bin/Debug/net11.0
       run: >-
         ./SideroLabs.Omni.Api.Tests
         --coverage
@@ -107,7 +107,7 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: SideroLabs.Omni.Api.Tests/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        coverage-reports: SideroLabs.Omni.Api.Tests/bin/Debug/net11.0/TestResults/coverage.cobertura.xml
 
     - name: Upload coverage artifact
       if: always()
@@ -115,7 +115,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: coverage
-        path: SideroLabs.Omni.Api.Tests/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        path: SideroLabs.Omni.Api.Tests/bin/Debug/net11.0/TestResults/coverage.cobertura.xml
         retention-days: 7
 
   publish:
