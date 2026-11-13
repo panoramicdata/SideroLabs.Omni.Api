@@ -7,7 +7,7 @@
 
 ## 🎯 Project Overview
 
-This is a .NET 9 SDK for the **Omni API** by Sidero Labs - a Kubernetes cluster lifecycle management platform.
+This is a .NET 11.0 SDK for the **Omni API** by Sidero Labs - a Kubernetes cluster lifecycle management platform.
 
 **Current State**:
 - ✅ **90% Code Coverage** (Goal Achieved!)

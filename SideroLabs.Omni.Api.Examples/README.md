@@ -6,7 +6,7 @@ This project contains comprehensive examples demonstrating how to use the Sidero
 
 ### Prerequisites
 
-- .NET 9.0 or later
+- .NET 11.0 or later
 - Access to a SideroLabs Omni instance
 - PGP key pair for authentication
 

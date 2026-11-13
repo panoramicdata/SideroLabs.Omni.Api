@@ -13,6 +13,8 @@
 
 A **.NET gRPC client library** for interacting with the **SideroLabs Omni Management API**.
 
+Supports .NET 11.0.
+
 This client provides strongly-typed C# interfaces for the Omni gRPC services, with built-in PGP-based authentication and enterprise-ready features.
 
 > **🏗️ Inspired by**: This project is inspired by the official [SideroLabs Omni client](https://github.com/siderolabs/omni/tree/main/client) and follows the same patterns and authentication mechanisms.
@@ -497,7 +499,7 @@ This .NET client is designed to be fully compatible with:
 
 ## Requirements
 
-- **.NET 9.0** or later
+- **.NET 11.0** or later
 - **gRPC support** (included)
 - **Valid Omni instance** with gRPC endpoint
 - **PGP key pair** for authentication
