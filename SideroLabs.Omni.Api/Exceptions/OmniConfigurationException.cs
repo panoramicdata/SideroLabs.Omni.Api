@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 namespace SideroLabs.Omni.Api.Exceptions;
 
 /// <summary>
@@ -5,7 +6,7 @@ namespace SideroLabs.Omni.Api.Exceptions;
 /// </summary>
 /// <param name="validationErrors">The validation errors</param>
 /// <param name="innerException">The inner exception</param>
-public class OmniConfigurationException(IReadOnlyList<string> validationErrors, Exception? innerException = null) : OmniException("configuration", FormatMessage(validationErrors), null, innerException)
+public class OmniConfigurationException(IReadOnlyList<string> validationErrors, [Optional] Exception? innerException) : OmniException("configuration", FormatMessage(validationErrors), null, innerException)
 {
 	/// <summary>
 	/// Gets the validation errors

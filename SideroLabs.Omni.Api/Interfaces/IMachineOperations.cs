@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -11,69 +12,69 @@ public interface IMachineOperations
 	/// Lists all machines
 	/// </summary>
 	IAsyncEnumerable<Machine> ListAsync(
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets a specific machine by ID
 	/// </summary>
 	Task<Machine> GetAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a new machine
 	/// </summary>
 	Task<Machine> CreateAsync(
 		Machine machine,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Updates an existing machine
 	/// </summary>
 	Task<Machine> UpdateAsync(
 		Machine machine,
-		string? currentVersion = null,
-		CancellationToken cancellationToken = default);
+		[Optional] string? currentVersion,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Deletes a machine by ID
 	/// </summary>
 	Task DeleteAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Watches for machine changes
 	/// </summary>
 	IAsyncEnumerable<ResourceEvent<Machine>> WatchAsync(
-		string? @namespace = "default",
-		string? id = null,
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] string? id,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Applies a machine (create or update)
 	/// </summary>
 	Task<Machine> ApplyAsync(
 		Machine machine,
-		bool dryRun = false,
-		CancellationToken cancellationToken = default);
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Locks a machine to prevent modifications
 	/// </summary>
 	Task LockAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Unlocks a machine to allow modifications
 	/// </summary>
 	Task UnlockAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 }

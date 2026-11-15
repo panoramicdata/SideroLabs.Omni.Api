@@ -46,6 +46,15 @@ public static class AsyncEnumerableExtensions
 	}
 
 	/// <summary>
+	/// Materializes the async enumerable into an Array without a cancellation token
+	/// </summary>
+	/// <typeparam name="T">The type of items</typeparam>
+	/// <param name="source">The async enumerable source</param>
+	/// <returns>An array containing all items</returns>
+	public static Task<T[]> ToArrayAsync<T>(this IAsyncEnumerable<T> source) =>
+		source.ToArrayAsync(CancellationToken.None);
+
+	/// <summary>
 	/// Materializes the async enumerable into an Array
 	/// WARNING: This loads ALL items into memory. Only use for small datasets.
 	/// </summary>
@@ -55,7 +64,7 @@ public static class AsyncEnumerableExtensions
 	/// <returns>An array containing all items</returns>
 	public static async Task<T[]> ToArrayAsync<T>(
 		this IAsyncEnumerable<T> source,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 	{
 		var list = await source.ToListAsync(cancellationToken);
 		return [.. list];

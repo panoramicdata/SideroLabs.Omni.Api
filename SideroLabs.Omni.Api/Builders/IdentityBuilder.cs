@@ -77,7 +77,9 @@ public class IdentityBuilder
 	public IdentityBuilder ForUser(User user)
 	{
 		if (user == null)
+		{
 			throw new ArgumentNullException(nameof(user));
+		}
 
 		return ForUser(user.UserId);
 	}

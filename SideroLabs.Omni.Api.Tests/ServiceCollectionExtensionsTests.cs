@@ -25,7 +25,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			options.BaseUrl = new("https://test.example.com:8443");
 			options.Identity = "test-user";
-			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
+			options.PgpPrivateKey = "test-pgp-key";
 		});
 
 		var serviceProvider = services.BuildServiceProvider();
@@ -53,7 +53,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			BaseUrl = new("https://test.example.com:8443"),
 			Identity = "test-user",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
+			PgpPrivateKey = "test-pgp-key",
 			TimeoutSeconds = 60
 		};
 
@@ -88,7 +88,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			options.BaseUrl = new("https://test.example.com");
 			options.Identity = "test-user";
-			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
+			options.PgpPrivateKey = "test-pgp-key";
 		});
 
 		var serviceProvider = services.BuildServiceProvider();

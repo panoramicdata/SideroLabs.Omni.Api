@@ -28,7 +28,7 @@ public static class ExampleConfigurationFactory
 	{
 		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
-		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+		PgpPrivateKey = "<your armored PGP private key>",
 		TimeoutSeconds = timeoutSeconds,
 		UseTls = true,
 		ValidateCertificate = true
@@ -49,7 +49,7 @@ public static class ExampleConfigurationFactory
 	{
 		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
-		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+		PgpPrivateKey = "<your armored PGP private key>",
 		TimeoutSeconds = 30,
 		UseTls = true,
 		ValidateCertificate = true,
@@ -71,7 +71,7 @@ public static class ExampleConfigurationFactory
 	{
 		BaseUrl = new("https://your-omni-instance.example.com"),
 		Identity = identity,
-		PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n...\n-----END PGP PRIVATE KEY BLOCK-----",
+		PgpPrivateKey = "<your armored PGP private key>",
 		TimeoutSeconds = 60,
 		UseTls = true,
 		ValidateCertificate = true

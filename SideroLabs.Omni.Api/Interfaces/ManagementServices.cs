@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Models;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -12,14 +13,14 @@ public interface IServiceAccountService
 	/// </summary>
 	Task<string> CreateAsync(
 		string armoredPgpPublicKey,
-		bool useUserRole = false,
-		string? role = null,
-		CancellationToken cancellationToken = default);
+		[Optional] bool useUserRole,
+		[Optional] string? role,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Lists all service accounts
 	/// </summary>
-	Task<IReadOnlyList<ServiceAccountInfo>> ListAsync(CancellationToken cancellationToken = default);
+	Task<IReadOnlyList<ServiceAccountInfo>> ListAsync([Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Renews a service account
@@ -27,12 +28,12 @@ public interface IServiceAccountService
 	Task<string> RenewAsync(
 		string name,
 		string armoredPgpPublicKey,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Destroys a service account
 	/// </summary>
-	Task DestroyAsync(string name, CancellationToken cancellationToken = default);
+	Task DestroyAsync(string name, [Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -43,7 +44,7 @@ public interface IValidationService
 	/// <summary>
 	/// Validates a configuration
 	/// </summary>
-	Task ValidateConfigAsync(string config, CancellationToken cancellationToken = default);
+	Task ValidateConfigAsync(string config, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Validates JSON data against a JSON schema
@@ -51,7 +52,7 @@ public interface IValidationService
 	Task<ValidateJsonSchemaResult> ValidateJsonSchemaAsync(
 		string data,
 		string schema,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -64,14 +65,14 @@ public interface IKubernetesService
 	/// </summary>
 	Task<KubernetesUpgradePreCheckResult> UpgradePreChecksAsync(
 		string newVersion,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Streams Kubernetes manifest synchronization results
 	/// </summary>
 	IAsyncEnumerable<KubernetesSyncResult> StreamSyncManifestsAsync(
-		bool dryRun = false,
-		CancellationToken cancellationToken = default);
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -83,15 +84,15 @@ public interface ISchematicService
 	/// Creates a schematic for machine provisioning
 	/// </summary>
 	Task<SchematicResult> CreateAsync(
-		string[]? extensions = null,
-		string[]? extraKernelArgs = null,
-		Dictionary<uint, string>? metaValues = null,
-		string? talosVersion = null,
-		string? mediaId = null,
-		bool secureBoot = false,
-		Enums.SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode = Enums.SiderolinkGrpcTunnelMode.Auto,
-		string? joinToken = null,
-		CancellationToken cancellationToken = default);
+		[Optional] string[]? extensions,
+		[Optional] string[]? extraKernelArgs,
+		[Optional] Dictionary<uint, string>? metaValues,
+		[Optional] string? talosVersion,
+		[Optional] string? mediaId,
+		[Optional] bool secureBoot,
+		[Optional, DefaultParameterValue(Enums.SiderolinkGrpcTunnelMode.Auto)] Enums.SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode,
+		[Optional] string? joinToken,
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -104,9 +105,9 @@ public interface IMachineService
 	/// </summary>
 	IAsyncEnumerable<byte[]> StreamLogsAsync(
 		string machineId,
-		bool follow = false,
-		int tailLines = 0,
-		CancellationToken cancellationToken = default);
+		[Optional] bool follow,
+		[Optional] int tailLines,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Performs a maintenance upgrade on a machine
@@ -114,7 +115,7 @@ public interface IMachineService
 	Task MaintenanceUpgradeAsync(
 		string machineId,
 		string version,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets the configuration for a machine to join the cluster
@@ -122,7 +123,7 @@ public interface IMachineService
 	Task<MachineJoinConfig> GetJoinConfigAsync(
 		bool useGrpcTunnel,
 		string joinToken,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a join token for machines to join the cluster
@@ -130,7 +131,7 @@ public interface IMachineService
 	Task<string> CreateJoinTokenAsync(
 		string name,
 		DateTimeOffset expirationTime,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -143,7 +144,7 @@ public interface ISupportService
 	/// </summary>
 	IAsyncEnumerable<SupportBundleProgress> GetSupportBundleAsync(
 		string cluster,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Streams audit log entries for compliance and security analysis
@@ -151,12 +152,12 @@ public interface ISupportService
 	IAsyncEnumerable<byte[]> ReadAuditLogAsync(
 		string startDate,
 		string endDate,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Tears down a locked cluster
 	/// </summary>
 	Task TearDownLockedClusterAsync(
 		string clusterId,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 }

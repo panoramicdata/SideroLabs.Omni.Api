@@ -13,11 +13,9 @@ internal static class ProtoSpecDeserializer
 	/// <summary>
 	/// Deserializes a proto spec for a given resource type
 	/// </summary>
-	/// <typeparam name="TResource">The resource type</typeparam>
 	/// <param name="protoSpecBytes">The protobuf-encoded spec bytes</param>
 	/// <returns>The deserialized spec object, or null if deserialization is not yet implemented</returns>
-	public static object? DeserializeSpec<TResource>(ByteString protoSpecBytes)
-		where TResource : IOmniResource
+	public static object? DeserializeSpec(ByteString protoSpecBytes)
 	{
 		// TODO: Implement proto spec deserialization
 		// We have the proto files and they compile, but need to:
@@ -32,7 +30,7 @@ internal static class ProtoSpecDeserializer
 	/// <summary>
 	/// Checks if spec deserialization is implemented for a resource type
 	/// </summary>
-	public static bool IsImplemented<TResource>() where TResource : IOmniResource
+	public static bool IsImplemented()
 	{
 		// Not implemented yet
 		return false;

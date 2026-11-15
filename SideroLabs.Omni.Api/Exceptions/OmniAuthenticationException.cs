@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 namespace SideroLabs.Omni.Api.Exceptions;
 
 /// <summary>
@@ -5,6 +6,6 @@ namespace SideroLabs.Omni.Api.Exceptions;
 /// </summary>
 /// <param name="message">The exception message</param>
 /// <param name="innerException">The inner exception</param>
-public class OmniAuthenticationException(string message, Exception? innerException = null) : OmniException("authentication", message, null, innerException)
+public class OmniAuthenticationException(string message, [Optional] Exception? innerException) : OmniException("authentication", message, null, innerException)
 {
 }

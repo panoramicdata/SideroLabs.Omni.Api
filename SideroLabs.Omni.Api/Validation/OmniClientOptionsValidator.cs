@@ -81,14 +81,13 @@ internal class OmniClientOptionsValidator : IOptionsValidator<OmniClientOptions>
 			!string.IsNullOrWhiteSpace(options.AuthToken)
 		}.Count(b => b);
 
-		switch (authMethodsProvided)
+		if (authMethodsProvided == 0)
 		{
-			case 0:
-				errors.Add("One of PgpPrivateKey, PgpKeyFilePath, or AuthToken must be provided for authentication");
-				break;
-			case > 1:
-				errors.Add("Only one of PgpPrivateKey, PgpKeyFilePath, or AuthToken should be provided");
-				break;
+			errors.Add("One of PgpPrivateKey, PgpKeyFilePath, or AuthToken must be provided for authentication");
+		}
+		else if (authMethodsProvided > 1)
+		{
+			errors.Add("Only one of PgpPrivateKey, PgpKeyFilePath, or AuthToken should be provided");
 		}
 
 		return errors.Count == 0 ? ValidationResult.Success() : ValidationResult.Failure([.. errors]);

@@ -108,7 +108,7 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 	public async Task FromFileAsync_WithMissingNameProperty_ThrowsInvalidOperationException()
 	{
 		// Arrange
-		var jsonContent = """{"pgp_key":"-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----"}""";
+		var jsonContent = """{"pgp_key":"test-pgp-key"}""";
 		var base64Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jsonContent));
 
 		var tempFile = Path.GetTempFileName();

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -15,7 +16,7 @@ public interface INamespacedResourceReadOperations<TResource>
 	/// <param name="namespace">The COSI namespace to query. Defaults to <c>default</c>.</param>
 	/// <param name="cancellationToken">A token that can cancel the asynchronous stream.</param>
 	/// <returns>An asynchronous stream of matching resources.</returns>
-	IAsyncEnumerable<TResource> ListAsync(string? @namespace = "default", CancellationToken cancellationToken = default);
+	IAsyncEnumerable<TResource> ListAsync([Optional, DefaultParameterValue("default")] string? @namespace, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets a resource by identifier from a namespace.
@@ -24,7 +25,7 @@ public interface INamespacedResourceReadOperations<TResource>
 	/// <param name="namespace">The COSI namespace to query. Defaults to <c>default</c>.</param>
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	/// <returns>The resolved resource.</returns>
-	Task<TResource> GetAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
+	Task<TResource> GetAsync(string id, [Optional, DefaultParameterValue("default")] string? @namespace, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Watches resources for add, update, and delete events.
@@ -33,7 +34,7 @@ public interface INamespacedResourceReadOperations<TResource>
 	/// <param name="id">Optional identifier filter for a single resource.</param>
 	/// <param name="cancellationToken">A token that can cancel the asynchronous stream.</param>
 	/// <returns>An asynchronous stream of resource events.</returns>
-	IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync(string? @namespace = "default", string? id = null, CancellationToken cancellationToken = default);
+	IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync([Optional, DefaultParameterValue("default")] string? @namespace, [Optional] string? id, [Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -49,7 +50,7 @@ public interface INamespacedResourceWriteOperations<TResource>
 	/// <param name="resource">The resource payload to create.</param>
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	/// <returns>The created resource as returned by Omni.</returns>
-	Task<TResource> CreateAsync(TResource resource, CancellationToken cancellationToken = default);
+	Task<TResource> CreateAsync(TResource resource, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Updates an existing resource.
@@ -58,7 +59,7 @@ public interface INamespacedResourceWriteOperations<TResource>
 	/// <param name="currentVersion">Optional optimistic-lock version from metadata.</param>
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	/// <returns>The updated resource.</returns>
-	Task<TResource> UpdateAsync(TResource resource, string? currentVersion = null, CancellationToken cancellationToken = default);
+	Task<TResource> UpdateAsync(TResource resource, [Optional] string? currentVersion, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Deletes a resource by identifier.
@@ -66,7 +67,7 @@ public interface INamespacedResourceWriteOperations<TResource>
 	/// <param name="id">The resource identifier.</param>
 	/// <param name="namespace">The COSI namespace containing the resource. Defaults to <c>default</c>.</param>
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
-	Task DeleteAsync(string id, string? @namespace = "default", CancellationToken cancellationToken = default);
+	Task DeleteAsync(string id, [Optional, DefaultParameterValue("default")] string? @namespace, [Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -83,7 +84,7 @@ public interface INamespacedResourceApplyOperations<TResource>
 	/// <param name="dryRun"><see langword="true"/> to validate without persisting.</param>
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	/// <returns>The applied resource.</returns>
-	Task<TResource> ApplyAsync(TResource resource, bool dryRun = false, CancellationToken cancellationToken = default);
+	Task<TResource> ApplyAsync(TResource resource, [Optional] bool dryRun, [Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>

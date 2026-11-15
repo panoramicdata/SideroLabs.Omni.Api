@@ -104,35 +104,35 @@ internal static partial class GrpcErrorParser
 		var httpStatusCode = ExtractHttpStatusCode(exception);
 		var httpResponseBody = ExtractHttpResponseBody(exception);
 
-		var message = $"gRPC Error: {exception.StatusCode} - {exception.Status.Detail}";
+		var message = new System.Text.StringBuilder($"gRPC Error: {exception.StatusCode} - {exception.Status.Detail}");
 
 		if (httpStatusCode.HasValue)
 		{
-			message += $"\nHTTP Status Code: {httpStatusCode}";
+			message.Append($"\nHTTP Status Code: {httpStatusCode}");
 		}
 
 		if (!string.IsNullOrEmpty(httpResponseBody))
 		{
-			message += $"\nHTTP Response Body:\n{httpResponseBody}";
+			message.Append($"\nHTTP Response Body:\n{httpResponseBody}");
 		}
 
 		if (exception.Trailers != null && exception.Trailers.Count > 0)
 		{
-			message += "\n\nResponse Trailers:";
+			message.Append("\n\nResponse Trailers:");
 			foreach (var trailer in exception.Trailers)
 			{
 				if (trailer.IsBinary)
 				{
-					message += $"\n  {trailer.Key}: [binary data, {trailer.ValueBytes.Length} bytes]";
+					message.Append($"\n  {trailer.Key}: [binary data, {trailer.ValueBytes.Length} bytes]");
 				}
 				else
 				{
-					message += $"\n  {trailer.Key}: {trailer.Value}";
+					message.Append($"\n  {trailer.Key}: {trailer.Value}");
 				}
 			}
 		}
 
-		return message;
+		return message.ToString();
 	}
 
 	/// <summary>

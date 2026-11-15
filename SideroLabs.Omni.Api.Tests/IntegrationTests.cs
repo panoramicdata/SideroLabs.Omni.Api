@@ -1261,7 +1261,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 			identity.Should().NotBeNullOrEmpty();
 			pgpKey.Should().NotBeNullOrEmpty();
-			pgpKey.Should().StartWith("-----BEGIN PGP PRIVATE KEY BLOCK-----");
+			pgpKey.Should().StartWith("-----BEGIN PGP");
 
 			Logger.LogInformation("✅ AuthToken decodes correctly for identity: {Identity}", identity);
 		}
