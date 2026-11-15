@@ -19,27 +19,22 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task Get_NonExistentResource_ThrowsNotFound()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var nonExistentId = CreateUniqueId("does-not-exist");
 
-		using var client = new OmniClient(GetClientOptions());
-		var nonExistentId = CreateUniqueId("does-not-exist");
+			// Act & Assert
+			Logger.LogInformation("🔍 Attempting to get non-existent cluster: {Id}", nonExistentId);
+			
+			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+			{
+				await client.Resources.GetAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
+			});
 
-		// Act & Assert
-		Logger.LogInformation("🔍 Attempting to get non-existent cluster: {Id}", nonExistentId);
-		
-		var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
-		{
-			await client.Resources.GetAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
+			// Assert
+			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
+			Logger.LogInformation("✅ NotFound exception thrown as expected");
 		});
-
-		// Assert
-		exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
-		Logger.LogInformation("✅ NotFound exception thrown as expected");
 	}
 
 	/// <summary>
@@ -48,27 +43,22 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task Delete_NonExistentResource_ThrowsNotFound()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var nonExistentId = CreateUniqueId("does-not-exist");
 
-		using var client = new OmniClient(GetClientOptions());
-		var nonExistentId = CreateUniqueId("does-not-exist");
+			// Act & Assert
+			Logger.LogInformation("🔍 Attempting to delete non-existent cluster: {Id}", nonExistentId);
+			
+			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+			{
+				await client.Resources.DeleteAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
+			});
 
-		// Act & Assert
-		Logger.LogInformation("🔍 Attempting to delete non-existent cluster: {Id}", nonExistentId);
-		
-		var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
-		{
-			await client.Resources.DeleteAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
+			// Assert
+			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
+			Logger.LogInformation("✅ NotFound exception thrown as expected");
 		});
-
-		// Assert
-		exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
-		Logger.LogInformation("✅ NotFound exception thrown as expected");
 	}
 
 	/// <summary>
@@ -77,38 +67,32 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task List_WithInvalidSelector_ThrowsError()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
-		{
-			// Act - Try to list with invalid selector syntax
-			Logger.LogInformation("🔍 Attempting to list with invalid selector");
-			
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				selector: "===invalid===",
-				cancellationToken: CancellationToken))
+			try
 			{
-				// Should not reach here
-				Assert.Fail("Should have thrown exception for invalid selector");
+				// Act - Try to list with invalid selector syntax
+				Logger.LogInformation("🔍 Attempting to list with invalid selector");
+				
+				await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+					selector: "===invalid===",
+					cancellationToken: CancellationToken))
+				{
+					// Should not reach here
+					Assert.Fail("Should have thrown exception for invalid selector");
+				}
 			}
-		}
-		catch (Grpc.Core.RpcException ex)
-		{
-			// Assert - Should get an error (might be InvalidArgument or other)
-			Logger.LogInformation("✅ Exception thrown as expected: {Code} - {Message}", 
-				ex.StatusCode, ex.Status.Detail);
-			
-			ex.StatusCode.Should().BeOneOf(
-				Grpc.Core.StatusCode.InvalidArgument,
-				Grpc.Core.StatusCode.Unknown);
-		}
+			catch (Grpc.Core.RpcException ex)
+			{
+				// Assert - Should get an error (might be InvalidArgument or other)
+				Logger.LogInformation("✅ Exception thrown as expected: {Code} - {Message}", 
+					ex.StatusCode, ex.Status.Detail);
+				
+				ex.StatusCode.Should().BeOneOf(
+					Grpc.Core.StatusCode.InvalidArgument,
+					Grpc.Core.StatusCode.Unknown);
+			}
+		});
 	}
 
 	/// <summary>
@@ -158,50 +142,44 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task Create_WithInvalidData_ThrowsValidationError()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
-		{
-			// Arrange - Create cluster with invalid version format
-			var clusterId = CreateUniqueId("invalid");
-			var cluster = new Api.Resources.Cluster
+			try
 			{
-				Metadata = new Api.Resources.ResourceMetadata
+				// Arrange - Create cluster with invalid version format
+				var clusterId = CreateUniqueId("invalid");
+				var cluster = new Api.Resources.Cluster
 				{
-					Id = clusterId,
-					Namespace = "default"
-				},
-				Spec = new Api.Resources.ClusterSpec
-				{
-					KubernetesVersion = "invalid-version", // Invalid format
-					TalosVersion = "also-invalid"
-				}
-			};
+					Metadata = new Api.Resources.ResourceMetadata
+					{
+						Id = clusterId,
+						Namespace = "default"
+					},
+					Spec = new Api.Resources.ClusterSpec
+					{
+						KubernetesVersion = "invalid-version", // Invalid format
+						TalosVersion = "also-invalid"
+					}
+				};
 
-			// Act
-			Logger.LogInformation("🔍 Attempting to create cluster with invalid version format");
-			await client.Resources.CreateAsync(cluster, CancellationToken);
+				// Act
+				Logger.LogInformation("🔍 Attempting to create cluster with invalid version format");
+				await client.Resources.CreateAsync(cluster, CancellationToken);
 
-			Assert.Fail("Should have thrown validation error");
-		}
-		catch (Grpc.Core.RpcException ex) when (
-			ex.StatusCode == Grpc.Core.StatusCode.InvalidArgument ||
-			ex.StatusCode == Grpc.Core.StatusCode.Unknown ||
-			ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("✅ Validation error thrown as expected: {Code}", ex.StatusCode);
-		}
-		catch (FluentValidation.ValidationException)
-		{
-			Logger.LogInformation("✅ Client-side validation caught invalid data");
-		}
+				Assert.Fail("Should have thrown validation error");
+			}
+			catch (Grpc.Core.RpcException ex) when (
+				ex.StatusCode == Grpc.Core.StatusCode.InvalidArgument ||
+				ex.StatusCode == Grpc.Core.StatusCode.Unknown ||
+				ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+			{
+				Logger.LogInformation("✅ Validation error thrown as expected: {Code}", ex.StatusCode);
+			}
+			catch (FluentValidation.ValidationException)
+			{
+				Logger.LogInformation("✅ Client-side validation caught invalid data");
+			}
+		});
 	}
 
 	/// <summary>
@@ -253,42 +231,37 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task List_WithCancellation_StopsEnumeration()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			using var cts = new CancellationTokenSource();
 
-		using var client = new OmniClient(GetClientOptions());
-		using var cts = new CancellationTokenSource();
-
-		try
-		{
-			// Act - Start listing and cancel after first item
-			Logger.LogInformation("🔍 Starting List operation with planned cancellation");
-			var count = 0;
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				cancellationToken: cts.Token))
+			try
 			{
-				count++;
-				Logger.LogInformation("📋 Retrieved cluster {Count}: {Id}", count, c.Metadata.Id);
+				// Act - Start listing and cancel after first item
+				Logger.LogInformation("🔍 Starting List operation with planned cancellation");
+				var count = 0;
 
-				// Cancel after first item
-				if (count >= 1)
+				await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+					cancellationToken: cts.Token))
 				{
-					Logger.LogInformation("🛑 Cancelling enumeration");
-					cts.Cancel();
-				}
-			}
+					count++;
+					Logger.LogInformation("📋 Retrieved cluster {Count}: {Id}", count, c.Metadata.Id);
 
-			Assert.Fail("Should have thrown OperationCanceledException");
-		}
-		catch (OperationCanceledException)
-		{
-			Logger.LogInformation("✅ Enumeration cancelled as expected");
-		}
+					// Cancel after first item
+					if (count >= 1)
+					{
+						Logger.LogInformation("🛑 Cancelling enumeration");
+						cts.Cancel();
+					}
+				}
+
+				Assert.Fail("Should have thrown OperationCanceledException");
+			}
+			catch (OperationCanceledException)
+			{
+				Logger.LogInformation("✅ Enumeration cancelled as expected");
+			}
+		});
 	}
 
 	/// <summary>
@@ -297,51 +270,46 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task Create_DuplicateResource_ThrowsAlreadyExists()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var machineId = CreateUniqueId("duplicate");
 
-		using var client = new OmniClient(GetClientOptions());
-		var machineId = CreateUniqueId("duplicate");
-
-		try
-		{
-			// Arrange - Create a machine with required role
-			var machine = new Api.Builders.MachineBuilder(machineId)
-				.WithRole("worker")
-				.Build();
-
-			Logger.LogInformation("🔍 Creating first machine: {Id}", machineId);
-			await client.Resources.CreateAsync(machine, CancellationToken);
-
-			// Act - Try to create same machine again
-			Logger.LogInformation("🔍 Attempting to create duplicate machine: {Id}", machineId);
-			
-			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+			try
 			{
-				await client.Resources.CreateAsync(machine, CancellationToken);
-			});
+				// Arrange - Create a machine with required role
+				var machine = new Api.Builders.MachineBuilder(machineId)
+					.WithRole("worker")
+					.Build();
 
-			// Assert
-			exception.StatusCode.Should().BeOneOf(
-				Grpc.Core.StatusCode.AlreadyExists,
-				Grpc.Core.StatusCode.InvalidArgument);
-			
-			Logger.LogInformation("✅ Duplicate creation prevented: {Code}", exception.StatusCode);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-			Logger.LogInformation("✅ gRPC authentication is working correctly");
-		}
-		finally
-		{
-			// Cleanup
-			await CleanupMachine(client, machineId);
-		}
+				Logger.LogInformation("🔍 Creating first machine: {Id}", machineId);
+				await client.Resources.CreateAsync(machine, CancellationToken);
+
+				// Act - Try to create same machine again
+				Logger.LogInformation("🔍 Attempting to create duplicate machine: {Id}", machineId);
+				
+				var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
+				{
+					await client.Resources.CreateAsync(machine, CancellationToken);
+				});
+
+				// Assert
+				exception.StatusCode.Should().BeOneOf(
+					Grpc.Core.StatusCode.AlreadyExists,
+					Grpc.Core.StatusCode.InvalidArgument);
+				
+				Logger.LogInformation("✅ Duplicate creation prevented: {Code}", exception.StatusCode);
+			}
+			catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
+			{
+				Logger.LogInformation("🔒 Permission denied - expected with Reader role");
+				Logger.LogInformation("✅ gRPC authentication is working correctly");
+			}
+			finally
+			{
+				// Cleanup
+				await CleanupMachine(client, machineId);
+			}
+		});
 	}
 
 	/// <summary>
@@ -392,24 +360,18 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	[Fact]
 	public async Task Get_WithEmptyId_ThrowsInvalidArgument()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunClientAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			// Act & Assert
+			Logger.LogInformation("🔍 Attempting to get cluster with empty ID");
+			
+			var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+			{
+				await client.Resources.GetAsync<Api.Resources.Cluster>("", cancellationToken: CancellationToken);
+			});
 
-		using var client = new OmniClient(GetClientOptions());
-
-		// Act & Assert
-		Logger.LogInformation("🔍 Attempting to get cluster with empty ID");
-		
-		var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
-		{
-			await client.Resources.GetAsync<Api.Resources.Cluster>("", cancellationToken: CancellationToken);
+			Logger.LogInformation("✅ ArgumentException thrown as expected for empty ID");
 		});
-
-		Logger.LogInformation("✅ ArgumentException thrown as expected for empty ID");
 	}
 
 	#region Helper Methods

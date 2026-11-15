@@ -122,4 +122,19 @@ public abstract class IntegrationTestBase(ITestOutputHelper testOutputHelper) : 
 			Logger.LogWarning(ex, "Failed to cleanup test resource: {Id}", id);
 		}
 	}
+
+	/// <summary>
+	/// Runs the body with a client when integration configuration exists
+	/// </summary>
+	protected async Task RunClientAsync(Func<OmniClient, Task> body)
+	{
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		using var client = new OmniClient(GetClientOptions());
+		await body(client);
+	}
 }
