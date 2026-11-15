@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -88,7 +89,7 @@ public abstract class TestBase : IDisposable
 	/// </summary>
 	/// <param name="prefix">Prefix for the ID (default: "test")</param>
 	/// <returns>Unique resource ID</returns>
-	protected static string GenerateUniqueId(string prefix = "test")
+	protected static string GenerateUniqueId([Optional, DefaultParameterValue("test")] string prefix)
 		=> $"{prefix}-{Guid.NewGuid():N}";
 
 	/// <summary>

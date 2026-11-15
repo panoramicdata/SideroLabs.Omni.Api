@@ -1,6 +1,5 @@
 using System.Text;
 using SideroLabs.Omni.Api.Enums;
-using SideroLabs.Omni.Api.Examples.Infrastructure;
 using SideroLabs.Omni.Api.Exceptions;
 using SideroLabs.Omni.Api.Models;
 
@@ -160,7 +159,7 @@ public static class OmniClientExample
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "your-username",
-			PgpPrivateKey = ExamplePlaceholders.PgpPrivateKey,
+			PgpPrivateKey = "<your armored PGP private key>",
 			TimeoutSeconds = 60,
 			UseTls = true,
 			ValidateCertificate = true
@@ -251,7 +250,7 @@ public static class OmniClientExample
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "admin-user",
-			PgpPrivateKey = ExamplePlaceholders.PgpPrivateKey,
+			PgpPrivateKey = "<your armored PGP private key>",
 			TimeoutSeconds = 30,
 			UseTls = true,
 			ValidateCertificate = true
@@ -351,7 +350,7 @@ public static class OmniClientExample
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "provisioning-user",
-			PgpPrivateKey = ExamplePlaceholders.PgpPrivateKey,
+			PgpPrivateKey = "<your armored PGP private key>",
 			TimeoutSeconds = 30,
 			UseTls = true,
 			ValidateCertificate = true
@@ -442,7 +441,7 @@ public static class OmniClientExample
 		{
 			BaseUrl = new("https://your-omni-instance.example.com"),
 			Identity = "readonly-user",
-			PgpPrivateKey = ExamplePlaceholders.PgpPrivateKey,
+			PgpPrivateKey = "<your armored PGP private key>",
 			TimeoutSeconds = 30,
 			UseTls = true,
 			ValidateCertificate = true,

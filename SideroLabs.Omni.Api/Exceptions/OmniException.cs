@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Grpc.Core;
 
 namespace SideroLabs.Omni.Api.Exceptions;
@@ -9,7 +10,7 @@ namespace SideroLabs.Omni.Api.Exceptions;
 /// <param name="message">The exception message</param>
 /// <param name="methodPath">The gRPC method path</param>
 /// <param name="innerException">The inner exception</param>
-public abstract class OmniException(string operationName, string message, string? methodPath = null, Exception? innerException = null) : Exception(message, innerException)
+public abstract class OmniException(string operationName, string message, [Optional] string? methodPath, [Optional] Exception? innerException) : Exception(message, innerException)
 {
 	/// <summary>
 	/// Gets the operation name that caused the exception

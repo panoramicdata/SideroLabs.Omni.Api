@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Grpc.Core;
 
 namespace SideroLabs.Omni.Api.Exceptions;
@@ -15,11 +16,11 @@ namespace SideroLabs.Omni.Api.Exceptions;
 public class OmniGrpcException(
 	string operationName,
 	StatusCode grpcStatusCode,
-	string? grpcStatusDetail = null,
-	string? methodPath = null,
-	int? httpStatusCode = null,
-	string? httpResponseBody = null,
-	Exception? innerException = null) : OmniException(
+	[Optional] string? grpcStatusDetail,
+	[Optional] string? methodPath,
+	[Optional] int? httpStatusCode,
+	[Optional] string? httpResponseBody,
+	[Optional] Exception? innerException) : OmniException(
 		operationName,
 		FormatMessage(operationName, grpcStatusCode, grpcStatusDetail, httpStatusCode, httpResponseBody),
 		methodPath,

@@ -3,7 +3,6 @@ using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SideroLabs.Omni.Api.Tests.Infrastructure;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -1262,7 +1261,7 @@ public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(tes
 
 			identity.Should().NotBeNullOrEmpty();
 			pgpKey.Should().NotBeNullOrEmpty();
-			pgpKey.Should().StartWith(FakeCredentials.PgpKeyHeader);
+			pgpKey.Should().StartWith("-----BEGIN PGP");
 
 			Logger.LogInformation("✅ AuthToken decodes correctly for identity: {Identity}", identity);
 		}
