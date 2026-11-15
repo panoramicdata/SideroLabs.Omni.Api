@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -11,53 +12,53 @@ public interface IClusterMachineOperations
 	/// Lists all cluster machines
 	/// </summary>
 	IAsyncEnumerable<ClusterMachine> ListAsync(
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets a specific cluster machine by ID
 	/// </summary>
 	Task<ClusterMachine> GetAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a new cluster machine
 	/// </summary>
 	Task<ClusterMachine> CreateAsync(
 		ClusterMachine clusterMachine,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Updates an existing cluster machine
 	/// </summary>
 	Task<ClusterMachine> UpdateAsync(
 		ClusterMachine clusterMachine,
-		string? currentVersion = null,
-		CancellationToken cancellationToken = default);
+		[Optional] string? currentVersion,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Deletes a cluster machine by ID
 	/// </summary>
 	Task DeleteAsync(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Watches for cluster machine changes
 	/// </summary>
 	IAsyncEnumerable<ResourceEvent<ClusterMachine>> WatchAsync(
-		string? @namespace = "default",
-		string? id = null,
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] string? id,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Applies a cluster machine (create or update)
 	/// </summary>
 	Task<ClusterMachine> ApplyAsync(
 		ClusterMachine clusterMachine,
-		bool dryRun = false,
-		CancellationToken cancellationToken = default);
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken);
 }

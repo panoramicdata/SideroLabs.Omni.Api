@@ -18,7 +18,7 @@ internal class KubeConfigService(
 	OmniAuthenticator? authenticator) : ManagementServiceBase(options, channel, authenticator), IKubeConfigService
 {
 	public Task<string> GetAsync(CancellationToken cancellationToken = default) =>
-		GetAsync(false, null, null, null, null, false, cancellationToken);
+		GetAsync(false, cancellationToken: cancellationToken);
 
 	public async Task<string> GetAsync(
 		bool serviceAccount,

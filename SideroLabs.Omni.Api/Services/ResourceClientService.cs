@@ -159,11 +159,17 @@ internal class ResourceClientService(
 
 		await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
 		{
-			if (response.Event == null) continue;
+			if (response.Event == null)
+			{
+				continue;
+			}
 
 			var resource = JsonSerializer.Deserialize<TResource>(response.Event.Resource, OmniClient.JsonSerializerOptions);
 
-			if (resource == null) continue;
+			if (resource == null)
+			{
+				continue;
+			}
 
 			TResource? oldResource = default;
 			if (!string.IsNullOrEmpty(response.Event.Old))

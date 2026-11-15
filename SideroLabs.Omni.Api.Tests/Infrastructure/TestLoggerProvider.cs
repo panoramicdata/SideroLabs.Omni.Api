@@ -37,7 +37,7 @@ internal class TestLoggerProvider(ILogger testLogger) : ILoggerProvider
 			var message = formatter(state, exception);
 			var formattedMessage = $"[{_categoryName}] {message}";
 			
-			_innerLogger.Log(logLevel, eventId, formattedMessage, exception, (msg, ex) => msg);
+			_innerLogger.Log(logLevel, eventId, formattedMessage, exception, (msg, _) => msg);
 		}
 	}
 }

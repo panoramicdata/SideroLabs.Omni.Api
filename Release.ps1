@@ -61,7 +61,7 @@ $ErrorActionPreference = "Stop"
 # Ensure information messages are visible
 $InformationPreference = "Continue"
 
-function Generate-Changelog {
+function New-Changelog {
 	param([string]$version)
 	
 	Write-Information "[*] Generating changelog for v$version..." -InformationAction Continue
@@ -474,7 +474,7 @@ try {
 		Write-Information "[*] Creating GitHub release..." -InformationAction Continue
 		
 		# Generate changelog since last release
-		$changelog = Generate-Changelog -version $version
+		$changelog = New-Changelog -version $version
 		
 		# Create the GitHub release
 		try {

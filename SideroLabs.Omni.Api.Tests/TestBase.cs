@@ -162,7 +162,7 @@ public abstract class TestBase : IDisposable
 	/// <typeparam name="T">Resource type</typeparam>
 	/// <param name="id">Resource ID</param>
 	/// <param name="ns">Resource namespace (default: "default")</param>
-	protected async Task SafeDeleteResourceAsync<T>(string id, string? ns = "default")
+	protected async Task SafeDeleteResourceAsync<T>(string id, string? ns)
 		where T : SideroLabs.Omni.Api.Resources.IOmniResource, new()
 	{
 		try

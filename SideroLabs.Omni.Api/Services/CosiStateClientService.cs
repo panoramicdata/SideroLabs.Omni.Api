@@ -159,7 +159,10 @@ internal class CosiStateClientService(
 		{
 			foreach (var evt in response.Event)
 			{
-				if (evt.Resource == null) continue;
+				if (evt.Resource == null)
+				{
+					continue;
+				}
 
 				var resource = DeserializeResource<TResource>(evt.Resource);
 
@@ -431,7 +434,7 @@ internal class CosiStateClientService(
 		{
 			try
 			{
-				var spec = ProtoSpecDeserializer.DeserializeSpec<TResource>(cosiResource.Spec!.ProtoSpec);
+				var spec = ProtoSpecDeserializer.DeserializeSpec(cosiResource.Spec!.ProtoSpec);
 				if (spec != null)
 				{
 					var specProperty = typeof(TResource).GetProperty("Spec");

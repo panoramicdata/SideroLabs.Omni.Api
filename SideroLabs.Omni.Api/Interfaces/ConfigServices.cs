@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace SideroLabs.Omni.Api.Interfaces;
 
 /// <summary>
@@ -8,19 +10,19 @@ public interface IKubeConfigService
 	/// <summary>
 	/// Gets the kubeconfig for a cluster
 	/// </summary>
-	Task<string> GetAsync(CancellationToken cancellationToken = default);
+	Task<string> GetAsync([Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets the kubeconfig for a cluster with service account options
 	/// </summary>
 	Task<string> GetAsync(
 		bool serviceAccount,
-		TimeSpan? serviceAccountTtl = null,
-		string? serviceAccountUser = null,
-		string[]? serviceAccountGroups = null,
-		string? grantType = null,
-		bool breakGlass = false,
-		CancellationToken cancellationToken = default);
+		[Optional] TimeSpan? serviceAccountTtl,
+		[Optional] string? serviceAccountUser,
+		[Optional] string[]? serviceAccountGroups,
+		[Optional] string? grantType,
+		[Optional] bool breakGlass,
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -32,9 +34,9 @@ public interface ITalosConfigService
 	/// Gets the talosconfig for cluster access
 	/// </summary>
 	Task<string> GetAsync(
-		bool raw = false,
-		bool breakGlass = false,
-		CancellationToken cancellationToken = default);
+		[Optional] bool raw,
+		[Optional] bool breakGlass,
+		[Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -45,5 +47,5 @@ public interface IOmniConfigService
 	/// <summary>
 	/// Gets the omniconfig for omnictl client
 	/// </summary>
-	Task<string> GetAsync(CancellationToken cancellationToken = default);
+	Task<string> GetAsync([Optional] CancellationToken cancellationToken);
 }

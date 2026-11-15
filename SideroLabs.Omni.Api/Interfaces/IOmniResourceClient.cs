@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -18,8 +19,8 @@ public interface IOmniResourceClient
 	/// <returns>The requested resource</returns>
 	Task<TResource> GetAsync<TResource>(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default)
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -37,15 +38,15 @@ public interface IOmniResourceClient
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Async enumerable of resources</returns>
 	IAsyncEnumerable<TResource> ListAsync<TResource>(
-		string? @namespace = "default",
-		string? selector = null,
-		string? idMatchRegexp = null,
-		int offset = 0,
-		int limit = 0,
-		string? sortBy = null,
-		bool sortDescending = false,
-		string[]? searchFor = null,
-		CancellationToken cancellationToken = default)
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] string? selector,
+		[Optional] string? idMatchRegexp,
+		[Optional] int offset,
+		[Optional] int limit,
+		[Optional] string? sortBy,
+		[Optional] bool sortDescending,
+		[Optional] string[]? searchFor,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -59,11 +60,11 @@ public interface IOmniResourceClient
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Async enumerable of resource events</returns>
 	IAsyncEnumerable<ResourceEvent<TResource>> WatchAsync<TResource>(
-		string? @namespace = "default",
-		string? selector = null,
-		string? id = null,
-		int tailEvents = 0,
-		CancellationToken cancellationToken = default)
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] string? selector,
+		[Optional] string? id,
+		[Optional] int tailEvents,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -75,7 +76,7 @@ public interface IOmniResourceClient
 	/// <returns>The created resource</returns>
 	Task<TResource> CreateAsync<TResource>(
 		TResource resource,
-		CancellationToken cancellationToken = default)
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource;
 
 	/// <summary>
@@ -88,8 +89,8 @@ public interface IOmniResourceClient
 	/// <returns>The updated resource</returns>
 	Task<TResource> UpdateAsync<TResource>(
 		TResource resource,
-		string? currentVersion = null,
-		CancellationToken cancellationToken = default)
+		[Optional] string? currentVersion,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource;
 
 	/// <summary>
@@ -101,8 +102,8 @@ public interface IOmniResourceClient
 	/// <param name="cancellationToken">Cancellation token</param>
 	Task DeleteAsync<TResource>(
 		string id,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default)
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -114,9 +115,9 @@ public interface IOmniResourceClient
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Number of resources deleted</returns>
 	Task<int> DeleteManyAsync<TResource>(
-		string? selector = null,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default)
+		[Optional] string? selector,
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -127,8 +128,8 @@ public interface IOmniResourceClient
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Number of resources deleted</returns>
 	Task<int> DeleteAllAsync<TResource>(
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default)
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -141,8 +142,8 @@ public interface IOmniResourceClient
 	/// <returns>The applied resource</returns>
 	Task<TResource> ApplyAsync<TResource>(
 		TResource resource,
-		bool dryRun = false,
-		CancellationToken cancellationToken = default)
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -155,8 +156,8 @@ public interface IOmniResourceClient
 	/// <returns>The applied resource</returns>
 	Task<TResource> ApplyYamlAsync<TResource>(
 		string yaml,
-		bool dryRun = false,
-		CancellationToken cancellationToken = default)
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 
 	/// <summary>
@@ -169,7 +170,7 @@ public interface IOmniResourceClient
 	/// <returns>The applied resource</returns>
 	Task<TResource> ApplyFileAsync<TResource>(
 		string filePath,
-		bool dryRun = false,
-		CancellationToken cancellationToken = default)
+		[Optional] bool dryRun,
+		[Optional] CancellationToken cancellationToken)
 		where TResource : IOmniResource, new();
 }

@@ -24,10 +24,14 @@ internal class UserManagement(IOmniResourceClient resources, ILogger logger) : I
 		CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			throw new ArgumentException("Email is required", nameof(email));
+		}
 		
 		if (string.IsNullOrWhiteSpace(role))
+		{
 			throw new ArgumentException("Role is required", nameof(role));
+		}
 
 		_logger.LogInformation("Creating user with email {Email} and role {Role}", email, role);
 
@@ -112,7 +116,9 @@ internal class UserManagement(IOmniResourceClient resources, ILogger logger) : I
 	public async Task<UserInfo> GetAsync(string email, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			throw new ArgumentException("Email is required", nameof(email));
+		}
 
 		_logger.LogInformation("Getting user with email {Email}", email);
 
@@ -133,7 +139,9 @@ internal class UserManagement(IOmniResourceClient resources, ILogger logger) : I
 	public async Task DeleteAsync(string email, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			throw new ArgumentException("Email is required", nameof(email));
+		}
 
 		_logger.LogInformation("Deleting user with email {Email}", email);
 
@@ -153,10 +161,14 @@ internal class UserManagement(IOmniResourceClient resources, ILogger logger) : I
 	public async Task<User> SetRoleAsync(string email, string role, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			throw new ArgumentException("Email is required", nameof(email));
+		}
 		
 		if (string.IsNullOrWhiteSpace(role))
+		{
 			throw new ArgumentException("Role is required", nameof(role));
+		}
 
 		_logger.LogInformation("Setting role {Role} for user {Email}", role, email);
 

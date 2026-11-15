@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SideroLabs.Omni.Api.Extensions;
+using SideroLabs.Omni.Api.Tests.Infrastructure;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests;
@@ -25,7 +26,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			options.BaseUrl = new("https://test.example.com:8443");
 			options.Identity = "test-user";
-			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
+			options.PgpPrivateKey = FakeCredentials.PgpPrivateKey;
 		});
 
 		var serviceProvider = services.BuildServiceProvider();
@@ -53,7 +54,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			BaseUrl = new("https://test.example.com:8443"),
 			Identity = "test-user",
-			PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----",
+			PgpPrivateKey = FakeCredentials.PgpPrivateKey,
 			TimeoutSeconds = 60
 		};
 
@@ -88,7 +89,7 @@ public class ServiceCollectionExtensionsTests(ITestOutputHelper testOutputHelper
 		{
 			options.BaseUrl = new("https://test.example.com");
 			options.Identity = "test-user";
-			options.PgpPrivateKey = "-----BEGIN PGP PRIVATE KEY BLOCK-----\ntest\n-----END PGP PRIVATE KEY BLOCK-----";
+			options.PgpPrivateKey = FakeCredentials.PgpPrivateKey;
 		});
 
 		var serviceProvider = services.BuildServiceProvider();

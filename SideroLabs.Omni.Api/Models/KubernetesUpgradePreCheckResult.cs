@@ -20,8 +20,15 @@ public class KubernetesUpgradePreCheckResult
 	/// </summary>
 	/// <param name="reason">Success message</param>
 	/// <returns>Successful pre-check result</returns>
-	public static KubernetesUpgradePreCheckResult Success(string reason = "All pre-checks passed") =>
+	public static KubernetesUpgradePreCheckResult Success(string reason) =>
 		new() { Ok = true, Reason = reason };
+
+	/// <summary>
+	/// Creates a successful pre-check result with the default message
+	/// </summary>
+	/// <returns>Successful pre-check result</returns>
+	public static KubernetesUpgradePreCheckResult Success() =>
+		Success("All pre-checks passed");
 
 	/// <summary>
 	/// Creates a failed pre-check result

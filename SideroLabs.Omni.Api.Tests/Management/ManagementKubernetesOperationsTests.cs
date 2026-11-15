@@ -142,7 +142,10 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 			Logger.LogInformation("Sync result #{Count}: Type={Type}, Path={Path}, Skipped={Skipped}",
 				syncCount, result.ResponseType, result.Path, result.Skipped);
 
-			if (syncCount >= 20) break; // Limit for test
+			if (syncCount >= 20)
+			{
+				break;
+			}
 		}
 
 		Assert.True(syncCount > 0, "Should receive at least one sync result");

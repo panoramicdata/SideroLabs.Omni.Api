@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -18,14 +19,14 @@ public interface IUserManagement
 	Task<(User User, Identity Identity)> CreateAsync(
 		string email,
 		string role,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Lists all users (excluding service accounts)
 	/// </summary>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>List of user information</returns>
-	Task<List<UserInfo>> ListAsync(CancellationToken cancellationToken = default);
+	Task<List<UserInfo>> ListAsync([Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets a user by email address
@@ -33,14 +34,14 @@ public interface IUserManagement
 	/// <param name="email">User email address</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>User information</returns>
-	Task<UserInfo> GetAsync(string email, CancellationToken cancellationToken = default);
+	Task<UserInfo> GetAsync(string email, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Deletes a user by email address
 	/// </summary>
 	/// <param name="email">User email address</param>
 	/// <param name="cancellationToken">Cancellation token</param>
-	Task DeleteAsync(string email, CancellationToken cancellationToken = default);
+	Task DeleteAsync(string email, [Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Updates a user's role
@@ -49,7 +50,7 @@ public interface IUserManagement
 	/// <param name="role">New role (Admin, Operator, Reader, None)</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Updated user</returns>
-	Task<User> SetRoleAsync(string email, string role, CancellationToken cancellationToken = default);
+	Task<User> SetRoleAsync(string email, string role, [Optional] CancellationToken cancellationToken);
 }
 
 /// <summary>

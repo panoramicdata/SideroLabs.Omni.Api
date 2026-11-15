@@ -29,7 +29,10 @@ internal class TemplateOperations(
 
 		foreach (var doc in docs)
 		{
-			if (string.IsNullOrWhiteSpace(doc)) continue;
+			if (string.IsNullOrWhiteSpace(doc))
+			{
+				continue;
+			}
 
 			// Inspect kind
 			var deserializer = new DeserializerBuilder()
@@ -37,7 +40,10 @@ internal class TemplateOperations(
 				.Build();
 
 			var map = deserializer.Deserialize<Dictionary<string, object>>(doc);
-			if (map == null) continue;
+			if (map == null)
+			{
+				continue;
+			}
 
 			map.TryGetValue("kind", out var kindObj);
 			var kind = (kindObj as string) ?? string.Empty;
@@ -48,11 +54,17 @@ internal class TemplateOperations(
 				{
 					case "Cluster":
 						var cluster = ResourceSerializer.FromYaml<Cluster>(doc);
-						if (cluster != null) list.Add(cluster);
+						if (cluster != null)
+						{
+							list.Add(cluster);
+						}
 						break;
 					case "Machine":
 						var machine = ResourceSerializer.FromYaml<Resources.Machine>(doc);
-						if (machine != null) list.Add(machine);
+						if (machine != null)
+						{
+							list.Add(machine);
+						}
 						break;
 					default:
 						throw new NotSupportedException($"Kind {kind} not supported.");
@@ -79,11 +91,14 @@ internal class TemplateOperations(
 		bool dryRun,
 		[EnumeratorCancellation] CancellationToken cancellationToken)
 	{
-		var resources = await RenderAsync(template, variables, cancellationToken);
+		var rendered = await RenderAsync(template, variables, cancellationToken);
 
-		foreach (var res in resources)
+		foreach (var res in rendered)
 		{
-			if (cancellationToken.IsCancellationRequested) yield break;
+			if (cancellationToken.IsCancellationRequested)
+			{
+				yield break;
+			}
 
 			SyncResult result;
 			try
@@ -134,7 +149,10 @@ internal class TemplateOperations(
 		var generic = method.MakeGenericMethod(resource.GetType());
 
 		var taskObj = generic.Invoke(resources, new object?[] { resource, dryRun, cancellationToken });
-		if (taskObj == null) return null;
+		if (taskObj == null)
+		{
+			return null;
+		}
 
 		var asTask = taskObj as Task ?? throw new InvalidOperationException("ApplyAsync did not return a Task");
 		await asTask.ConfigureAwait(false);

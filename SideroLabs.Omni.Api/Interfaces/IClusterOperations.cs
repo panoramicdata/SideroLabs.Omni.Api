@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SideroLabs.Omni.Api.Resources;
 
 namespace SideroLabs.Omni.Api.Interfaces;
@@ -14,8 +15,8 @@ public interface IClusterOperations
 	/// <param name="cancellationToken">A token that can cancel the asynchronous stream.</param>
 	/// <returns>An asynchronous stream of cluster resources.</returns>
 	IAsyncEnumerable<Cluster> ListAsync(
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Gets a single cluster resource by resource identifier.
@@ -26,8 +27,8 @@ public interface IClusterOperations
 	/// <returns>The resolved cluster resource.</returns>
 	Task<Cluster> GetAsync(
 		string clusterId,
-		string? @namespace = "default",
-		CancellationToken cancellationToken = default);
+		[Optional, DefaultParameterValue("default")] string? @namespace,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Resolves current cluster status, optionally waiting for state convergence.
@@ -38,8 +39,8 @@ public interface IClusterOperations
 	/// <returns>An implementation-specific status payload.</returns>
 	Task<object> GetStatusAsync(
 		string clusterName,
-		TimeSpan? waitTimeout = null,
-		CancellationToken cancellationToken = default);
+		[Optional] TimeSpan? waitTimeout,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Creates a new cluster resource in Omni.
@@ -49,7 +50,7 @@ public interface IClusterOperations
 	/// <returns>The created resource as returned by Omni.</returns>
 	Task<IOmniResource> CreateAsync(
 		IOmniResource cluster,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Deletes a cluster by name.
@@ -59,8 +60,8 @@ public interface IClusterOperations
 	/// <param name="cancellationToken">A token that can cancel the operation.</param>
 	Task DeleteAsync(
 		string clusterName,
-		bool force = false,
-		CancellationToken cancellationToken = default);
+		[Optional] bool force,
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Locks a machine inside a cluster to prevent disruptive automation actions.
@@ -71,7 +72,7 @@ public interface IClusterOperations
 	Task LockMachineAsync(
 		string machineId,
 		string clusterName,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Unlocks a previously locked machine in a cluster.
@@ -82,5 +83,5 @@ public interface IClusterOperations
 	Task UnlockMachineAsync(
 		string machineId,
 		string clusterName,
-		CancellationToken cancellationToken = default);
+		[Optional] CancellationToken cancellationToken);
 }
