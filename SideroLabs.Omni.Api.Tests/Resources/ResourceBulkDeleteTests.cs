@@ -1,6 +1,7 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Builders;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources;
@@ -12,7 +13,7 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Collection("Integration")]
 [Trait("Category", "Integration")]
 [Trait("Category", "CRUD")]
-public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
+public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : IntegrationTestBase(testOutputHelper)
 {
 	/// <summary>
 	/// Integration test that bulk-deletes multiple Cluster resources matching a label selector.
@@ -20,72 +21,43 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteMany_WithSelector_DeletesMatchingResources()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var testLabel = $"bulk-delete-{Guid.NewGuid():N}";
+			var createdIds = new List<string>();
 
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		var testLabel = $"bulk-delete-{Guid.NewGuid():N}";
-		var createdIds = new List<string>();
-
-		try
-		{
-			// Create multiple test clusters with the same label
-			for (int i = 0; i < 3; i++)
+			try
 			{
-				var clusterId = CreateUniqueId($"bulk-test-{i}");
-				var cluster = new Api.Builders.ClusterBuilder(clusterId)
-					.WithKubernetesVersion("v1.29.0")
-					.WithTalosVersion("v1.7.0")
-					.WithLabel("test-group", testLabel)
-					.Build();
-
-				var created = await client.Resources.CreateAsync(cluster, CancellationToken);
-				createdIds.Add(created.Metadata.Id);
-				Logger.LogInformation("Created test cluster {Id} with label test-group={Label}", clusterId, testLabel);
-			}
-
-			// Act
-			Logger.LogInformation("🔍 Deleting clusters with selector: test-group={Label}", testLabel);
-			var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.Cluster>(
-				selector: $"test-group={testLabel}",
-				cancellationToken: CancellationToken);
-
-			// Assert
-			deletedCount.Should().Be(3, "Should delete all 3 test clusters");
-			Logger.LogInformation("✅ Successfully deleted {Count} clusters", deletedCount);
-
-			// Verify they're actually deleted
-			foreach (var id in createdIds)
-			{
-				await Assert.ThrowsAsync<RpcException>(async () =>
+				for (var i = 0; i < 3; i++)
 				{
-					await client.Resources.GetAsync<Api.Resources.Cluster>(id, cancellationToken: CancellationToken);
-				});
-			}
+					var cluster = new ClusterBuilder(CreateUniqueId($"bulk-test-{i}"))
+						.WithKubernetesVersion("v1.29.0")
+						.WithTalosVersion("v1.7.0")
+						.WithLabel("test-group", testLabel)
+						.Build();
 
-			createdIds.Clear(); // Prevent cleanup in finally
-		}
-		catch (RpcException ex) when (ex.StatusCode == StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
-		finally
-		{
-			// Cleanup any remaining resources
-			foreach (var id in createdIds)
-			{
-				try
-				{
-					await client.Resources.DeleteAsync<Api.Resources.Cluster>(id, cancellationToken: CancellationToken);
+					createdIds.Add((await client.Resources.CreateAsync(cluster, CancellationToken)).Metadata.Id);
 				}
-				catch { /* Ignore cleanup errors */ }
+
+				var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.Cluster>(
+					selector: $"test-group={testLabel}",
+					cancellationToken: CancellationToken);
+
+				deletedCount.Should().Be(3, "Should delete all 3 test clusters");
+
+				foreach (var id in createdIds)
+				{
+					await Assert.ThrowsAsync<RpcException>(() =>
+						client.Resources.GetAsync<Api.Resources.Cluster>(id, cancellationToken: CancellationToken));
+				}
+
+				createdIds.Clear();
 			}
-		}
+			finally
+			{
+				await CleanupAllAsync<Api.Resources.Cluster>(client, createdIds);
+			}
+		});
 	}
 
 	/// <summary>
@@ -94,59 +66,36 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteMany_ReturnsCorrectCount()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var testLabel = $"count-test-{Guid.NewGuid():N}";
+			const int expectedCount = 5;
+			var createdIds = new List<string>();
 
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		var testLabel = $"count-test-{Guid.NewGuid():N}";
-		var expectedCount = 5;
-		var createdIds = new List<string>();
-
-		try
-		{
-			// Create multiple test config patches
-			for (int i = 0; i < expectedCount; i++)
+			try
 			{
-				var patchId = CreateUniqueId($"count-test-{i}");
-				var patch = new Api.Builders.ConfigPatchBuilder(patchId)
-					.WithData($"machine:\n  test: {i}")
-					.Build();
+				for (var i = 0; i < expectedCount; i++)
+				{
+					var patch = new ConfigPatchBuilder(CreateUniqueId($"count-test-{i}"))
+						.WithData($"machine:\n  test: {i}")
+						.Build();
 
-				patch.Metadata.Labels = new Dictionary<string, string> { ["count-test"] = testLabel };
+					patch.Metadata.Labels = new Dictionary<string, string> { ["count-test"] = testLabel };
+					createdIds.Add((await client.Resources.CreateAsync(patch, CancellationToken)).Metadata.Id);
+				}
 
-				var created = await client.Resources.CreateAsync(patch, CancellationToken);
-				createdIds.Add(created.Metadata.Id);
+				var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.ConfigPatch>(
+					selector: $"count-test={testLabel}",
+					cancellationToken: CancellationToken);
+
+				deletedCount.Should().Be(expectedCount, $"Should delete all {expectedCount} test patches");
+				createdIds.Clear();
 			}
-
-			// Act
-			var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.ConfigPatch>(
-				selector: $"count-test={testLabel}",
-				cancellationToken: CancellationToken);
-
-			// Assert
-			deletedCount.Should().Be(expectedCount, $"Should delete all {expectedCount} test patches");
-			Logger.LogInformation("✅ DeleteMany returned correct count: {Count}", deletedCount);
-
-			createdIds.Clear();
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
-		finally
-		{
-			// Cleanup
-			foreach (var id in createdIds)
+			finally
 			{
-				try { await client.Resources.DeleteAsync<Api.Resources.ConfigPatch>(id, cancellationToken: CancellationToken); }
-				catch { /* Ignore */ }
+				await CleanupAllAsync<Api.Resources.ConfigPatch>(client, createdIds);
 			}
-		}
+		});
 	}
 
 	/// <summary>
@@ -155,32 +104,14 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteMany_NoMatches_ReturnsZero()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		var nonExistentLabel = $"nonexistent-{Guid.NewGuid():N}";
-
-		try
-		{
-			// Act - Try to delete with selector that matches nothing
 			var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.Cluster>(
-				selector: $"nonexistent-label={nonExistentLabel}",
+				selector: $"nonexistent-label=nonexistent-{Guid.NewGuid():N}",
 				cancellationToken: CancellationToken);
 
-			// Assert
 			deletedCount.Should().Be(0, "Should return 0 when no resources match");
-			Logger.LogInformation("✅ DeleteMany correctly returned 0 for no matches");
-		}
-		catch (RpcException ex) when (ex.StatusCode == StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -189,34 +120,14 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteMany_ContinuesOnError()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		// This test verifies that DeleteMany continues deleting even if one delete fails
-		// In practice, this is hard to test without special setup, so we'll verify
-		// the implementation handles errors gracefully
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
-		{
-			// Act - Delete with a selector, implementation should handle any individual failures
 			var deletedCount = await client.Resources.DeleteManyAsync<Api.Resources.Machine>(
 				selector: "test-label=resilience-test",
 				cancellationToken: CancellationToken);
 
-			// Assert - Should complete without throwing, even if 0 matches
 			deletedCount.Should().BeGreaterThanOrEqualTo(0);
-			Logger.LogInformation("✅ DeleteMany completed gracefully with count: {Count}", deletedCount);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -225,26 +136,13 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteAll_RemovesAllResourcesInNamespace()
 	{
-		// Skip if integration tests are not configured or destructive tests are disabled
-		if (!ShouldRunIntegrationTests() || ShouldSkipDestructiveTests())
+		await RunDestructiveAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping destructive test");
-			return;
-		}
+			var testNamespace = $"test-ns-{Guid.NewGuid():N}";
 
-		// WARNING: This is a destructive test - it deletes ALL resources of a type
-		// Only run in test environments!
-
-		using var client = new OmniClient(GetClientOptions());
-		var testNamespace = $"test-ns-{Guid.NewGuid():N}";
-
-		try
-		{
-			// Create a few test resources in a specific namespace
-			for (int i = 0; i < 3; i++)
+			for (var i = 0; i < 3; i++)
 			{
-				var patchId = CreateUniqueId($"deleteall-{i}");
-				var patch = new Api.Builders.ConfigPatchBuilder(patchId)
+				var patch = new ConfigPatchBuilder(CreateUniqueId($"deleteall-{i}"))
 					.WithData($"test: {i}")
 					.InNamespace(testNamespace)
 					.Build();
@@ -252,19 +150,12 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 				await client.Resources.CreateAsync(patch, CancellationToken);
 			}
 
-			// Act
 			var deletedCount = await client.Resources.DeleteAllAsync<Api.Resources.ConfigPatch>(
 				@namespace: testNamespace,
 				cancellationToken: CancellationToken);
 
-			// Assert
 			deletedCount.Should().Be(3, "Should delete all 3 test patches");
-			Logger.LogInformation("✅ DeleteAll removed {Count} resources", deletedCount);
-		}
-		catch (RpcException ex) when (ex.StatusCode == StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -273,31 +164,37 @@ public class ResourceBulkDeleteTests(ITestOutputHelper testOutputHelper) : TestB
 	[Fact]
 	public async Task DeleteAll_InDefaultNamespace_HandledSafely()
 	{
-		// Skip destructive tests
-		if (!ShouldRunIntegrationTests() || ShouldSkipDestructiveTests())
+		await RunDestructiveAsync(async client =>
+		{
+			var deletedCount = await client.Resources.DeleteAllAsync<Api.Resources.Machine>(cancellationToken: CancellationToken);
+
+			deletedCount.Should().BeGreaterThanOrEqualTo(0);
+		});
+	}
+
+	private async Task RunDestructiveAsync(Func<OmniClient, Task> body)
+	{
+		if (ShouldSkipDestructiveTests())
 		{
 			Logger.LogInformation("⏭️ Skipping destructive test");
 			return;
 		}
 
-		// This test ensures DeleteAll works correctly
-		// We won't actually delete everything in default namespace in tests
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
-		{
-			// Just verify the method can be called (it will be permission denied in most cases)
-			var deletedCount = await client.Resources.DeleteAllAsync<Api.Resources.Machine>(
-				cancellationToken: CancellationToken);
-
-			Logger.LogInformation("DeleteAll returned count: {Count}", deletedCount);
-			deletedCount.Should().BeGreaterThanOrEqualTo(0);
-		}
-		catch (RpcException ex) when (ex.StatusCode == StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected for DeleteAll in default namespace");
-		}
+		await RunAsync(body);
 	}
 
+	private async Task CleanupAllAsync<T>(OmniClient client, List<string> ids) where T : class, Api.Resources.IOmniResource, new()
+	{
+		foreach (var id in ids)
+		{
+			try
+			{
+				await client.Resources.DeleteAsync<T>(id, cancellationToken: CancellationToken);
+			}
+			catch (RpcException ex)
+			{
+				Logger.LogDebug(ex, "Ignoring cleanup error for {Id}", id);
+			}
+		}
+	}
 }
