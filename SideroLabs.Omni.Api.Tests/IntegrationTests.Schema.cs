@@ -259,7 +259,7 @@ public partial class IntegrationTests
 		return (progressUpdates, totalBundleSize, errors);
 	}
 
-	private long LogBundleProgress(Models.SupportBundleProgress progress, List<string> errors)
+	private long LogBundleProgress(Api.Models.SupportBundleProgress progress, List<string> errors)
 	{
 		if (progress.HasError)
 		{
