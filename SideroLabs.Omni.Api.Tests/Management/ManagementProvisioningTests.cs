@@ -348,19 +348,6 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 	[Fact(Skip = "Requires valid join token - manual test only")]
 	public async Task GetMachineJoinConfig_ValidToken_ReturnsConfig()
 	{
-		// This test requires a valid join token created first
-		// var joinToken = "valid-token-id";
-
-		// NEW API!
-		// var config = await OmniClient.MachineManagement.GetJoinConfigAsync(
-		//     useGrpcTunnel: true,
-		//     joinToken: joinToken,
-		//     CancellationToken);
-
-		// Assert.NotNull(config);
-		// Assert.NotEmpty(config.Config);
-		// Assert.NotNull(config.KernelArgs);
-
 		Logger.LogInformation("Join config test requires valid token");
 	}
 

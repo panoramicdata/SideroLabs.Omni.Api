@@ -7,6 +7,17 @@ namespace SideroLabs.Omni.Api.Examples;
 /// </summary>
 public static class Program
 {
+	private static readonly (string Key, string Title, Func<CancellationToken, Task> Run)[] Examples =
+	[
+		("basic", "Basic Usage", _ => OmniClientExample.BasicUsageExample()),
+		("structured", "Structured Basic Usage", BasicUsageExample.DemonstrateAsync),
+		("readonly", "Read-Only Mode", _ => OmniClientExample.ReadOnlyModeExample()),
+		("streaming", "Advanced Streaming", _ => OmniClientExample.AdvancedStreamingExample()),
+		("service-accounts", "Service Account Management", _ => OmniClientExample.ServiceAccountManagementExample()),
+		("provisioning", "Machine Provisioning", _ => OmniClientExample.MachineProvisioningExample()),
+		("comprehensive", "Comprehensive Management Service", _ => OmniClientExample.ComprehensiveManagementServiceExample())
+	];
+
 	/// <summary>
 	/// Main entry point for the examples application
 	/// </summary>
@@ -35,52 +46,11 @@ public static class Program
 
 		try
 		{
-			switch (exampleName)
+			if (!await TryRunAsync(exampleName, cts.Token))
 			{
-				case "basic":
-					Console.WriteLine("Running Basic Usage Example...");
-					await OmniClientExample.BasicUsageExample();
-					break;
-
-				case "streaming":
-					Console.WriteLine("Running Advanced Streaming Example...");
-					await OmniClientExample.AdvancedStreamingExample();
-					break;
-
-				case "service-accounts":
-					Console.WriteLine("Running Service Account Management Example...");
-					await OmniClientExample.ServiceAccountManagementExample();
-					break;
-
-				case "provisioning":
-					Console.WriteLine("Running Machine Provisioning Example...");
-					await OmniClientExample.MachineProvisioningExample();
-					break;
-
-				case "readonly":
-					Console.WriteLine("Running Read-Only Mode Example...");
-					await OmniClientExample.ReadOnlyModeExample();
-					break;
-
-				case "comprehensive":
-					Console.WriteLine("Running Comprehensive Management Service Example...");
-					await OmniClientExample.ComprehensiveManagementServiceExample();
-					break;
-
-				case "structured":
-					Console.WriteLine("Running Structured Basic Usage Example...");
-					await BasicUsageExample.DemonstrateAsync(cts.Token);
-					break;
-
-				case "all":
-					await RunAllExamples(cts.Token);
-					break;
-
-				default:
-					Console.WriteLine($"Unknown example: {exampleName}");
-					ShowUsage();
-					Environment.Exit(1);
-					break;
+				Console.WriteLine($"Unknown example: {exampleName}");
+				ShowUsage();
+				Environment.Exit(1);
 			}
 		}
 		catch (OperationCanceledException)
@@ -101,6 +71,25 @@ public static class Program
 		Console.WriteLine("\nExample completed successfully.");
 	}
 
+	private static async Task<bool> TryRunAsync(string exampleName, CancellationToken cancellationToken)
+	{
+		if (exampleName == "all")
+		{
+			await RunAllExamples(cancellationToken);
+			return true;
+		}
+
+		var example = Examples.FirstOrDefault(e => e.Key == exampleName);
+		if (example.Run == null)
+		{
+			return false;
+		}
+
+		Console.WriteLine($"Running {example.Title} Example...");
+		await example.Run(cancellationToken);
+		return true;
+	}
+
 	/// <summary>
 	/// Shows usage information
 	/// </summary>
@@ -109,13 +98,11 @@ public static class Program
 		Console.WriteLine("Usage: SideroLabs.Omni.Api.Examples <example-name> [options]");
 		Console.WriteLine();
 		Console.WriteLine("Available examples:");
-		Console.WriteLine("  basic              - Basic usage example with configuration management");
-		Console.WriteLine("  streaming          - Advanced streaming operations and machine management");
-		Console.WriteLine("  service-accounts   - Service account lifecycle management");
-		Console.WriteLine("  provisioning       - Machine provisioning with schematics");
-		Console.WriteLine("  readonly           - Read-only mode demonstration");
-		Console.WriteLine("  comprehensive      - All available ManagementService operations");
-		Console.WriteLine("  structured         - Structured basic usage example");
+		foreach (var (key, title, _) in Examples)
+		{
+			Console.WriteLine($"  {key,-18} - {title}");
+		}
+
 		Console.WriteLine("  all                - Run all examples sequentially");
 		Console.WriteLine();
 		Console.WriteLine("Options:");
@@ -133,26 +120,15 @@ public static class Program
 	/// <param name="cancellationToken">Cancellation token</param>
 	private static async Task RunAllExamples(CancellationToken cancellationToken)
 	{
-		var examples = new (string Name, Func<Task> ExampleFunc)[]
+		for (var i = 0; i < Examples.Length; i++)
 		{
-			("Basic Usage", () => OmniClientExample.BasicUsageExample()),
-			("Structured Basic Usage", () => BasicUsageExample.DemonstrateAsync(cancellationToken)),
-			("Read-Only Mode", () => OmniClientExample.ReadOnlyModeExample()),
-			("Advanced Streaming", () => OmniClientExample.AdvancedStreamingExample()),
-			("Service Account Management", () => OmniClientExample.ServiceAccountManagementExample()),
-			("Machine Provisioning", () => OmniClientExample.MachineProvisioningExample()),
-			("Comprehensive Management Service", () => OmniClientExample.ComprehensiveManagementServiceExample())
-		};
+			var (_, name, run) = Examples[i];
 
-		for (var i = 0; i < examples.Length; i++)
-		{
-			var (name, exampleFunc) = examples[i];
-
-			Console.WriteLine($"\n--- Example {i + 1}/{examples.Length}: {name} ---");
+			Console.WriteLine($"\n--- Example {i + 1}/{Examples.Length}: {name} ---");
 
 			try
 			{
-				await exampleFunc();
+				await run(cancellationToken);
 				Console.WriteLine($"✅ {name} completed successfully");
 			}
 			catch (Exception ex)
@@ -160,21 +136,25 @@ public static class Program
 				Console.WriteLine($"❌ {name} failed: {ex.Message}");
 			}
 
-			// Wait a moment between examples (unless cancelled)
-			if (i < examples.Length - 1)
+			if (i < Examples.Length - 1 && !await WaitForKeyAsync(cancellationToken))
 			{
-				Console.WriteLine("\nPress any key to continue to the next example, or Ctrl+C to stop...");
-				var keyTask = Task.Run(() => Console.ReadKey(true), cancellationToken);
-				try
-				{
-					await keyTask;
-				}
-				catch (OperationCanceledException)
-				{
-					Console.WriteLine("\nStopping examples execution.");
-					break;
-				}
+				break;
 			}
+		}
+	}
+
+	private static async Task<bool> WaitForKeyAsync(CancellationToken cancellationToken)
+	{
+		Console.WriteLine("\nPress any key to continue to the next example, or Ctrl+C to stop...");
+		try
+		{
+			await Task.Run(() => Console.ReadKey(true), cancellationToken);
+			return true;
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine("\nStopping examples execution.");
+			return false;
 		}
 	}
 }

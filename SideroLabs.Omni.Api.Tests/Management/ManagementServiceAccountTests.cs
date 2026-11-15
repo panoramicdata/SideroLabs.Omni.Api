@@ -93,17 +93,7 @@ public class ManagementServiceAccountTests(ITestOutputHelper testOutputHelper) :
 	[Fact(Skip = "Requires PGP key generation - manual test only")]
 	public async Task CreateServiceAccount_WithUserRole_ReturnsKeyId()
 	{
-		if (ShouldSkipDestructiveTests())
-		{
-			return;
-		}
-
-		// Would need to:
-		// var (publicKey, _) = GenerateTestPgpKeyPair();
-		// NEW API!
-		// var keyId = await OmniClient.ServiceAccounts.CreateAsync(publicKey, true, CancellationToken);
-		// Assert.NotEmpty(keyId);
-		// Cleanup: await OmniClient.ServiceAccounts.DestroyAsync(accountName, CancellationToken);
+		Logger.LogInformation("Create service account test requires PGP key generation");
 	}
 
 	/// <summary>
