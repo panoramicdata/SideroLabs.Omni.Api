@@ -17,42 +17,6 @@ namespace SideroLabs.Omni.Api.Tests;
 [Trait("Category", "Integration")]
 public class IntegrationTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
 {
-	private OmniClientOptions GetClientOptions(bool? isReadOnlyOverride = null)
-	{
-		var configuration = LoadConfiguration();
-		var omniSection = configuration.GetSection("Omni");
-
-		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni config section must contain AuthToken.");
-
-		return CreateClientOptions(omniSection, authToken, isReadOnlyOverride);
-	}
-
-	/// <summary>
-	/// Loads configuration from appsettings.json
-	/// </summary>
-	private static IConfiguration LoadConfiguration()
-	{
-		return new ConfigurationBuilder()
-			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("appsettings.json", optional: false)
-			.Build();
-	}
-
-	/// <summary>
-	/// Creates the OmniClientOptions with the provided configuration
-	/// </summary>
-	private OmniClientOptions CreateClientOptions(IConfigurationSection omniSection, string authToken, bool? isReadOnlyOverride)
-		=> new()
-		{
-			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl not configured")),
-			AuthToken = authToken,
-			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
-			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
-			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
-			IsReadOnly = isReadOnlyOverride ?? bool.Parse(omniSection["IsReadOnly"] ?? "false"),
-			Logger = Logger
-		};
-
 	/// <summary>
 	/// Determines if integration tests should run based on configuration
 	/// </summary>

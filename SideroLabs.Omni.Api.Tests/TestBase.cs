@@ -196,6 +196,34 @@ public abstract class TestBase : IDisposable
 
 	#endregion
 
+	#region Integration Client Helpers
+
+	/// <summary>
+	/// Builds client options from the Omni configuration section
+	/// </summary>
+	protected OmniClientOptions GetClientOptions([Optional] bool? isReadOnlyOverride)
+	{
+		var omniSection = Configuration.GetSection("Omni");
+		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni config section must contain AuthToken.");
+
+		return new OmniClientOptions
+		{
+			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl not configured")),
+			AuthToken = authToken,
+			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
+			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
+			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
+			IsReadOnly = isReadOnlyOverride ?? bool.Parse(omniSection["IsReadOnly"] ?? "false"),
+			Logger = Logger
+		};
+	}
+
+	/// <summary>
+	/// Creates a unique resource id with the given prefix
+	/// </summary>
+	protected static string CreateUniqueId(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
+
+	#endregion
 	#region Integration Test Guards
 
 	/// <summary>

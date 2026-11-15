@@ -334,26 +334,6 @@ spec:
 		}
 	}
 
-	private OmniClientOptions GetClientOptions()
-	{
-		var configuration = Configuration;
-		var omniSection = configuration.GetSection("Omni");
-		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni config section must contain AuthToken.");
-
-		return new OmniClientOptions
-		{
-			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl not configured")),
-			AuthToken = authToken,
-			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
-			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
-			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
-			IsReadOnly = bool.Parse(omniSection["IsReadOnly"] ?? "false"),
-			Logger = Logger
-		};
-	}
-
-	private static string CreateUniqueId(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
-
 	private async Task CleanupCluster(OmniClient client, string clusterId)
 	{
 		try

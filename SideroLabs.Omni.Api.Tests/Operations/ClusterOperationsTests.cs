@@ -456,8 +456,6 @@ public class ClusterOperationsTests(ITestOutputHelper testOutputHelper) : TestBa
 
 	#region Helper Methods
 
-	private static string CreateUniqueId(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
-
 	private async Task CleanupCluster(IOmniClient client, string clusterId)
 	{
 		try
