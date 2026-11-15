@@ -14,6 +14,10 @@ internal class TemplateOperations(
 	IOmniResourceClient resources,
 	ILogger logger) : ITemplateOperations
 {
+	private static readonly IDeserializer KindDeserializer = new DeserializerBuilder()
+		.WithNamingConvention(CamelCaseNamingConvention.Instance)
+		.Build();
+
 	public async Task<object> LoadAsync(string filePath, CancellationToken cancellationToken)
 	{
 		var yaml = await File.ReadAllTextAsync(filePath, cancellationToken);
@@ -23,51 +27,22 @@ internal class TemplateOperations(
 	public Task<List<IOmniResource>> RenderAsync(object template, Dictionary<string, object> variables, CancellationToken cancellationToken)
 	{
 		var yaml = template as string ?? template?.ToString() ?? string.Empty;
-		var docs = SplitYamlDocuments(yaml);
-
 		var list = new List<IOmniResource>();
 
-		foreach (var doc in docs)
+		foreach (var doc in SplitYamlDocuments(yaml).Where(d => !string.IsNullOrWhiteSpace(d)))
 		{
-			if (string.IsNullOrWhiteSpace(doc))
+			var kind = ReadKind(doc);
+			if (kind == null)
 			{
 				continue;
 			}
-
-			// Inspect kind
-			var deserializer = new DeserializerBuilder()
-				.WithNamingConvention(CamelCaseNamingConvention.Instance)
-				.Build();
-
-			var map = deserializer.Deserialize<Dictionary<string, object>>(doc);
-			if (map == null)
-			{
-				continue;
-			}
-
-			map.TryGetValue("kind", out var kindObj);
-			var kind = (kindObj as string) ?? string.Empty;
 
 			try
 			{
-				switch (kind)
+				var resource = ParseResource(kind, doc);
+				if (resource != null)
 				{
-					case "Cluster":
-						var cluster = ResourceSerializer.FromYaml<Cluster>(doc);
-						if (cluster != null)
-						{
-							list.Add(cluster);
-						}
-						break;
-					case "Machine":
-						var machine = ResourceSerializer.FromYaml<Resources.Machine>(doc);
-						if (machine != null)
-						{
-							list.Add(machine);
-						}
-						break;
-					default:
-						throw new NotSupportedException($"Kind {kind} not supported.");
+					list.Add(resource);
 				}
 			}
 			catch (Exception ex)
@@ -79,6 +54,24 @@ internal class TemplateOperations(
 		return Task.FromResult(list);
 	}
 
+	private static string? ReadKind(string doc)
+	{
+		var map = KindDeserializer.Deserialize<Dictionary<string, object>>(doc);
+		if (map == null)
+		{
+			return null;
+		}
+
+		map.TryGetValue("kind", out var kindObj);
+		return kindObj as string ?? string.Empty;
+	}
+
+	private static IOmniResource? ParseResource(string kind, string doc) => kind switch
+	{
+		"Cluster" => ResourceSerializer.FromYaml<Cluster>(doc),
+		"Machine" => ResourceSerializer.FromYaml<Resources.Machine>(doc),
+		_ => throw new NotSupportedException($"Kind {kind} not supported.")
+	};
 	public Task ValidateAsync(object template, CancellationToken cancellationToken)
 	{
 		// Validation not implemented yet - placeholder

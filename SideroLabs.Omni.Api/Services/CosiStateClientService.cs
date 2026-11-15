@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Cosi.Resource;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -75,7 +74,7 @@ internal class CosiStateClientService(
 		var callOptions = CreateCallOptions("Get");
 		var response = await _grpcClient.GetAsync(request, callOptions);
 
-		var resource = DeserializeResource<TResource>(response.Resource);
+		var resource = CosiResourceMapper.Deserialize<TResource>(response.Resource, _logger);
 		_logger.LogInformation("Retrieved resource {Type}/{Namespace}/{Id}", resourceType, @namespace, id);
 		return resource;
 	}
@@ -113,7 +112,7 @@ internal class CosiStateClientService(
 		{
 			if (response.Resource != null)
 			{
-				var resource = DeserializeResource<TResource>(response.Resource);
+				var resource = CosiResourceMapper.Deserialize<TResource>(response.Resource, _logger);
 				count++;
 				yield return resource;
 			}
@@ -164,12 +163,12 @@ internal class CosiStateClientService(
 					continue;
 				}
 
-				var resource = DeserializeResource<TResource>(evt.Resource);
+				var resource = CosiResourceMapper.Deserialize<TResource>(evt.Resource, _logger);
 
 				TResource? oldResource = default;
 				if (evt.Old != null)
 				{
-					oldResource = DeserializeResource<TResource>(evt.Old);
+					oldResource = CosiResourceMapper.Deserialize<TResource>(evt.Old, _logger);
 				}
 
 				yield return new ResourceEvent<TResource>
@@ -194,7 +193,7 @@ internal class CosiStateClientService(
 		_logger.LogDebug("Creating resource {Type}/{Namespace}/{Id} via COSI State",
 			resourceType, resource.Metadata.Namespace, resource.Metadata.Id);
 
-		var cosiResource = SerializeResource(resource);
+		var cosiResource = CosiResourceMapper.Serialize(resource);
 
 		var request = new CreateRequest
 		{
@@ -223,7 +222,7 @@ internal class CosiStateClientService(
 		_logger.LogDebug("Updating resource {Type}/{Namespace}/{Id} via COSI State",
 			resourceType, resource.Metadata.Namespace, resource.Metadata.Id);
 
-		var cosiResource = SerializeResource(resource);
+		var cosiResource = CosiResourceMapper.Serialize(resource);
 
 		var request = new UpdateRequest
 		{
@@ -353,107 +352,6 @@ internal class CosiStateClientService(
 			throw new Exceptions.ReadOnlyModeException(operation, "Resource",
 				$"Cannot perform {operation} when client is in read-only mode");
 		}
-	}
-
-	private Cosi.Resource.Resource SerializeResource<TResource>(TResource resource)
-		where TResource : IOmniResource
-	{
-		var specJson = JsonSerializer.Serialize(resource, OmniClient.JsonSerializerOptions);
-
-		return new Cosi.Resource.Resource
-		{
-			Metadata = new Cosi.Resource.Metadata
-			{
-				Namespace = resource.Metadata.Namespace,
-				Type = ResourceTypeRegistry.GetProtoTypeName<TResource>(),
-				Id = resource.Metadata.Id,
-				Version = resource.Metadata.Version
-			},
-			Spec = new Spec
-			{
-				YamlSpec = specJson
-			}
-		};
-	}
-
-	private TResource DeserializeResource<TResource>(Cosi.Resource.Resource cosiResource)
-		where TResource : IOmniResource, new()
-	{
-		// Create a new instance of the resource
-		var resource = new TResource();
-
-		// Map metadata from COSI to our resource
-		resource.Metadata = ResourceMetadata.FromProto(cosiResource.Metadata);
-
-		// DIAGNOSTIC: Log what format we receive
-		var hasYamlSpec = cosiResource.Spec != null && !string.IsNullOrEmpty(cosiResource.Spec.YamlSpec);
-		var hasProtoSpec = cosiResource.Spec?.ProtoSpec != null && !cosiResource.Spec.ProtoSpec.IsEmpty;
-
-		_logger.LogInformation(
-			"Spec format - Type: {Type}, YamlSpec: {HasYaml} ({YamlLength} bytes), ProtoSpec: {HasProto} ({ProtoLength} bytes)",
-			cosiResource.Metadata.Type,
-			hasYamlSpec,
-			hasYamlSpec ? cosiResource.Spec!.YamlSpec.Length : 0,
-			hasProtoSpec,
-			hasProtoSpec ? cosiResource.Spec!.ProtoSpec.Length : 0);
-
-		// Try YamlSpec first (JSON format)
-		if (hasYamlSpec)
-		{
-			try
-			{
-				_logger.LogDebug("Attempting to deserialize YamlSpec as JSON for {Type}", cosiResource.Metadata.Type);
-
-				var deserializedResource = JsonSerializer.Deserialize<TResource>(
-					cosiResource.Spec!.YamlSpec,
-					OmniClient.JsonSerializerOptions);
-
-				if (deserializedResource != null)
-				{
-					var specProperty = typeof(TResource).GetProperty("Spec");
-					if (specProperty != null)
-					{
-						var spec = specProperty.GetValue(deserializedResource);
-						if (spec != null)
-						{
-							specProperty.SetValue(resource, spec);
-							_logger.LogInformation("? Successfully deserialized spec from YamlSpec for {Type}", cosiResource.Metadata.Type);
-							return resource;
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogDebug(ex, "Failed to deserialize YamlSpec as JSON for {Type}", cosiResource.Metadata.Type);
-			}
-		}
-
-		// Try ProtoSpec with our deserializer
-		if (hasProtoSpec)
-		{
-			try
-			{
-				var spec = ProtoSpecDeserializer.DeserializeSpec(cosiResource.Spec!.ProtoSpec);
-				if (spec != null)
-				{
-					var specProperty = typeof(TResource).GetProperty("Spec");
-					if (specProperty != null && specProperty.CanWrite)
-					{
-						specProperty.SetValue(resource, spec);
-						_logger.LogInformation("? Successfully deserialized spec from ProtoSpec for {Type}", cosiResource.Metadata.Type);
-						return resource;
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogDebug(ex, "Failed to deserialize ProtoSpec for {Type}", cosiResource.Metadata.Type);
-			}
-		}
-
-		_logger.LogDebug("Returning resource with metadata only - no spec deserialization available for {Type}", cosiResource.Metadata.Type);
-		return resource;
 	}
 
 	private static ResourceEventType MapEventType(EventType eventType) => eventType switch

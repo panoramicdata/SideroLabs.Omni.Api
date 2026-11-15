@@ -14,13 +14,10 @@ internal abstract class ManagementServiceBase : OmniServiceBase
 	protected readonly Management.ManagementService.ManagementServiceClient GrpcClient;
 	protected readonly GrpcCallHelper CallHelper;
 
-	protected ManagementServiceBase(
-		OmniClientOptions options,
-		GrpcChannel channel,
-		OmniAuthenticator? authenticator)
-		: base(options, channel, authenticator)
+	protected ManagementServiceBase(ManagementConnection connection)
+		: base(connection.Options, connection.Channel, connection.Authenticator)
 	{
-		GrpcClient = new Management.ManagementService.ManagementServiceClient(channel);
-		CallHelper = new GrpcCallHelper(options.Logger, CreateCallOptions);
+		GrpcClient = new Management.ManagementService.ManagementServiceClient(connection.Channel);
+		CallHelper = new GrpcCallHelper(connection.Options.Logger, CreateCallOptions);
 	}
 }
