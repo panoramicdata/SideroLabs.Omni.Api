@@ -11,7 +11,7 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Collection("Integration")]
 [Trait("Category", "Integration")]
 [Trait("Category", "ErrorHandling")]
-public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
+public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : IntegrationTestBase(testOutputHelper)
 {
 	/// <summary>
 	/// Integration test that verifies getting a non-existent cluster ID throws RpcException with NotFound status.
@@ -210,16 +210,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 	[Fact]
 	public async Task Update_WithoutVersion_HandlesOptimisticLocking()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List clusters to get one
 			Logger.LogInformation("🔍 Getting existing cluster for version test");
@@ -253,11 +244,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : TestBase(t
 			{
 				Logger.LogInformation("✅ Optimistic locking conflict detected as expected");
 			}
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>

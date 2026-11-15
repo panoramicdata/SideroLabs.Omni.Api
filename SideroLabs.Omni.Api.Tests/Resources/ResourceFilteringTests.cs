@@ -12,7 +12,7 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Collection("Integration")]
 [Trait("Category", "Integration")]
 [Trait("Category", "Filtering")]
-public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
+public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : IntegrationTestBase(testOutputHelper)
 {
 	/// <summary>
 	/// Integration test that filters the cluster list using a label selector and verifies only matching clusters are returned.
@@ -20,16 +20,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_WithSelector_FiltersResults()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List all clusters first to understand what's available
 			Logger.LogInformation("🔍 Listing all clusters to check for existing data");
@@ -75,11 +66,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 				.WhoseValue.Should().Be(labelValue));
 
 			Logger.LogInformation("✅ Selector filtering successful - found {Count} matching clusters", filteredClusters.Count);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -88,16 +75,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_WithRegex_MatchesIds()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List all clusters first
 			Logger.LogInformation("🔍 Listing all clusters");
@@ -135,11 +113,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 				c.Metadata.Id.Should().StartWith(idPrefix));
 
 			Logger.LogInformation("✅ Regex filtering successful - found {Count} matching clusters", regexClusters.Count);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -148,16 +122,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_WithPagination_ReturnsCorrectPage()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List with pagination (first page, limit 10)
 			Logger.LogInformation("🔍 Listing clusters with pagination: offset=0, limit=10");
@@ -175,11 +140,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 			page1.Should().HaveCountLessThanOrEqualTo(10);
 
 			Logger.LogInformation("✅ Pagination successful - returned {Count} clusters", page1.Count);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -188,16 +149,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_WithSorting_ReturnsSortedResults()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List with sorting by metadata.created
 			Logger.LogInformation("🔍 Listing clusters sorted by metadata.created");
@@ -216,11 +168,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 			sortedClusters.Should().NotBeNull();
 
 			Logger.LogInformation("✅ Sorting successful - returned {Count} clusters", sortedClusters.Count);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -229,16 +177,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_WithSearch_FindsMatches()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List all clusters first
 			Logger.LogInformation("🔍 Listing all clusters");
@@ -274,11 +213,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 			searchResults.Should().NotBeEmpty();
 
 			Logger.LogInformation("✅ Search successful - found {Count} matches", searchResults.Count);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	/// <summary>
@@ -287,16 +222,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task List_CombinedFilters_AppliesAll()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
-		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		using var client = new OmniClient(GetClientOptions());
-
-		try
+		await RunAsync(async client =>
 		{
 			// Act - List all clusters first
 			Logger.LogInformation("🔍 Listing all clusters");
@@ -356,11 +282,7 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : TestBa
 			results2.Should().HaveCountLessThanOrEqualTo(1);
 
 			Logger.LogInformation("✅ Combined filtering successful");
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+		});
 	}
 
 	#region Helper Methods
