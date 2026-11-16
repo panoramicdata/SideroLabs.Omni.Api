@@ -40,10 +40,11 @@ internal static class CosiResourceMapper
 		};
 
 		var type = cosiResource.Metadata.Type;
-		var yamlSpec = cosiResource.Spec?.YamlSpec ?? string.Empty;
-		var protoSpec = cosiResource.Spec?.ProtoSpec;
+		var spec = cosiResource.Spec ?? new Cosi.Resource.Spec();
+		var yamlSpec = spec.YamlSpec;
+		var protoSpec = spec.ProtoSpec;
 		var hasYamlSpec = yamlSpec.Length > 0;
-		var hasProtoSpec = protoSpec is { IsEmpty: false };
+		var hasProtoSpec = !protoSpec.IsEmpty;
 
 		logger.LogInformation(
 			"Spec format - Type: {Type}, YamlSpec: {HasYaml} ({YamlLength} bytes), ProtoSpec: {HasProto} ({ProtoLength} bytes)",
@@ -51,14 +52,14 @@ internal static class CosiResourceMapper
 			hasYamlSpec,
 			yamlSpec.Length,
 			hasProtoSpec,
-			protoSpec?.Length ?? 0);
+			protoSpec.Length);
 
 		if (hasYamlSpec && TryApplyYamlSpec(resource, yamlSpec, type, logger))
 		{
 			return resource;
 		}
 
-		if (hasProtoSpec && TryApplyProtoSpec(resource, protoSpec!, type, logger))
+		if (hasProtoSpec && TryApplyProtoSpec(resource, protoSpec, type, logger))
 		{
 			return resource;
 		}

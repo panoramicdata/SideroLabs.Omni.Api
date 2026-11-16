@@ -208,7 +208,6 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 			}
 
 			var cluster = clusters.First();
-			var originalVersion = cluster.Metadata.Version;
 
 			// Try to update with cleared version (simulating stale data)
 			cluster.Metadata.Version = "";
@@ -307,7 +306,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 			finally
 			{
 				// Cleanup
-				await CleanupMachine(client, machineId);
+				await CleanupAsync<Api.Resources.Machine>(client, machineId);
 			}
 		});
 	}
@@ -365,7 +364,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 			// Act & Assert
 			Logger.LogInformation("🔍 Attempting to get cluster with empty ID");
 			
-			var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+			await Assert.ThrowsAsync<ArgumentException>(async () =>
 			{
 				await client.Resources.GetAsync<Api.Resources.Cluster>("", cancellationToken: CancellationToken);
 			});
@@ -373,25 +372,4 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 			Logger.LogInformation("✅ ArgumentException thrown as expected for empty ID");
 		});
 	}
-
-	#region Helper Methods
-
-	private async Task CleanupMachine(OmniClient client, string machineId)
-	{
-		try
-		{
-			await client.Resources.DeleteAsync<Api.Resources.Machine>(machineId, cancellationToken: CancellationToken);
-			Logger.LogDebug("Cleaned up test machine: {MachineId}", machineId);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
-		{
-			Logger.LogDebug("Test machine already deleted: {MachineId}", machineId);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(ex, "Failed to cleanup test machine: {MachineId}", machineId);
-		}
-	}
-
-	#endregion
 }

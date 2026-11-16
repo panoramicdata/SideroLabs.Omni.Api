@@ -28,8 +28,7 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 
 		// Arrange
 		var testEmail = GenerateTestEmail();
-		User? createdUser = null;
-		Identity? createdIdentity = null;
+		var created = false;
 
 		try
 		{
@@ -38,8 +37,7 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 				"Reader",
 				CancellationToken);
 
-			createdUser = user;
-			createdIdentity = identity;
+			created = true;
 			AssertResourceCreated(user);
 			AssertResourceCreated(identity);
 			Assert.Equal("Reader", user.Spec.Role);
@@ -63,13 +61,12 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 				await OmniClient.Users.GetAsync(testEmail, CancellationToken));
 
 			// Clear references to prevent double-delete in finally
-			createdUser = null;
-			createdIdentity = null;
+			created = false;
 		}
 		finally
 		{
 			// CLEANUP - Even if test fails
-			if (createdUser != null || createdIdentity != null)
+			if (created)
 			{
 				await SafeDeleteUserAsync(testEmail);
 			}

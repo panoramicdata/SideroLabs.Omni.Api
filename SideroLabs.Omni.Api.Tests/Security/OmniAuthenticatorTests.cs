@@ -2,6 +2,7 @@ using System.Text.Json;
 using AwesomeAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SideroLabs.Omni.Api.Security;
 using Xunit;
 
@@ -64,13 +65,8 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 	[Fact]
 	public async Task FromFileAsync_WithNonExistentFile_ThrowsException()
 	{
-		// Arrange
-		var nonExistentFile = new FileInfo("non-existent-file.txt");
-		using var loggerFactory = new LoggerFactory();
-		var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
+		var action = () => OmniAuthenticator.FromFileAsync(new FileInfo("non-existent-file.txt"), NullLogger<OmniAuthenticator>.Instance, CancellationToken);
 
-		// Act & Assert
-		var action = () => OmniAuthenticator.FromFileAsync(nonExistentFile, logger, CancellationToken);
 		await action.Should().ThrowAsync<FileNotFoundException>();
 	}
 
@@ -78,89 +74,42 @@ public class OmniAuthenticatorTests(ITestOutputHelper testOutputHelper) : TestBa
 	/// Verifies that a file containing invalid Base64 content throws InvalidOperationException.
 	/// </summary>
 	[Fact]
-	public async Task FromFileAsync_WithInvalidBase64Content_ThrowsInvalidOperationException()
-	{
-		// Arrange
-		var tempFile = Path.GetTempFileName();
-		try
-		{
-			await File.WriteAllTextAsync(tempFile, "invalid-base64-content!", CancellationToken);
-			var testKeyFile = new FileInfo(tempFile);
-
-			using var loggerFactory = new LoggerFactory();
-			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
-
-			// Act & Assert
-			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
-			await action.Should().ThrowAsync<InvalidOperationException>()
-				.WithMessage("Invalid Base64 content in the file");
-		}
-		finally
-		{
-			File.Delete(tempFile);
-		}
-	}
+	public Task FromFileAsync_WithInvalidBase64Content_ThrowsInvalidOperationException() =>
+		AssertRejectedAsync("invalid-base64-content!", "Invalid Base64 content in the file");
 
 	/// <summary>
 	/// Verifies that a JSON payload missing the 'name' property throws InvalidOperationException.
 	/// </summary>
 	[Fact]
-	public async Task FromFileAsync_WithMissingNameProperty_ThrowsInvalidOperationException()
-	{
-		// Arrange
-		var jsonContent = """{"pgp_key":"test-pgp-key"}""";
-		var base64Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jsonContent));
-
-		var tempFile = Path.GetTempFileName();
-		try
-		{
-			await File.WriteAllTextAsync(tempFile, base64Content, CancellationToken);
-			var testKeyFile = new FileInfo(tempFile);
-
-			using var loggerFactory = new LoggerFactory();
-			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
-
-			// Act & Assert
-			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
-			await action.Should().ThrowAsync<InvalidOperationException>()
-				.WithMessage("Missing 'name' property in JSON content");
-		}
-		finally
-		{
-			File.Delete(tempFile);
-		}
-	}
+	public Task FromFileAsync_WithMissingNameProperty_ThrowsInvalidOperationException() =>
+		AssertRejectedAsync(ToBase64("""{"pgp_key":"test-pgp-key"}"""), "Missing 'name' property in JSON content");
 
 	/// <summary>
 	/// Verifies that loading an auth token file that is missing the <c>pgp_key</c> JSON property throws an <see cref="InvalidOperationException"/>.
 	/// </summary>
 	[Fact]
-	public async Task FromFileAsync_WithMissingPgpKeyProperty_ThrowsInvalidOperationException()
-	{
-		// Arrange
-		var jsonContent = """{"name":"test-user"}""";
-		var base64Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jsonContent));
+	public Task FromFileAsync_WithMissingPgpKeyProperty_ThrowsInvalidOperationException() =>
+		AssertRejectedAsync(ToBase64("""{"name":"test-user"}"""), "Missing 'pgp_key' property in JSON content");
 
+	private static string ToBase64(string json) => Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+
+	private async Task AssertRejectedAsync(string fileContent, string expectedMessage)
+	{
 		var tempFile = Path.GetTempFileName();
+
 		try
 		{
-			await File.WriteAllTextAsync(tempFile, base64Content, CancellationToken);
-			var testKeyFile = new FileInfo(tempFile);
+			await File.WriteAllTextAsync(tempFile, fileContent, CancellationToken);
 
-			using var loggerFactory = new LoggerFactory();
-			var logger = loggerFactory.CreateLogger<OmniAuthenticator>();
+			var action = () => OmniAuthenticator.FromFileAsync(new FileInfo(tempFile), NullLogger<OmniAuthenticator>.Instance, CancellationToken);
 
-			// Act & Assert
-			var action = () => OmniAuthenticator.FromFileAsync(testKeyFile, logger, CancellationToken);
-			await action.Should().ThrowAsync<InvalidOperationException>()
-				.WithMessage("Missing 'pgp_key' property in JSON content");
+			await action.Should().ThrowAsync<InvalidOperationException>().WithMessage(expectedMessage);
 		}
 		finally
 		{
 			File.Delete(tempFile);
 		}
 	}
-
 	/// <summary>
 	/// Verifies that signing a gRPC request with a valid PGP key file populates the expected authentication headers.
 	/// </summary>

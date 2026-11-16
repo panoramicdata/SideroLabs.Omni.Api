@@ -62,10 +62,7 @@ public static class UserManagementExample
 			"Operator",
 			cancellationToken);
 
-		Console.WriteLine($"   Created user: {user.UserId}");
-		Console.WriteLine($"   Email: {identity.Email}");
-		Console.WriteLine($"   Role: {user.Role}");
-		Console.WriteLine();
+		PrintUser(user, identity);
 	}
 
 	/// <summary>
@@ -91,10 +88,7 @@ public static class UserManagementExample
 		await client.Resources.CreateAsync(user, cancellationToken);
 		await client.Resources.CreateAsync(identity, cancellationToken);
 
-		Console.WriteLine($"   Created user: {user.UserId}");
-		Console.WriteLine($"   Email: {identity.Email}");
-		Console.WriteLine($"   Role: {user.Role}");
-		Console.WriteLine();
+		PrintUser(user, identity);
 	}
 
 	/// <summary>
@@ -167,5 +161,13 @@ public static class UserManagementExample
 		{
 			Console.WriteLine($"   {evt.Type}: User {evt.Resource.UserId} - Role: {evt.Resource.Role}");
 		}
+	}
+
+	private static void PrintUser(User user, Identity identity)
+	{
+		Console.WriteLine($"   Created user: {user.UserId}");
+		Console.WriteLine($"   Email: {identity.Email}");
+		Console.WriteLine($"   Role: {user.Role}");
+		Console.WriteLine();
 	}
 }

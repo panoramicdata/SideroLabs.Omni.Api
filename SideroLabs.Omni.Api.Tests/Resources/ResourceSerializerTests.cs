@@ -10,18 +10,20 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 /// </summary>
 public class ResourceSerializerTests
 {
+	private static Cluster NewCluster(string id, string kubernetesVersion, bool ready) => new()
+	{
+		Metadata = new ResourceMetadata { Namespace = "default", Id = id },
+		Spec = new ClusterSpec { KubernetesVersion = kubernetesVersion, TalosVersion = "v1.7.0" },
+		Status = new ClusterStatus { Ready = ready }
+	};
+
 	/// <summary>
 	/// Verifies that a Cluster resource survives a JSON serialization/deserialization round-trip with data integrity.
 	/// </summary>
 	[Fact]
 	public void JsonRoundtrip_Cluster()
 	{
-		var cluster = new Cluster
-		{
-			Metadata = new ResourceMetadata { Namespace = "default", Id = "test-cluster" },
-			Spec = new ClusterSpec { KubernetesVersion = "v1.29.0", TalosVersion = "v1.7.0" },
-			Status = new ClusterStatus { Ready = true }
-		};
+		var cluster = NewCluster("test-cluster", "v1.29.0", true);
 
 		var json = ResourceSerializer.ToJson(cluster);
 		var deserialized = ResourceSerializer.FromJson<Cluster>(json);
@@ -38,12 +40,7 @@ public class ResourceSerializerTests
 	[Fact]
 	public void YamlRoundtrip_Cluster()
 	{
-		var cluster = new Cluster
-		{
-			Metadata = new ResourceMetadata { Namespace = "default", Id = "yaml-cluster" },
-			Spec = new ClusterSpec { KubernetesVersion = "v1.28.0" },
-			Status = new ClusterStatus { Ready = false }
-		};
+		var cluster = NewCluster("yaml-cluster", "v1.28.0", false);
 
 		var yaml = ResourceSerializer.ToYaml(cluster);
 		var deserialized = ResourceSerializer.FromYaml<Cluster>(yaml);

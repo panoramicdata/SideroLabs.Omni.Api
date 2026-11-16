@@ -68,7 +68,7 @@ public abstract class IntegrationTestBase(ITestOutputHelper testOutputHelper) : 
 	/// <summary>
 	/// Runs the body against the shared injected client, treating permission denied (and optionally not found) as expected
 	/// </summary>
-	protected async Task RunSharedAsync(Func<Interfaces.IOmniClient, Task> body, bool toleratesNotFound = false)
+	protected async Task RunSharedAsync(Func<Interfaces.IOmniClient, Task> body, [System.Runtime.InteropServices.Optional] bool toleratesNotFound)
 	{
 		if (!ShouldRunIntegrationTests())
 		{
