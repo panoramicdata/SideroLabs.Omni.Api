@@ -126,7 +126,7 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		var skippedCount = 0;
 
 		// Act - NEW API!
-		await foreach (var result in OmniClient.Kubernetes.StreamSyncManifestsAsync(
+		await foreach (var _ in OmniClient.Kubernetes.StreamSyncManifestsAsync(
 			dryRun: true,
 			cancellationToken: cts.Token))
 		{

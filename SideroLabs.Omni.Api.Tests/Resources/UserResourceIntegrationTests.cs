@@ -295,7 +295,7 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 			Logger.LogInformation("🚀 Testing role: {Role}", role);
 
 			// Act
-			var (user, identity) = await OmniClient.Users.CreateAsync(
+			var (user, _) = await OmniClient.Users.CreateAsync(
 				testEmail,
 				role,
 				CancellationToken);
