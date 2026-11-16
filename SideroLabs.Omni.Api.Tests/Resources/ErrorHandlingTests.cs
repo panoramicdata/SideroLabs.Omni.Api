@@ -47,7 +47,7 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 				// Act - Try to list with invalid selector syntax
 				Logger.LogInformation("🔍 Attempting to list with invalid selector");
 				
-				await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+				await foreach (var _ in client.Resources.ListAsync<Api.Resources.Cluster>(
 					selector: "===invalid===",
 					cancellationToken: CancellationToken))
 				{

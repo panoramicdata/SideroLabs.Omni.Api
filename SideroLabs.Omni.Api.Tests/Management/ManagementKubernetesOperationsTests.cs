@@ -187,7 +187,7 @@ public class ManagementKubernetesOperationsTests(ITestOutputHelper testOutputHel
 		// Act & Assert - NEW API!
 		try
 		{
-			await foreach (var result in OmniClient.Kubernetes.StreamSyncManifestsAsync(
+			await foreach (var _ in OmniClient.Kubernetes.StreamSyncManifestsAsync(
 				dryRun: true,
 				cancellationToken: cts.Token))
 			{
