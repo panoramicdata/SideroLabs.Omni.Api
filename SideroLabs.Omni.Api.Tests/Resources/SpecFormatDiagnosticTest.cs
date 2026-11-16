@@ -15,9 +15,6 @@ public class SpecFormatDiagnosticTest(ITestOutputHelper testOutputHelper) : Test
 	/// <summary>
 	/// Integration diagnostic test that retrieves the first Cluster resource and logs its spec content to verify COSI deserialization.
 	/// </summary>
-	/// <summary>
-	/// Integration diagnostic test that retrieves the first Cluster resource and logs its spec content to verify COSI deserialization.
-	/// </summary>
 	[Fact]
 	public async Task CheckSpecFormat_LogsWhatServerReturns()
 	{

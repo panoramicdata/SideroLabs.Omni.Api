@@ -14,7 +14,7 @@ public class Identity : OmniResource<IdentitySpec, IdentityStatus>
 	/// <summary>
 	/// Gets the resource type for Identities
 	/// </summary>
-	public const string ResourceType = "Identities.omni.sidero.dev";
+	public static string ResourceType { get; } = "Identities.omni.sidero.dev";
 
 	/// <summary>
 	/// Gets the email address (same as resource ID)
@@ -29,20 +29,20 @@ public class Identity : OmniResource<IdentitySpec, IdentityStatus>
 	/// <summary>
 	/// Label key for user ID association
 	/// </summary>
-	public const string LabelUserID = "identity.omni.sidero.dev/user-id";
+	public static string LabelUserID { get; } = "identity.omni.sidero.dev/user-id";
 
 	/// <summary>
 	/// Label key for identity type
 	/// </summary>
-	public const string LabelType = "identity.omni.sidero.dev/type";
+	public static string LabelType { get; } = "identity.omni.sidero.dev/type";
 
 	/// <summary>
 	/// Identity type value for regular users
 	/// </summary>
-	public const string TypeUser = "user";
+	public static string TypeUser { get; } = "user";
 
 	/// <summary>
 	/// Identity type value for service accounts
 	/// </summary>
-	public const string TypeServiceAccount = "service-account";
+	public static string TypeServiceAccount { get; } = "service-account";
 }

@@ -1,3 +1,4 @@
+using SideroLabs.Omni.Api.Models;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using SideroLabs.Omni.Api.Enums;
@@ -60,9 +61,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		};
 
 		// Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: extensions,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = extensions }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -93,10 +92,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		};
 
 		// Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: null,
-			extraKernelArgs: kernelArgs,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = null, ExtraKernelArgs = kernelArgs }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -126,11 +122,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		};
 
 		// Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: null,
-			extraKernelArgs: null,
-			metaValues: metaValues,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = null, ExtraKernelArgs = null, MetaValues = metaValues }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -157,16 +149,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		var metaValues = new Dictionary<uint, string> { { 0x0a, "test" } };
 
 		// Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: extensions,
-			extraKernelArgs: kernelArgs,
-			metaValues: metaValues,
-			talosVersion: "v1.6.0",
-			mediaId: null,
-			secureBoot: false,
-			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,
-			joinToken: null,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = extensions, ExtraKernelArgs = kernelArgs, MetaValues = metaValues, TalosVersion = "v1.6.0", MediaId = null, SecureBoot = false, SiderolinkGrpcTunnelMode = SiderolinkGrpcTunnelMode.Auto, JoinToken = null }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -190,16 +173,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange & Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: null,
-			extraKernelArgs: null,
-			metaValues: null,
-			talosVersion: null,
-			mediaId: null,
-			secureBoot: true,
-			siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,
-			joinToken: null,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = null, ExtraKernelArgs = null, MetaValues = null, TalosVersion = null, MediaId = null, SecureBoot = true, SiderolinkGrpcTunnelMode = SiderolinkGrpcTunnelMode.Auto, JoinToken = null }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -223,16 +197,7 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 		}
 
 		// Arrange & Act - NEW API!
-		var result = await OmniClient.Schematics.CreateAsync(
-			extensions: null,
-			extraKernelArgs: null,
-			metaValues: null,
-			talosVersion: null,
-			mediaId: null,
-			secureBoot: false,
-			siderolinkGrpcTunnelMode: tunnelMode,
-			joinToken: null,
-			cancellationToken: CancellationToken);
+		var result = await OmniClient.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = null, ExtraKernelArgs = null, MetaValues = null, TalosVersion = null, MediaId = null, SecureBoot = false, SiderolinkGrpcTunnelMode = tunnelMode, JoinToken = null }, cancellationToken: CancellationToken);
 
 		// Assert
 		Assert.NotEmpty(result.SchematicId);
@@ -348,19 +313,6 @@ public class ManagementProvisioningTests(ITestOutputHelper testOutputHelper) : T
 	[Fact(Skip = "Requires valid join token - manual test only")]
 	public async Task GetMachineJoinConfig_ValidToken_ReturnsConfig()
 	{
-		// This test requires a valid join token created first
-		// var joinToken = "valid-token-id";
-
-		// NEW API!
-		// var config = await OmniClient.MachineManagement.GetJoinConfigAsync(
-		//     useGrpcTunnel: true,
-		//     joinToken: joinToken,
-		//     CancellationToken);
-
-		// Assert.NotNull(config);
-		// Assert.NotEmpty(config.Config);
-		// Assert.NotNull(config.KernelArgs);
-
 		Logger.LogInformation("Join config test requires valid token");
 	}
 

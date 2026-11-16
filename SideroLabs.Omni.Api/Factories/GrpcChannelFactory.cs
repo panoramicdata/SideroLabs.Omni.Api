@@ -97,87 +97,12 @@ internal class LoggingHttpMessageHandler : DelegatingHandler
 		HttpRequestMessage request,
 		CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("═══════════════════════════════════════════════════════════");
-		_logger.LogInformation("🌐 HTTP Request:");
-		_logger.LogInformation("  Method: {Method}", request.Method);
-		_logger.LogInformation("  URI: {Uri}", request.RequestUri);
-		_logger.LogInformation("  Version: HTTP/{Version}", request.Version);
-		
-		_logger.LogInformation("  Headers:");
-		foreach (var header in request.Headers)
-		{
-			foreach (var value in header.Value)
-			{
-				if (header.Key.Contains("signature", StringComparison.OrdinalIgnoreCase))
-				{
-					_logger.LogInformation("    {Key}: [REDACTED]", header.Key);
-				}
-				else
-				{
-					_logger.LogInformation("    {Key}: {Value}", header.Key, value);
-				}
-			}
-		}
-
-		if (request.Content != null)
-		{
-			_logger.LogInformation("  Content Headers:");
-			foreach (var header in request.Content.Headers)
-			{
-				foreach (var value in header.Value)
-				{
-					_logger.LogInformation("    {Key}: {Value}", header.Key, value);
-				}
-			}
-		}
+		LogRequest(request);
 
 		try
 		{
 			var response = await base.SendAsync(request, cancellationToken);
-
-			_logger.LogInformation("───────────────────────────────────────────────────────────");
-			_logger.LogInformation("📥 HTTP Response:");
-			_logger.LogInformation("  Status: {StatusCode} {ReasonPhrase}", (int)response.StatusCode, response.ReasonPhrase);
-			_logger.LogInformation("  Version: HTTP/{Version}", response.Version);
-			
-			_logger.LogInformation("  Headers:");
-			foreach (var header in response.Headers)
-			{
-				foreach (var value in header.Value)
-				{
-					_logger.LogInformation("    {Key}: {Value}", header.Key, value);
-				}
-			}
-
-			if (response.Content != null)
-			{
-				_logger.LogInformation("  Content Headers:");
-				foreach (var header in response.Content.Headers)
-				{
-					foreach (var value in header.Value)
-					{
-						_logger.LogInformation("    {Key}: {Value}", header.Key, value);
-					}
-				}
-
-				// Try to read the response body
-				try
-				{
-					var content = await response.Content.ReadAsStringAsync(cancellationToken);
-					if (!string.IsNullOrEmpty(content))
-					{
-						var preview = content.Length > 500 ? content[..500] + "..." : content;
-						_logger.LogInformation("  Content Body: {Body}", preview);
-					}
-				}
-				catch
-				{
-					// If we can't read the body, that's okay
-				}
-			}
-
-			_logger.LogInformation("═══════════════════════════════════════════════════════════");
-
+			await LogResponseAsync(response, cancellationToken);
 			return response;
 		}
 		catch (Exception ex)
@@ -187,7 +112,67 @@ internal class LoggingHttpMessageHandler : DelegatingHandler
 			throw;
 		}
 	}
+
+	private void LogRequest(HttpRequestMessage request)
+	{
+		_logger.LogInformation("═══════════════════════════════════════════════════════════");
+		_logger.LogInformation("🌐 HTTP Request:");
+		_logger.LogInformation("  Method: {Method}", request.Method);
+		_logger.LogInformation("  URI: {Uri}", request.RequestUri);
+		_logger.LogInformation("  Version: HTTP/{Version}", request.Version);
+
+		LogHeaders(request.Headers, redactSignatures: true);
+
+		if (request.Content != null)
+		{
+			LogHeaders(request.Content.Headers, redactSignatures: false, title: "  Content Headers:");
+		}
+	}
+
+	private async Task LogResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+	{
+		_logger.LogInformation("───────────────────────────────────────────────────────────");
+		_logger.LogInformation("📥 HTTP Response:");
+		_logger.LogInformation("  Status: {StatusCode} {ReasonPhrase}", (int)response.StatusCode, response.ReasonPhrase);
+		_logger.LogInformation("  Version: HTTP/{Version}", response.Version);
+
+		LogHeaders(response.Headers, redactSignatures: false);
+		LogHeaders(response.Content.Headers, redactSignatures: false, title: "  Content Headers:");
+		await LogBodyPreviewAsync(response.Content, cancellationToken);
+
+		_logger.LogInformation("═══════════════════════════════════════════════════════════");
+	}
+
+	private void LogHeaders(
+		System.Net.Http.Headers.HttpHeaders headers,
+		bool redactSignatures,
+		string title = "  Headers:")
+	{
+		_logger.LogInformation("{Title}", title);
+		foreach (var header in headers)
+		{
+			var redact = redactSignatures && header.Key.Contains("signature", StringComparison.OrdinalIgnoreCase);
+			foreach (var value in header.Value)
+			{
+				_logger.LogInformation("    {Key}: {Value}", header.Key, redact ? "[REDACTED]" : value);
+			}
+		}
+	}
+
+	private async Task LogBodyPreviewAsync(HttpContent content, CancellationToken cancellationToken)
+	{
+		try
+		{
+			var body = await content.ReadAsStringAsync(cancellationToken);
+			if (!string.IsNullOrEmpty(body))
+			{
+				var preview = body.Length > 500 ? body[..500] + "..." : body;
+				_logger.LogInformation("  Content Body: {Body}", preview);
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogDebug(ex, "Could not read the response body for logging");
+		}
+	}
 }
-
-
-

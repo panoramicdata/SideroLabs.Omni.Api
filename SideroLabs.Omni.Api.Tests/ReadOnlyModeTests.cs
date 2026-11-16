@@ -1,3 +1,4 @@
+using SideroLabs.Omni.Api.Models;
 using AwesomeAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -52,32 +53,13 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task CreateServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
-		// Arrange
 		using var client = CreateReadOnlyClient();
 		const string testPgpKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest-key\n-----END PGP PUBLIC KEY BLOCK-----";
 
-		// Act & Assert
-		Exception? exception = null;
-		try
-		{
-			#pragma warning disable CS0618
-			await client.ServiceAccounts.CreateAsync(testPgpKey, cancellationToken: CancellationToken);
-			#pragma warning restore CS0618
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-		// Assert
-		exception.Should().NotBeNull("Expected an exception to be thrown");
-		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
-
-		var readOnlyEx = (ReadOnlyModeException)exception!;
-		readOnlyEx.Operation.Should().Be("create");
-		readOnlyEx.ResourceType.Should().Be("service account");
-
-		Logger.LogInformation("✓ CreateServiceAccount correctly blocked by read-only mode");
+		await AssertBlockedAsync(
+			() => client.ServiceAccounts.CreateAsync(testPgpKey, cancellationToken: CancellationToken),
+			"create",
+			"service account");
 	}
 
 	/// <summary>
@@ -86,33 +68,13 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task RenewServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
-		// Arrange
 		using var client = CreateReadOnlyClient();
-		const string testAccountName = "test-account";
 		const string testPgpKey = "-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest-key\n-----END PGP PUBLIC KEY BLOCK-----";
 
-		// Act & Assert
-		Exception? exception = null;
-		try
-		{
-			#pragma warning disable CS0618
-			await client.ServiceAccounts.RenewAsync(testAccountName, testPgpKey, CancellationToken);
-			#pragma warning restore CS0618
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-		// Assert
-		exception.Should().NotBeNull("Expected an exception to be thrown");
-		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
-
-		var readOnlyEx = (ReadOnlyModeException)exception!;
-		readOnlyEx.Operation.Should().Be("update");
-		readOnlyEx.ResourceType.Should().Be("service account");
-
-		Logger.LogInformation("✓ RenewServiceAccount correctly blocked by read-only mode");
+		await AssertBlockedAsync(
+			() => client.ServiceAccounts.RenewAsync("test-account", testPgpKey, CancellationToken),
+			"update",
+			"service account");
 	}
 
 	/// <summary>
@@ -121,32 +83,12 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task DestroyServiceAccountAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
-		// Arrange
 		using var client = CreateReadOnlyClient();
-		const string testAccountName = "test-account";
 
-		// Act & Assert
-		Exception? exception = null;
-		try
-		{
-			#pragma warning disable CS0618
-			await client.ServiceAccounts.DestroyAsync(testAccountName, CancellationToken);
-			#pragma warning restore CS0618
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-		// Assert
-		exception.Should().NotBeNull("Expected an exception to be thrown");
-		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
-
-		var readOnlyEx = (ReadOnlyModeException)exception!;
-		readOnlyEx.Operation.Should().Be("delete");
-		readOnlyEx.ResourceType.Should().Be("service account");
-
-		Logger.LogInformation("✓ DestroyServiceAccount correctly blocked by read-only mode");
+		await AssertBlockedAsync(
+			() => client.ServiceAccounts.DestroyAsync("test-account", CancellationToken),
+			"delete",
+			"service account");
 	}
 
 	/// <summary>
@@ -155,30 +97,12 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task CreateSchematicAsync_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
-		// Arrange
 		using var client = CreateReadOnlyClient();
-		var extensions = new[] { "test-extension" };
 
-		// Act & Assert
-		Exception? exception = null;
-		try
-		{
-			await client.Schematics.CreateAsync(extensions: extensions, cancellationToken: CancellationToken);
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-		// Assert
-		exception.Should().NotBeNull("Expected an exception to be thrown");
-		exception.Should().BeOfType<ReadOnlyModeException>("Client-side read-only mode should throw ReadOnlyModeException");
-
-		var readOnlyEx = (ReadOnlyModeException)exception!;
-		readOnlyEx.Operation.Should().Be("create");
-		readOnlyEx.ResourceType.Should().Be("schematic");
-
-		Logger.LogInformation("✓ CreateSchematic correctly blocked by read-only mode");
+		await AssertBlockedAsync(
+			() => client.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = ["test-extension"] }, cancellationToken: CancellationToken),
+			"create",
+			"schematic");
 	}
 
 	/// <summary>
@@ -187,32 +111,13 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task GetKubeConfigWithServiceAccount_WhenInReadOnlyMode_ShouldThrowReadOnlyModeException()
 	{
-		// Arrange
 		using var client = CreateReadOnlyClient();
-		const bool serviceAccount = true;
 
-		// Act & Assert
-		Exception? exception = null;
-		try
-		{
-			await client.KubeConfig.GetAsync(serviceAccount: serviceAccount, cancellationToken: CancellationToken);
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-		// Assert
-		exception.Should().NotBeNull("Expected an exception to be thrown");
-		exception.Should().BeOfType<ReadOnlyModeException>("Creating a service account in kubeconfig should throw ReadOnlyModeException");
-
-		var readOnlyEx = (ReadOnlyModeException)exception!;
-		readOnlyEx.Operation.Should().Be("create");
-		readOnlyEx.ResourceType.Should().Be("service account");
-
-		Logger.LogInformation("✓ GetKubeConfig with service account correctly blocked by read-only mode");
+		await AssertBlockedAsync(
+			() => client.KubeConfig.GetAsync(serviceAccount: true, cancellationToken: CancellationToken),
+			"create",
+			"service account");
 	}
-
 	/// <summary>
 	/// Verifies that StreamSyncManifestsAsync with dryRun=true is permitted in read-only mode.
 	/// </summary>
@@ -314,50 +219,19 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 	[Fact]
 	public async Task ClientSideReadOnlyMode_OverridesServerPermissions()
 	{
-		// Arrange - Create a client with read-only mode enabled
 		using var client = CreateReadOnlyClient();
 		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
-		Logger.LogInformation("🔒 Testing that IsReadOnly acts as a client-side safety switch");
+		await AssertBlockedAsync(
+			() => client.ServiceAccounts.CreateAsync("test-key", cancellationToken: cts.Token),
+			"create",
+			"service account");
 
-		// Act & Assert - These should throw ReadOnlyModeException before network calls
-		Exception? createException = null;
-		try
-		{
-			await client.ServiceAccounts.CreateAsync("test-key", cancellationToken: cts.Token);
-		}
-		catch (Exception ex)
-		{
-			createException = ex;
-		}
-
-		createException.Should().NotBeNull("Expected CreateServiceAccountAsync to throw an exception");
-		createException.Should().BeOfType<ReadOnlyModeException>("Expected ReadOnlyModeException for CreateServiceAccountAsync");
-
-		var createReadOnlyEx = (ReadOnlyModeException)createException!;
-		createReadOnlyEx.Operation.Should().Be("create");
-		createReadOnlyEx.ResourceType.Should().Be("service account");
-
-		Exception? destroyException = null;
-		try
-		{
-			await client.ServiceAccounts.DestroyAsync("test-account", cts.Token);
-		}
-		catch (Exception ex)
-		{
-			destroyException = ex;
-		}
-
-		destroyException.Should().NotBeNull("Expected DestroyServiceAccountAsync to throw an exception");
-		destroyException.Should().BeOfType<ReadOnlyModeException>("Expected ReadOnlyModeException for DestroyServiceAccountAsync");
-
-		var destroyReadOnlyEx = (ReadOnlyModeException)destroyException!;
-		destroyReadOnlyEx.Operation.Should().Be("delete");
-		destroyReadOnlyEx.ResourceType.Should().Be("service account");
-
-		Logger.LogInformation("✓ Client-side read-only mode successfully blocks write operations");
+		await AssertBlockedAsync(
+			() => client.ServiceAccounts.DestroyAsync("test-account", cts.Token),
+			"delete",
+			"service account");
 	}
-
 	/// <summary>
 	/// Verifies that a writable client allows write operations.
 	/// </summary>
@@ -384,6 +258,13 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 	}
 
+	private static async Task AssertBlockedAsync(Func<Task> action, string operation, string resourceType)
+	{
+		var exception = await Assert.ThrowsAsync<ReadOnlyModeException>(action);
+		exception.Operation.Should().Be(operation);
+		exception.ResourceType.Should().Be(resourceType);
+	}
+
 	/// <summary>
 	/// Helper method to verify that an operation throws any exception except ReadOnlyModeException
 	/// This is used to test that read operations are allowed (they may fail for other reasons like network)
@@ -396,34 +277,11 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		}
 		catch (ReadOnlyModeException)
 		{
-			// This is the exception we don't want to see
 			false.Should().BeTrue("Operation should not throw ReadOnlyModeException for read operations");
 		}
 		catch
 		{
-			// Any other exception is fine (e.g., network errors, authentication errors)
-			// We just want to ensure it's not a ReadOnlyModeException
-		}
-	}
-
-	/// <summary>
-	/// Helper method for testing generic <c>Task&lt;T&gt;</c> operations.
-	/// </summary>
-	private static async Task AssertNotReadOnlyException<T>(Func<Task<T>> operation)
-	{
-		try
-		{
-			await operation();
-		}
-		catch (ReadOnlyModeException)
-		{
-			// This is the exception we don't want to see
-			false.Should().BeTrue("Operation should not throw ReadOnlyModeException for read operations");
-		}
-		catch
-		{
-			// Any other exception is fine (e.g., network errors, authentication errors)
-			// We just want to ensure it's not a ReadOnlyModeException
+			// Any other failure (network, authentication) is fine
 		}
 	}
 }

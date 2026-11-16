@@ -59,21 +59,18 @@ internal class ClusterOperations : IClusterOperations
 		await _resources.DeleteAsync<Cluster>(clusterName, _options.DefaultNamespace, cancellationToken);
 	}
 
-	public async Task LockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default)
+	public Task LockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default) =>
+		SetMachineLockedAsync(machineId, true, cancellationToken);
+
+	public Task UnlockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default) =>
+		SetMachineLockedAsync(machineId, false, cancellationToken);
+
+	private async Task SetMachineLockedAsync(string machineId, bool locked, CancellationToken cancellationToken)
 	{
 		var machine = await _resources.GetAsync<Resources.Machine>(machineId, _options.DefaultNamespace, cancellationToken)
 			?? throw new InvalidOperationException("Machine not found");
 		machine.Status ??= new MachineStatus();
-		machine.Status.Locked = true;
-
-		await _resources.UpdateAsync(machine, null, cancellationToken);
-	}
-
-	public async Task UnlockMachineAsync(string machineId, string clusterName, CancellationToken cancellationToken = default)
-	{
-		var machine = await _resources.GetAsync<Resources.Machine>(machineId, _options.DefaultNamespace, cancellationToken) ?? throw new InvalidOperationException("Machine not found");
-		machine.Status ??= new MachineStatus();
-		machine.Status.Locked = false;
+		machine.Status.Locked = locked;
 
 		await _resources.UpdateAsync(machine, null, cancellationToken);
 	}

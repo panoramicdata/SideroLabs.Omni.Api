@@ -17,101 +17,50 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 	/// <summary>
 	/// Integration test that creates a user, reads it back, updates its role, lists all users, and then deletes it.
 	/// </summary>
-	/// <summary>
-	/// Integration test that creates a user, reads it back, updates its role, lists all users, and then deletes it.
-	/// </summary>
 	[Fact]
 	public async Task User_FullCRUDLifecycle_Success()
 	{
 		// Skip if integration tests are not configured
 		if (!ShouldRunIntegrationTests())
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
 			return;
 		}
 
 		// Arrange
 		var testEmail = GenerateTestEmail();
-		User? createdUser = null;
-		Identity? createdIdentity = null;
 
 		try
 		{
-			Logger.LogInformation("🚀 Starting User CRUD Lifecycle test for: {Email}", testEmail);
-
-			// ACT 1: CREATE
-			Logger.LogInformation("📝 Step 1: Creating user with Reader role");
 			var (user, identity) = await OmniClient.Users.CreateAsync(
 				testEmail,
 				"Reader",
 				CancellationToken);
 
-			createdUser = user;
-			createdIdentity = identity;
-
-			// ASSERT CREATE
-			Logger.LogInformation("✓ User created: {UserId}", user.Metadata.Id);
 			AssertResourceCreated(user);
 			AssertResourceCreated(identity);
 			Assert.Equal("Reader", user.Spec.Role);
 			Assert.Equal(testEmail, identity.Spec.UserId);
-
-			// ACT 2: READ
-			Logger.LogInformation("📖 Step 2: Reading user by email");
 			var retrievedUser = await OmniClient.Users.GetAsync(
 				testEmail,
 				CancellationToken);
-
-			// ASSERT READ
-			Assert.NotNull(retrievedUser);
 			Assert.Equal(user.Metadata.Id, retrievedUser.UserId);
 			Assert.Equal("Reader", retrievedUser.Role);
-			Logger.LogInformation("✓ User retrieved successfully");
-
-			// ACT 3: UPDATE
-			Logger.LogInformation("🔄 Step 3: Updating user role to Operator");
 			var updatedUser = await OmniClient.Users.SetRoleAsync(
 				testEmail,
 				"Operator",
 				CancellationToken);
-
-			// ASSERT UPDATE
 			Assert.Equal("Operator", updatedUser.Spec.Role);
 			Assert.Equal(user.Metadata.Id, updatedUser.Metadata.Id);
 			AssertResourceUpdated(user, updatedUser);
-			Logger.LogInformation("✓ User role updated successfully");
-
-			// ACT 4: LIST
-			Logger.LogInformation("📋 Step 4: Listing all users");
 			var allUsers = await OmniClient.Users.ListAsync(CancellationToken);
-
-			// ASSERT LIST
-			Assert.NotEmpty(allUsers);
 			Assert.Contains(allUsers, u => u.Email == testEmail);
-			Logger.LogInformation("✓ User found in list (total users: {Count})", allUsers.Count);
-
-			// ACT 5: DELETE
-			Logger.LogInformation("🗑️ Step 5: Deleting user");
 			await OmniClient.Users.DeleteAsync(testEmail, CancellationToken);
-
-			// ASSERT DELETE
 			await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
 				await OmniClient.Users.GetAsync(testEmail, CancellationToken));
-
-			Logger.LogInformation("✓ User deleted successfully");
-			Logger.LogInformation("✅ Full CRUD Lifecycle completed successfully!");
-
-			// Clear references to prevent double-delete in finally
-			createdUser = null;
-			createdIdentity = null;
 		}
 		finally
 		{
-			// CLEANUP - Even if test fails
-			if (createdUser != null || createdIdentity != null)
-			{
-				await SafeDeleteUserAsync(testEmail);
-			}
+			await SafeDeleteUserAsync(testEmail);
 		}
 	}
 

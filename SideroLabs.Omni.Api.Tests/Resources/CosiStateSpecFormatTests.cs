@@ -15,9 +15,6 @@ public class CosiStateSpecFormatTests(ITestOutputHelper testOutputHelper) : Test
 	/// <summary>
 	/// Integration test that retrieves a Cluster and logs the available spec format to diagnose COSI State spec serialization.
 	/// </summary>
-	/// <summary>
-	/// Integration test that retrieves a Cluster and logs the available spec format to diagnose COSI State spec serialization.
-	/// </summary>
 	[Fact]
 	public async Task CheckSpecFormat_Cluster_LogsAvailableFormats()
 	{

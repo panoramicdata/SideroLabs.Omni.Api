@@ -135,24 +135,26 @@ public class OmniClient : IOmniClient
 
 	// === Management Services ===
 
+	private ManagementConnection Connection => new(_options, _channel, _authenticator);
+
 	/// <inheritdoc/>
-	public IKubeConfigService KubeConfig => _kubeConfigService ??= new KubeConfigService(_options, _channel, _authenticator);
+	public IKubeConfigService KubeConfig => _kubeConfigService ??= new KubeConfigService(Connection);
 	/// <inheritdoc/>
-	public ITalosConfigService TalosConfig => _talosConfigService ??= new TalosConfigService(_options, _channel, _authenticator);
+	public ITalosConfigService TalosConfig => _talosConfigService ??= new TalosConfigService(Connection);
 	/// <inheritdoc/>
-	public IOmniConfigService OmniConfig => _omniConfigService ??= new OmniConfigService(_options, _channel, _authenticator);
+	public IOmniConfigService OmniConfig => _omniConfigService ??= new OmniConfigService(Connection);
 	/// <inheritdoc/>
-	public IServiceAccountService ServiceAccounts => _serviceAccountService ??= new ServiceAccountService(_options, _channel, _authenticator);
+	public IServiceAccountService ServiceAccounts => _serviceAccountService ??= new ServiceAccountService(Connection);
 	/// <inheritdoc/>
-	public IValidationService Validation => _validationService ??= new ValidationService(_options, _channel, _authenticator);
+	public IValidationService Validation => _validationService ??= new ValidationService(Connection);
 	/// <inheritdoc/>
-	public IKubernetesService Kubernetes => _kubernetesService ??= new KubernetesService(_options, _channel, _authenticator);
+	public IKubernetesService Kubernetes => _kubernetesService ??= new KubernetesService(Connection);
 	/// <inheritdoc/>
-	public ISchematicService Schematics => _schematicService ??= new SchematicService(_options, _channel, _authenticator);
+	public ISchematicService Schematics => _schematicService ??= new SchematicService(Connection);
 	/// <inheritdoc/>
-	public IMachineService MachineManagement => _machineService ??= new MachineService(_options, _channel, _authenticator);
+	public IMachineService MachineManagement => _machineService ??= new MachineService(Connection);
 	/// <inheritdoc/>
-	public ISupportService Support => _supportService ??= new SupportService(_options, _channel, _authenticator);
+	public ISupportService Support => _supportService ??= new SupportService(Connection);
 
 	// === Legacy (Deprecated) ===
 

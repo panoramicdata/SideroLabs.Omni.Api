@@ -17,9 +17,7 @@ public class UserValidator : AbstractValidator<User>
 			.NotEmpty()
 			.WithMessage("User ID is required");
 
-		RuleFor(x => x.Metadata.Namespace)
-			.NotEmpty()
-			.WithMessage("Namespace is required");
+		this.RequireNamespace();
 
 		// Validate spec
 		RuleFor(x => x.Spec.Role)

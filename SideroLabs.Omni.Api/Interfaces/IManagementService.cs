@@ -269,25 +269,11 @@ public interface IManagementService
 	/// <summary>
 	/// Creates a schematic for machine provisioning with all available options
 	/// </summary>
-	/// <param name="extensions">Extensions to include</param>
-	/// <param name="extraKernelArgs">Extra kernel arguments</param>
-	/// <param name="metaValues">Meta values mapping</param>
-	/// <param name="talosVersion">Talos version to use</param>
-	/// <param name="mediaId">Media ID for the installation media</param>
-	/// <param name="secureBoot">Whether to enable secure boot</param>
-	/// <param name="siderolinkGrpcTunnelMode">Siderolink gRPC tunnel mode</param>
-	/// <param name="joinToken">Join token for the machine</param>
+	/// <param name="options">Schematic options</param>
 	/// <param name="cancellationToken">Cancellation token</param>
 	/// <returns>Schematic result containing ID, PXE URL, and gRPC tunnel status</returns>
 	Task<SchematicResult> CreateSchematicAsync(
-		string[]? extensions,
-		string[]? extraKernelArgs,
-		Dictionary<uint, string>? metaValues,
-		string? talosVersion,
-		string? mediaId,
-		bool secureBoot,
-		SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode,
-		string? joinToken,
+		CreateSchematicOptions options,
 		CancellationToken cancellationToken);
 
 	/// <summary>

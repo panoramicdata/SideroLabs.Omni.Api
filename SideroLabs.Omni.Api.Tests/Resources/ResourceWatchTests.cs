@@ -1,5 +1,7 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
+using SideroLabs.Omni.Api.Builders;
+using SideroLabs.Omni.Api.Resources;
 using Xunit;
 
 namespace SideroLabs.Omni.Api.Tests.Resources;
@@ -11,7 +13,7 @@ namespace SideroLabs.Omni.Api.Tests.Resources;
 [Collection("Integration")]
 [Trait("Category", "Integration")]
 [Trait("Category", "Streaming")]
-public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper)
+public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : IntegrationTestBase(testOutputHelper)
 {
 	/// <summary>
 	/// Integration test that establishes a watch stream on Cluster resources and verifies a Created event is received after creating a cluster.
@@ -19,65 +21,34 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 	[Fact]
 	public async Task Watch_Cluster_ReceivesCreatedEvent()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var clusterId = CreateUniqueId("watch-test");
+			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+			var watchTask = Task.Run(() => WaitForCreatedAsync(client, clusterId, cts.Token), cts.Token);
 
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		var clusterId = CreateUniqueId("watch-test");
-		
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-		var watchTask = Task.Run(async () =>
-		{
-			await foreach (var evt in client.Resources.WatchAsync<Api.Resources.Cluster>(cancellationToken: cts.Token))
-			{
-				if (evt.Resource.Metadata.Id == clusterId && evt.Type == Api.Resources.ResourceEventType.Created)
-				{
-					Logger.LogInformation("✅ Received Created event for cluster: {Id}", clusterId);
-					return true;
-				}
-			}
-			return false;
-		}, cts.Token);
-
-		try
-		{
-			// Wait a moment for watch to establish
-			await Task.Delay(1000, CancellationToken);
-
-			// Act - Create the cluster
-			var cluster = new Api.Builders.ClusterBuilder(clusterId)
-				.WithKubernetesVersion("v1.29.0")
-				.WithTalosVersion("v1.7.0")
-				.Build();
-
-			await client.Resources.CreateAsync(cluster, CancellationToken);
-
-			// Assert
-			var receivedEvent = await watchTask;
-			receivedEvent.Should().BeTrue("Should receive Created event");
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
-		catch (OperationCanceledException)
-		{
-			Logger.LogInformation("⏱️ Watch timed out - this may be expected if permissions don't allow watch");
-		}
-		finally
-		{
-			// Cleanup
 			try
 			{
-				await client.Resources.DeleteAsync<Api.Resources.Cluster>(clusterId, cancellationToken: CancellationToken);
+				await Task.Delay(1000, CancellationToken);
+
+				var cluster = new ClusterBuilder(clusterId)
+					.WithKubernetesVersion("v1.29.0")
+					.WithTalosVersion("v1.7.0")
+					.Build();
+
+				await client.Resources.CreateAsync(cluster, CancellationToken);
+
+				(await watchTask).Should().BeTrue("Should receive Created event");
 			}
-			catch { /* Ignore cleanup errors */ }
-		}
+			catch (OperationCanceledException)
+			{
+				Logger.LogInformation("⏱️ Watch timed out - this may be expected if permissions don't allow watch");
+			}
+			finally
+			{
+				await CleanupAsync<Cluster>(client, clusterId);
+			}
+		});
 	}
 
 	/// <summary>
@@ -86,53 +57,16 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 	[Fact]
 	public async Task Watch_WithSelector_FiltersEvents()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		
-		try
-		{
-			// Act - Watch with label selector
-			Logger.LogInformation("🔍 Watching clusters with selector: env=test");
-			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-			var eventCount = 0;
-
-			await foreach (var evt in client.Resources.WatchAsync<Api.Resources.Cluster>(
-				selector: "env=test",
-				cancellationToken: cts.Token))
+			var count = await CountEventsAsync(client, TimeSpan.FromSeconds(5), 3, selector: "env=test", onEvent: evt =>
 			{
-				eventCount++;
-				Logger.LogInformation("Received event: {Type} - {Id}", evt.Type, evt.Resource.Metadata.Id);
-				
-				// Verify the event matches our selector
-				if (evt.Resource.Metadata.Labels != null)
-				{
-					evt.Resource.Metadata.Labels.Should().ContainKey("env");
-					evt.Resource.Metadata.Labels["env"].Should().Be("test");
-				}
+				evt.Resource.Metadata.Labels.Should().ContainKey("env");
+				evt.Resource.Metadata.Labels["env"].Should().Be("test");
+			});
 
-				if (eventCount >= 3)
-				{
-					break;
-				}
-			}
-
-			Logger.LogInformation("✅ Watch with selector works correctly (received {Count} events)", eventCount);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
-		catch (OperationCanceledException)
-		{
-			Logger.LogInformation("⏱️ Watch timed out - no matching events in time window");
-		}
+			Logger.LogInformation("✅ Watch with selector works correctly (received {Count} events)", count);
+		});
 	}
 
 	/// <summary>
@@ -141,47 +75,12 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 	[Fact]
 	public async Task Watch_TailEvents_ReplaysHistory()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
+			var count = await CountEventsAsync(client, TimeSpan.FromSeconds(5), 10, tailEvents: 10);
 
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		
-		try
-		{
-			// Act - Watch with tail events to get recent history
-			Logger.LogInformation("🔍 Watching clusters with tail events");
-			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-			var eventCount = 0;
-
-			await foreach (var evt in client.Resources.WatchAsync<Api.Resources.Cluster>(
-				tailEvents: 10, // Request last 10 events
-				cancellationToken: cts.Token))
-			{
-				eventCount++;
-				Logger.LogInformation("Event {Count}: {Type} - {Id}", eventCount, evt.Type, evt.Resource.Metadata.Id);
-
-				if (eventCount >= 10)
-				{
-					break;
-				}
-			}
-
-			Logger.LogInformation("✅ Tail events works correctly (received {Count} events)", eventCount);
-			eventCount.Should().BeGreaterThan(0, "Should receive at least some historical events");
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
-		catch (OperationCanceledException)
-		{
-			Logger.LogInformation("⏱️ Watch timed out");
-		}
+			count.Should().BeGreaterThan(0, "Should receive at least some historical events");
+		});
 	}
 
 	/// <summary>
@@ -190,59 +89,59 @@ public class ResourceWatchTests(ITestOutputHelper testOutputHelper) : TestBase(t
 	[Fact]
 	public async Task Watch_Cancellation_StopsStreaming()
 	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+		await RunAsync(async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
+			var count = await CountEventsAsync(client, TimeSpan.FromSeconds(2), int.MaxValue);
+
+			Logger.LogInformation("✅ Watch completed with {Count} events", count);
+		});
+	}
+
+	private static async Task<bool> WaitForCreatedAsync(OmniClient client, string clusterId, CancellationToken cancellationToken)
+	{
+		await foreach (var evt in client.Resources.WatchAsync<Cluster>(cancellationToken: cancellationToken))
+		{
+			if (evt.Resource.Metadata.Id == clusterId && evt.Type == ResourceEventType.Created)
+			{
+				return true;
+			}
 		}
 
-		// Arrange
-		using var client = new OmniClient(GetClientOptions());
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-		
+		return false;
+	}
+
+	private async Task<int> CountEventsAsync(
+		OmniClient client,
+		TimeSpan timeout,
+		int maxEvents,
+		string? selector = null,
+		int tailEvents = 0,
+		Action<ResourceEvent<Cluster>>? onEvent = null)
+	{
+		using var cts = new CancellationTokenSource(timeout);
+		var count = 0;
+
 		try
 		{
-			// Act - Start watching and cancel
-			Logger.LogInformation("🔍 Starting watch and cancelling");
-			var eventCount = 0;
-
-			await foreach (var evt in client.Resources.WatchAsync<Api.Resources.Cluster>(
+			await foreach (var evt in client.Resources.WatchAsync<Cluster>(
+				selector: selector,
+				tailEvents: tailEvents,
 				cancellationToken: cts.Token))
 			{
-				eventCount++;
-				Logger.LogDebug("Received event {Count}", eventCount);
-			}
+				count++;
+				onEvent?.Invoke(evt);
 
-			Logger.LogInformation("✅ Watch completed with {Count} events", eventCount);
+				if (count >= maxEvents)
+				{
+					break;
+				}
+			}
 		}
 		catch (OperationCanceledException)
 		{
-			Logger.LogInformation("✅ Watch correctly cancelled after timeout");
+			Logger.LogInformation("⏱️ Watch ended by timeout after {Count} events", count);
 		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("🔒 Permission denied - expected with Reader role");
-		}
+
+		return count;
 	}
-
-	private OmniClientOptions GetClientOptions()
-	{
-		var configuration = Configuration;
-		var omniSection = configuration.GetSection("Omni");
-		var authToken = omniSection["AuthToken"] ?? throw new FormatException("Omni config section must contain AuthToken.");
-
-		return new OmniClientOptions
-		{
-			BaseUrl = new(omniSection["BaseUrl"] ?? throw new InvalidOperationException("Omni:BaseUrl not configured")),
-			AuthToken = authToken,
-			TimeoutSeconds = int.Parse(omniSection["TimeoutSeconds"] ?? "30"),
-			UseTls = bool.Parse(omniSection["UseTls"] ?? "true"),
-			ValidateCertificate = bool.Parse(omniSection["ValidateCertificate"] ?? "true"),
-			IsReadOnly = bool.Parse(omniSection["IsReadOnly"] ?? "false"),
-			Logger = Logger
-		};
-	}
-
-	private static string CreateUniqueId(string prefix) => $"{prefix}-{Guid.NewGuid():N}";
 }
