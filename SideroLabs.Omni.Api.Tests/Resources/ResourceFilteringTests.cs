@@ -1,7 +1,7 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using SideroLabs.Omni.Api.Builders;
+using Cluster = SideroLabs.Omni.Api.Resources.Cluster;
 
 namespace SideroLabs.Omni.Api.Tests.Resources;
 
@@ -22,50 +22,19 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List all clusters first to understand what's available
-			Logger.LogInformation("🔍 Listing all clusters to check for existing data");
-			var allClusters = new List<Api.Resources.Cluster>();
-			
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(cancellationToken: CancellationToken))
-			{
-				allClusters.Add(c);
-			}
-
-			if (allClusters.Count == 0)
-			{
-				Logger.LogInformation("⏭️ No existing clusters found - skipping selector filtering test");
-				return;
-			}
-
-			// Get a label from an existing cluster to test filtering
-			var clusterWithLabels = allClusters.FirstOrDefault(c => c.Metadata.Labels.Count > 0);
-			if (clusterWithLabels == null)
+			var labelled = await FindLabelledClusterAsync(client);
+			if (labelled == null)
 			{
 				Logger.LogInformation("⏭️ No clusters with labels found - skipping selector filtering test");
 				return;
 			}
 
-			var labelKey = clusterWithLabels.Metadata.Labels.Keys.First();
-			var labelValue = clusterWithLabels.Metadata.Labels[labelKey];
+			var (key, value) = labelled.Value;
+			var filtered = await client.Resources.ListAsync<Cluster>(selector: $"{key}={value}", cancellationToken: CancellationToken)
+				.ToListAsync(CancellationToken);
 
-			// Act - List with selector filtering
-			Logger.LogInformation("🔍 Listing clusters with selector: {Key}={Value}", labelKey, labelValue);
-			var filteredClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				selector: $"{labelKey}={labelValue}",
-				cancellationToken: CancellationToken))
-			{
-				filteredClusters.Add(c);
-			}
-
-			// Assert
-			filteredClusters.Should().NotBeEmpty();
-			filteredClusters.Should().AllSatisfy(c => 
-				c.Metadata.Labels.Should().ContainKey(labelKey)
-				.WhoseValue.Should().Be(labelValue));
-
-			Logger.LogInformation("✅ Selector filtering successful - found {Count} matching clusters", filteredClusters.Count);
+			filtered.Should().NotBeEmpty();
+			filtered.Should().AllSatisfy(c => c.Metadata.Labels.Should().ContainKey(key).WhoseValue.Should().Be(value));
 		});
 	}
 
@@ -77,42 +46,18 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List all clusters first
-			Logger.LogInformation("🔍 Listing all clusters");
-			var allClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(cancellationToken: CancellationToken))
-			{
-				allClusters.Add(c);
-			}
-
-			if (allClusters.Count == 0)
+			var prefix = await FirstIdPrefixAsync(client, 5);
+			if (prefix == null)
 			{
 				Logger.LogInformation("⏭️ No existing clusters found - skipping regex filtering test");
 				return;
 			}
 
-			// Use first cluster's ID to create a regex pattern
-			var firstCluster = allClusters.First();
-			var idPrefix = firstCluster.Metadata.Id.Substring(0, Math.Min(5, firstCluster.Metadata.Id.Length));
+			var matches = await client.Resources.ListAsync<Cluster>(idMatchRegexp: $"^{prefix}.*", cancellationToken: CancellationToken)
+				.ToListAsync(CancellationToken);
 
-			// Act - List with ID regex
-			Logger.LogInformation("🔍 Listing clusters with regex: ^{Prefix}.*", idPrefix);
-			var regexClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				idMatchRegexp: $"^{idPrefix}.*",
-				cancellationToken: CancellationToken))
-			{
-				regexClusters.Add(c);
-			}
-
-			// Assert
-			regexClusters.Should().NotBeEmpty();
-			regexClusters.Should().AllSatisfy(c => 
-				c.Metadata.Id.Should().StartWith(idPrefix));
-
-			Logger.LogInformation("✅ Regex filtering successful - found {Count} matching clusters", regexClusters.Count);
+			matches.Should().NotBeEmpty();
+			matches.Should().AllSatisfy(c => c.Metadata.Id.Should().StartWith(prefix));
 		});
 	}
 
@@ -124,22 +69,10 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List with pagination (first page, limit 10)
-			Logger.LogInformation("🔍 Listing clusters with pagination: offset=0, limit=10");
-			var page1 = new List<Api.Resources.Cluster>();
+			var page = await client.Resources.ListAsync<Cluster>(offset: 0, limit: 10, cancellationToken: CancellationToken)
+				.ToListAsync(CancellationToken);
 
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				offset: 0,
-				limit: 10,
-				cancellationToken: CancellationToken))
-			{
-				page1.Add(c);
-			}
-
-			// Assert - Should get at most 10 results
-			page1.Should().HaveCountLessThanOrEqualTo(10);
-
-			Logger.LogInformation("✅ Pagination successful - returned {Count} clusters", page1.Count);
+			page.Should().HaveCountLessThanOrEqualTo(10);
 		});
 	}
 
@@ -151,23 +84,13 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List with sorting by metadata.created
-			Logger.LogInformation("🔍 Listing clusters sorted by metadata.created");
-			var sortedClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
+			var sorted = await client.Resources.ListAsync<Cluster>(
 				sortBy: "metadata.created",
 				sortDescending: false,
 				limit: 5,
-				cancellationToken: CancellationToken))
-			{
-				sortedClusters.Add(c);
-			}
+				cancellationToken: CancellationToken).ToListAsync(CancellationToken);
 
-			// Assert - Should get results (can't verify exact order without knowing creation times)
-			sortedClusters.Should().NotBeNull();
-
-			Logger.LogInformation("✅ Sorting successful - returned {Count} clusters", sortedClusters.Count);
+			sorted.Should().NotBeNull();
 		});
 	}
 
@@ -179,40 +102,17 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List all clusters first
-			Logger.LogInformation("🔍 Listing all clusters");
-			var allClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(cancellationToken: CancellationToken))
-			{
-				allClusters.Add(c);
-			}
-
-			if (allClusters.Count == 0)
+			var term = await FirstIdPrefixAsync(client, 4);
+			if (term == null)
 			{
 				Logger.LogInformation("⏭️ No existing clusters found - skipping search test");
 				return;
 			}
 
-			// Use part of first cluster's ID for search
-			var firstCluster = allClusters.First();
-			var searchTerm = firstCluster.Metadata.Id.Substring(0, Math.Min(4, firstCluster.Metadata.Id.Length));
+			var results = await client.Resources.ListAsync<Cluster>(searchFor: [term], cancellationToken: CancellationToken)
+				.ToListAsync(CancellationToken);
 
-			// Act - List with search term
-			Logger.LogInformation("🔍 Searching for clusters with term: {Term}", searchTerm);
-			var searchResults = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				searchFor: new[] { searchTerm },
-				cancellationToken: CancellationToken))
-			{
-				searchResults.Add(c);
-			}
-
-			// Assert
-			searchResults.Should().NotBeEmpty();
-
-			Logger.LogInformation("✅ Search successful - found {Count} matches", searchResults.Count);
+			results.Should().NotBeEmpty();
 		});
 	}
 
@@ -224,85 +124,43 @@ public class ResourceFilteringTests(ITestOutputHelper testOutputHelper) : Integr
 	{
 		await RunAsync(async client =>
 		{
-			// Act - List all clusters first
-			Logger.LogInformation("🔍 Listing all clusters");
-			var allClusters = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(cancellationToken: CancellationToken))
-			{
-				allClusters.Add(c);
-			}
-
-			if (allClusters.Count == 0)
+			if (await FirstIdPrefixAsync(client, 1) == null)
 			{
 				Logger.LogInformation("⏭️ No existing clusters found - skipping combined filters test");
 				return;
 			}
 
-			// Find a cluster with labels to test combined filtering
-			var clusterWithLabels = allClusters.FirstOrDefault(c => c.Metadata.Labels.Count > 0);
-			if (clusterWithLabels == null)
-			{
-				Logger.LogInformation("⏭️ No clusters with labels - testing pagination + sorting only");
-				
-				// Test combined pagination + sorting
-				var results = new List<Api.Resources.Cluster>();
-				await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-					offset: 0,
-					limit: 2,
-					sortBy: "metadata.id",
-					cancellationToken: CancellationToken))
-				{
-					results.Add(c);
-				}
+			var labelled = await FindLabelledClusterAsync(client);
+			var results = labelled == null
+				? await client.Resources.ListAsync<Cluster>(offset: 0, limit: 2, sortBy: "metadata.id", cancellationToken: CancellationToken)
+					.ToListAsync(CancellationToken)
+				: await client.Resources.ListAsync<Cluster>(
+					selector: $"{labelled.Value.Key}={labelled.Value.Value}",
+					limit: 1,
+					cancellationToken: CancellationToken).ToListAsync(CancellationToken);
 
-				results.Should().NotBeEmpty();
-				results.Should().HaveCountLessThanOrEqualTo(2);
-				Logger.LogInformation("✅ Combined filtering successful (pagination + sorting) - returned {Count} clusters", results.Count);
-				return;
-			}
-
-			var labelKey = clusterWithLabels.Metadata.Labels.Keys.First();
-			var labelValue = clusterWithLabels.Metadata.Labels[labelKey];
-
-			// Act - List with combined filters (selector + limit)
-			Logger.LogInformation("🔍 Listing with combined filters: selector={Key}={Value}, limit=1", labelKey, labelValue);
-			var results2 = new List<Api.Resources.Cluster>();
-
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				selector: $"{labelKey}={labelValue}",
-				limit: 1,
-				cancellationToken: CancellationToken))
-			{
-				results2.Add(c);
-			}
-
-			// Assert
-			results2.Should().NotBeEmpty();
-			results2.Should().HaveCountLessThanOrEqualTo(1);
-
-			Logger.LogInformation("✅ Combined filtering successful");
+			results.Should().NotBeEmpty();
+			results.Should().HaveCountLessThanOrEqualTo(labelled == null ? 2 : 1);
 		});
 	}
 
-	#region Helper Methods
-
-	private async Task CleanupCluster(OmniClient client, string clusterId)
+	private async Task<string?> FirstIdPrefixAsync(OmniClient client, int length)
 	{
-		try
-		{
-			await client.Resources.DeleteAsync<Api.Resources.Cluster>(clusterId, cancellationToken: CancellationToken);
-			Logger.LogDebug("Cleaned up test cluster: {ClusterId}", clusterId);
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.NotFound)
-		{
-			Logger.LogDebug("Test cluster already deleted: {ClusterId}", clusterId);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(ex, "Failed to cleanup test cluster: {ClusterId}", clusterId);
-		}
+		var all = await client.Resources.ListAsync<Cluster>(cancellationToken: CancellationToken).ToListAsync(CancellationToken);
+
+		return all.Count == 0 ? null : all[0].Metadata.Id[..Math.Min(length, all[0].Metadata.Id.Length)];
 	}
 
-	#endregion
+	private async Task<(string Key, string Value)?> FindLabelledClusterAsync(OmniClient client)
+	{
+		var all = await client.Resources.ListAsync<Cluster>(cancellationToken: CancellationToken).ToListAsync(CancellationToken);
+		var labelled = all.FirstOrDefault(c => c.Metadata.Labels.Count > 0);
+		if (labelled == null)
+		{
+			return null;
+		}
+
+		var key = labelled.Metadata.Labels.Keys.First();
+		return (key, labelled.Metadata.Labels[key]);
+	}
 }
