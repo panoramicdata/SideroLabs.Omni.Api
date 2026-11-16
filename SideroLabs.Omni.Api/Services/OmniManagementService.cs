@@ -159,15 +159,15 @@ internal class OmniManagementService : IManagementService, IDisposable
 
 	/// <inheritdoc />
 	public Task<SchematicResult> CreateSchematicAsync(CancellationToken cancellationToken) =>
-		CreateSchematicAsync(null, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
+		CreateSchematicAsync(new CreateSchematicOptions(), cancellationToken);
 
 	/// <inheritdoc />
 	public Task<SchematicResult> CreateSchematicAsync(string[]? extensions, CancellationToken cancellationToken) =>
-		CreateSchematicAsync(extensions, null, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
+		CreateSchematicAsync(new CreateSchematicOptions { Extensions = extensions }, cancellationToken);
 
 	/// <inheritdoc />
 	public Task<SchematicResult> CreateSchematicAsync(string[]? extensions, string[]? extraKernelArgs, CancellationToken cancellationToken) =>
-		CreateSchematicAsync(extensions, extraKernelArgs, null, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
+		CreateSchematicAsync(new CreateSchematicOptions { Extensions = extensions, ExtraKernelArgs = extraKernelArgs }, cancellationToken);
 
 	/// <inheritdoc />
 	public Task<SchematicResult> CreateSchematicAsync(
@@ -175,30 +175,13 @@ internal class OmniManagementService : IManagementService, IDisposable
 		string[]? extraKernelArgs,
 		Dictionary<uint, string>? metaValues,
 		CancellationToken cancellationToken) =>
-		CreateSchematicAsync(extensions, extraKernelArgs, metaValues, null, null, false, SiderolinkGrpcTunnelMode.Auto, null, cancellationToken);
-
-	/// <inheritdoc />
-	public Task<SchematicResult> CreateSchematicAsync(
-		string[]? extensions,
-		string[]? extraKernelArgs,
-		Dictionary<uint, string>? metaValues,
-		string? talosVersion,
-		string? mediaId,
-		bool secureBoot,
-		SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode,
-		string? joinToken,
-		CancellationToken cancellationToken) =>
-		_schematics.CreateAsync(
-			extensions,
-			extraKernelArgs,
-			metaValues,
-			talosVersion,
-			mediaId,
-			secureBoot,
-			siderolinkGrpcTunnelMode,
-			joinToken,
+		CreateSchematicAsync(
+			new CreateSchematicOptions { Extensions = extensions, ExtraKernelArgs = extraKernelArgs, MetaValues = metaValues },
 			cancellationToken);
 
+	/// <inheritdoc />
+	public Task<SchematicResult> CreateSchematicAsync(CreateSchematicOptions options, CancellationToken cancellationToken) =>
+		_schematics.CreateAsync(options, cancellationToken);
 	/// <inheritdoc />
 	public IAsyncEnumerable<SupportBundleProgress> GetSupportBundleAsync(
 		string cluster,

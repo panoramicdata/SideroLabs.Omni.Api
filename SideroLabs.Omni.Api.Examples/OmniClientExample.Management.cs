@@ -86,7 +86,7 @@ public static partial class OmniClientExample
 			() => client.ServiceAccounts.CreateAsync("test-key", cancellationToken: cancellationToken));
 
 		await TryWriteOperation("CreateSchematicAsync",
-			() => client.Schematics.CreateAsync(["test-extension"], cancellationToken: cancellationToken));
+			() => client.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = ["test-extension"] }, cancellationToken: cancellationToken));
 
 		await TryWriteOperation("GetKubeConfigAsync(serviceAccount=true)",
 			() => client.KubeConfig.GetAsync(serviceAccount: true, cancellationToken: cancellationToken));
@@ -230,9 +230,7 @@ public static partial class OmniClientExample
 		Console.WriteLine("\n5️⃣ Machine Provisioning:");
 
 		// NEW API!
-		var schematicResult = await client.Schematics.CreateAsync(
-			extensions: ["siderolabs/util-linux-tools"],
-			cancellationToken: cancellationToken);
+		var schematicResult = await client.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = ["siderolabs/util-linux-tools"] }, cancellationToken: cancellationToken);
 		Console.WriteLine($"   ✅ Schematic created: {schematicResult.SchematicId}");
 		Console.WriteLine($"   📦 PXE URL: {schematicResult.PxeUrl}");
 		Console.WriteLine($"   🔌 gRPC Tunnel: {(schematicResult.GrpcTunnelEnabled ? "Enabled" : "Disabled")}");

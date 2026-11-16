@@ -19,41 +19,33 @@ namespace SideroLabs.Omni.Api.Services;
 internal class SchematicService(ManagementConnection connection) : ManagementServiceBase(connection), ISchematicService
 {
 	[IsWriteAction(WriteActionType.Create, Description = "Creates a new schematic for machine provisioning")]
-	public async Task<SchematicResult> CreateAsync(
-		string[]? extensions = null,
-		string[]? extraKernelArgs = null,
-		Dictionary<uint, string>? metaValues = null,
-		string? talosVersion = null,
-		string? mediaId = null,
-		bool secureBoot = false,
-		SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode = SiderolinkGrpcTunnelMode.Auto,
-		string? joinToken = null,
-		CancellationToken cancellationToken = default)
+	public async Task<SchematicResult> CreateAsync(CreateSchematicOptions? options = null, CancellationToken cancellationToken = default)
 	{
+		options ??= new CreateSchematicOptions();
 		EnsureWriteOperationAllowed("create", "schematic");
 
 		var request = new CreateSchematicRequest
 		{
-			TalosVersion = talosVersion ?? "",
-			MediaId = mediaId ?? "",
-			SecureBoot = secureBoot,
-			SiderolinkGrpcTunnelMode = (CreateSchematicRequest.Types.SiderolinkGRPCTunnelMode)(int)siderolinkGrpcTunnelMode,
-			JoinToken = joinToken ?? ""
+			TalosVersion = options.TalosVersion ?? "",
+			MediaId = options.MediaId ?? "",
+			SecureBoot = options.SecureBoot,
+			SiderolinkGrpcTunnelMode = (CreateSchematicRequest.Types.SiderolinkGRPCTunnelMode)(int)options.SiderolinkGrpcTunnelMode,
+			JoinToken = options.JoinToken ?? ""
 		};
 
-		if (extensions != null)
+		if (options.Extensions != null)
 		{
-			request.Extensions.AddRange(extensions);
+			request.Extensions.AddRange(options.Extensions);
 		}
 
-		if (extraKernelArgs != null)
+		if (options.ExtraKernelArgs != null)
 		{
-			request.ExtraKernelArgs.AddRange(extraKernelArgs);
+			request.ExtraKernelArgs.AddRange(options.ExtraKernelArgs);
 		}
 
-		if (metaValues != null)
+		if (options.MetaValues != null)
 		{
-			foreach (var kvp in metaValues)
+			foreach (var kvp in options.MetaValues)
 			{
 				request.MetaValues[kvp.Key] = kvp.Value;
 			}

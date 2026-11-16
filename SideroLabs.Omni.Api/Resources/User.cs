@@ -14,7 +14,7 @@ public class User : OmniResource<UserSpec, UserStatus>
 	/// <summary>
 	/// Gets the resource type for Users
 	/// </summary>
-	public const string ResourceType = "Users.omni.sidero.dev";
+	public static string ResourceType { get; } = "Users.omni.sidero.dev";
 
 	/// <summary>
 	/// Gets the user ID (same as resource ID)

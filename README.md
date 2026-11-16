@@ -401,13 +401,22 @@ await foreach (var syncResult in client.Management.StreamKubernetesSyncManifests
 
 ```csharp
 // Create a schematic for machine provisioning
-var (schematicId, pxeUrl) = await client.Management.CreateSchematicAsync(
-    extensions: new[] { "siderolabs/iscsi-tools", "siderolabs/util-linux-tools" },
-    extraKernelArgs: new[] { "console=ttyS0" },
-    metaValues: new Dictionary<uint, string> { { 0x0a, "rack-1" } },
-    cancellationToken: cancellationToken);
+var schematic = await client.Schematics.CreateAsync(
+    new CreateSchematicOptions
+    {
+        Extensions = ["siderolabs/iscsi-tools", "siderolabs/util-linux-tools"],
+        ExtraKernelArgs = ["console=ttyS0"],
+        MetaValues = new Dictionary<uint, string> { { 0x0a, "rack-1" } }
+    },
+    cancellationToken);
+
+Console.WriteLine($"{schematic.SchematicId} {schematic.PxeUrl}");
 ```
 
+## Breaking changes
+
+- `ISchematicService.CreateAsync` and `IManagementService.CreateSchematicAsync` no longer take nine separate parameters. Pass a `CreateSchematicOptions` instead (`Extensions`, `ExtraKernelArgs`, `MetaValues`, `TalosVersion`, `MediaId`, `SecureBoot`, `SiderolinkGrpcTunnelMode`, `JoinToken`). The shorter `IManagementService.CreateSchematicAsync` overloads are unchanged.
+- `ResourceTypes.*Type`, `Identity.ResourceType`, `Identity.Label*`, `Identity.Type*` and `User.ResourceType` are now `static` read-only properties instead of `const` fields, so they can no longer be used as compile-time constants (attribute arguments, `case` labels, default parameter values). Callers must be recompiled.
 ## Configuration
 
 ### OmniClientOptions

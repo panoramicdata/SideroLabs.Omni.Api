@@ -60,35 +60,35 @@ public static class ResourceTypes
 	/// <summary>
 	/// Proto type name for Cluster resources
 	/// </summary>
-	public const string ClusterType = "Clusters.omni.sidero.dev";
+	public static string ClusterType { get; } = "Clusters.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for Machine resources
 	/// </summary>
-	public const string MachineType = "Machines.omni.sidero.dev";
+	public static string MachineType { get; } = "Machines.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for ClusterMachine resources
 	/// </summary>
-	public const string ClusterMachineType = "ClusterMachines.omni.sidero.dev";
+	public static string ClusterMachineType { get; } = "ClusterMachines.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for ConfigPatch resources
 	/// </summary>
-	public const string ConfigPatchType = "ConfigPatches.omni.sidero.dev";
+	public static string ConfigPatchType { get; } = "ConfigPatches.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for ExtensionsConfiguration resources
 	/// </summary>
-	public const string ExtensionsConfigurationType = "ExtensionsConfigurations.omni.sidero.dev";
+	public static string ExtensionsConfigurationType { get; } = "ExtensionsConfigurations.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for User resources
 	/// </summary>
-	public const string UserType = "Users.omni.sidero.dev";
+	public static string UserType { get; } = "Users.omni.sidero.dev";
 
 	/// <summary>
 	/// Proto type name for Identity resources
 	/// </summary>
-	public const string IdentityType = "Identities.omni.sidero.dev";
+	public static string IdentityType { get; } = "Identities.omni.sidero.dev";
 }

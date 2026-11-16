@@ -1,3 +1,4 @@
+using SideroLabs.Omni.Api.Models;
 using System.Text;
 using System.Text.Json;
 using AwesomeAssertions;
@@ -236,18 +237,18 @@ public partial class IntegrationTests(ITestOutputHelper testOutputHelper) : Test
 		{
 			// Act - Test creating schematic with all available parameters
 			Logger.LogInformation("🔍 Creating schematic with Talos version, secure boot, and gRPC tunnel mode...");
-			var schematicResult = await client
-				.Management
-				.CreateSchematicAsync(
-					extensions: ["siderolabs/util-linux-tools"],
-					extraKernelArgs: ["console=ttyS0"],
-					metaValues: new Dictionary<uint, string> { { 0x0a, "test-env" } },
-					talosVersion: "v1.7.0",
-					mediaId: "installer",
-					secureBoot: false,
-					siderolinkGrpcTunnelMode: Enums.SiderolinkGrpcTunnelMode.Auto,
-					joinToken: null,
-					cancellationToken: CancellationToken);
+			var schematicOptions = new CreateSchematicOptions
+			{
+				Extensions = ["siderolabs/util-linux-tools"],
+				ExtraKernelArgs = ["console=ttyS0"],
+				MetaValues = new Dictionary<uint, string> { { 0x0a, "test-env" } },
+				TalosVersion = "v1.7.0",
+				MediaId = "installer",
+				SecureBoot = false,
+				SiderolinkGrpcTunnelMode = Enums.SiderolinkGrpcTunnelMode.Auto
+			};
+
+			var schematicResult = await client.Management.CreateSchematicAsync(schematicOptions, CancellationToken);
 
 			schematicResult.SchematicId.Should().NotBeNullOrEmpty();
 			schematicResult.PxeUrl.Should().NotBeNullOrEmpty();

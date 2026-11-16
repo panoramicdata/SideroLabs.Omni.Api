@@ -1,3 +1,4 @@
+using SideroLabs.Omni.Api.Models;
 using AwesomeAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -99,7 +100,7 @@ public class ReadOnlyModeTests(ITestOutputHelper testOutputHelper) : TestBase(te
 		using var client = CreateReadOnlyClient();
 
 		await AssertBlockedAsync(
-			() => client.Schematics.CreateAsync(extensions: ["test-extension"], cancellationToken: CancellationToken),
+			() => client.Schematics.CreateAsync(new CreateSchematicOptions { Extensions = ["test-extension"] }, cancellationToken: CancellationToken),
 			"create",
 			"schematic");
 	}

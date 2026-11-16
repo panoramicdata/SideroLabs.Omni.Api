@@ -150,33 +150,33 @@ public static partial class OmniClientExample
 	private static async Task CreateAndDisplaySchematic(OmniClient client, CancellationToken cancellationToken)
 	{
 		// Create a schematic for provisioning machines with all available options - NEW API!
-		var schematicResult = await client
-			.Schematics
-			.CreateAsync(
-				extensions:
-				[
-					"siderolabs/iscsi-tools",        // iSCSI storage support
-					"siderolabs/util-linux-tools",   // Additional Linux utilities
-					"siderolabs/gvisor"              // Container runtime security
-				],
-				extraKernelArgs:
-				[
-					"console=ttyS0,115200",          // Serial console
-					"net.ifnames=0",                 // Predictable network names
-					"systemd.unified_cgroup_hierarchy=0"
-				],
-				metaValues: new Dictionary<uint, string>
-				{
-					{ 0x0a, "datacenter-1" },       // Datacenter location
-					{ 0x0b, "rack-a1" },            // Rack identifier
-					{ 0x0c, "production" }          // Environment
-				},
-				talosVersion: "v1.7.0",             // NEW: Specify Talos version
-				mediaId: "installer",               // NEW: Installation media
-				secureBoot: true,                   // NEW: Enable secure boot
-				siderolinkGrpcTunnelMode: SiderolinkGrpcTunnelMode.Auto,  // NEW: gRPC tunnel mode
-				joinToken: null,                    // NEW: Optional join token
-				cancellationToken: cancellationToken);
+		var options = new CreateSchematicOptions
+		{
+			Extensions =
+			[
+				"siderolabs/iscsi-tools",        // iSCSI storage support
+				"siderolabs/util-linux-tools",   // Additional Linux utilities
+				"siderolabs/gvisor"              // Container runtime security
+			],
+			ExtraKernelArgs =
+			[
+				"console=ttyS0,115200",          // Serial console
+				"net.ifnames=0",                 // Predictable network names
+				"systemd.unified_cgroup_hierarchy=0"
+			],
+			MetaValues = new Dictionary<uint, string>
+			{
+				{ 0x0a, "datacenter-1" },       // Datacenter location
+				{ 0x0b, "rack-a1" },            // Rack identifier
+				{ 0x0c, "production" }          // Environment
+			},
+			TalosVersion = "v1.7.0",
+			MediaId = "installer",
+			SecureBoot = true,
+			SiderolinkGrpcTunnelMode = SiderolinkGrpcTunnelMode.Auto
+		};
+
+		var schematicResult = await client.Schematics.CreateAsync(options, cancellationToken);
 
 		DisplaySchematicResults(schematicResult);
 	}

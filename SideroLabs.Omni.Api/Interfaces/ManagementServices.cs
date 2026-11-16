@@ -83,15 +83,10 @@ public interface ISchematicService
 	/// <summary>
 	/// Creates a schematic for machine provisioning
 	/// </summary>
+	/// <param name="options">Schematic options; defaults are used when omitted</param>
+	/// <param name="cancellationToken">Cancellation token</param>
 	Task<SchematicResult> CreateAsync(
-		[Optional] string[]? extensions,
-		[Optional] string[]? extraKernelArgs,
-		[Optional] Dictionary<uint, string>? metaValues,
-		[Optional] string? talosVersion,
-		[Optional] string? mediaId,
-		[Optional] bool secureBoot,
-		[Optional, DefaultParameterValue(Enums.SiderolinkGrpcTunnelMode.Auto)] Enums.SiderolinkGrpcTunnelMode siderolinkGrpcTunnelMode,
-		[Optional] string? joinToken,
+		[Optional] CreateSchematicOptions? options,
 		[Optional] CancellationToken cancellationToken);
 }
 
