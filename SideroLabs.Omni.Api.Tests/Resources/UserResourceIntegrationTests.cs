@@ -137,7 +137,7 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 			Logger.LogInformation("🚀 Testing cleanup on failed update");
 
 			// Create user
-			var (user, identity) = await OmniClient.Users.CreateAsync(
+			var (user, _) = await OmniClient.Users.CreateAsync(
 				testEmail,
 				"Reader",
 				CancellationToken);
