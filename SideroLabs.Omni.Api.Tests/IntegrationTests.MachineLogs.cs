@@ -110,16 +110,13 @@ public partial class IntegrationTests
 		{
 			// Act & Assert - Test with empty machine ID
 			var emptyMachineId = "";
-			var logCount = 0;
-
-			await foreach (var logData in client.Management.StreamMachineLogsAsync(
+			await foreach (var _ in client.Management.StreamMachineLogsAsync(
 				machineId: emptyMachineId,
 				follow: false,
 				tailLines: 1,
 				cancellationToken: CancellationToken))
 			{
-				logCount++;
-				break; // Just check if we can start the stream
+				break;
 			}
 
 			// If we get here, either:
@@ -284,14 +281,5 @@ public partial class IntegrationTests
 		{
 			Logger.LogInformation("🔒 Permission denied for machine log access - this is expected with Reader role");
 		}
-	}
-	/// <summary>
-	/// Helper class to track test operation results
-	/// </summary>
-	private sealed class TestOperationResults
-	{
-		public int SuccessCount { get; set; }
-		public int TotalOperations { get; set; }
-		public double SuccessRate => TotalOperations > 0 ? (double)SuccessCount / TotalOperations : 0.0;
 	}
 }

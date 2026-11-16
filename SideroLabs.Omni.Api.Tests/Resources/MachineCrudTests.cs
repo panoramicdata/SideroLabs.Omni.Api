@@ -29,14 +29,12 @@ public class MachineCrudTests(ITestOutputHelper testOutputHelper) : ResourceCrud
 	}
 
 	/// <inheritdoc />
-	protected override void AssertCreated(Api.Resources.Machine created)
-	{
-	}
+	protected override void AssertCreated(Api.Resources.Machine created) =>
+		created.Kind.Should().Be("Machine");
 
 	/// <inheritdoc />
-	protected override void AssertRetrieved(Api.Resources.Machine retrieved, Api.Resources.Machine original)
-	{
-	}
+	protected override void AssertRetrieved(Api.Resources.Machine retrieved, Api.Resources.Machine original) =>
+		retrieved.Metadata.Namespace.Should().Be(original.Metadata.Namespace);
 
 	/// <inheritdoc />
 	protected override void AssertUpdated(Api.Resources.Machine updated)

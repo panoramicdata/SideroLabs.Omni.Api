@@ -294,4 +294,13 @@ public partial class IntegrationTests
 		}
 	}
 
+	/// <summary>
+	/// Helper class to track test operation results
+	/// </summary>
+	private sealed class TestOperationResults
+	{
+		public int SuccessCount { get; set; }
+		public int TotalOperations { get; set; }
+		public double SuccessRate => TotalOperations > 0 ? (double)SuccessCount / TotalOperations : 0.0;
+	}
 }
