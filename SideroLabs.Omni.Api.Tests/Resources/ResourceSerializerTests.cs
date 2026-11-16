@@ -21,35 +21,26 @@ public class ResourceSerializerTests
 	/// Verifies that a Cluster resource survives a JSON serialization/deserialization round-trip with data integrity.
 	/// </summary>
 	[Fact]
-	public void JsonRoundtrip_Cluster()
-	{
-		var cluster = NewCluster("test-cluster", "v1.29.0", true);
-
-		var json = ResourceSerializer.ToJson(cluster);
-		var deserialized = ResourceSerializer.FromJson<Cluster>(json);
-
-		deserialized.Should().NotBeNull();
-		deserialized!.Metadata.Id.Should().Be(cluster.Metadata.Id);
-		deserialized.Spec.KubernetesVersion.Should().Be(cluster.Spec.KubernetesVersion);
-		Assert.True(deserialized.Status?.Ready);
-	}
+	public void JsonRoundtrip_Cluster() =>
+		AssertRoundTrip(NewCluster("test-cluster", "v1.29.0", true), ResourceSerializer.ToJson, ResourceSerializer.FromJson<Cluster>)
+			.Status?.Ready.Should().BeTrue();
 
 	/// <summary>
 	/// Verifies that a Cluster resource survives a YAML serialization/deserialization round-trip with data integrity.
 	/// </summary>
 	[Fact]
-	public void YamlRoundtrip_Cluster()
-	{
-		var cluster = NewCluster("yaml-cluster", "v1.28.0", false);
+	public void YamlRoundtrip_Cluster() =>
+		AssertRoundTrip(NewCluster("yaml-cluster", "v1.28.0", false), ResourceSerializer.ToYaml, ResourceSerializer.FromYaml<Cluster>);
 
-		var yaml = ResourceSerializer.ToYaml(cluster);
-		var deserialized = ResourceSerializer.FromYaml<Cluster>(yaml);
+	private static Cluster AssertRoundTrip(Cluster cluster, Func<Cluster, string> serialize, Func<string, Cluster?> deserialize)
+	{
+		var deserialized = deserialize(serialize(cluster));
 
 		deserialized.Should().NotBeNull();
 		deserialized!.Metadata.Id.Should().Be(cluster.Metadata.Id);
 		deserialized.Spec.KubernetesVersion.Should().Be(cluster.Spec.KubernetesVersion);
+		return deserialized;
 	}
-
 	/// <summary>
 	/// Verifies that a custom proto type name can be registered and retrieved for a resource type.
 	/// </summary>

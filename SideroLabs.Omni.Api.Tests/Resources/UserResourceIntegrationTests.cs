@@ -28,7 +28,6 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 
 		// Arrange
 		var testEmail = GenerateTestEmail();
-		var created = false;
 
 		try
 		{
@@ -37,7 +36,6 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 				"Reader",
 				CancellationToken);
 
-			created = true;
 			AssertResourceCreated(user);
 			AssertResourceCreated(identity);
 			Assert.Equal("Reader", user.Spec.Role);
@@ -59,17 +57,10 @@ public class UserResourceIntegrationTests(ITestOutputHelper testOutputHelper) : 
 			await OmniClient.Users.DeleteAsync(testEmail, CancellationToken);
 			await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
 				await OmniClient.Users.GetAsync(testEmail, CancellationToken));
-
-			// Clear references to prevent double-delete in finally
-			created = false;
 		}
 		finally
 		{
-			// CLEANUP - Even if test fails
-			if (created)
-			{
-				await SafeDeleteUserAsync(testEmail);
-			}
+			await SafeDeleteUserAsync(testEmail);
 		}
 	}
 

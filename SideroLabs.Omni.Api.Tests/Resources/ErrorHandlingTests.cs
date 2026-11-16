@@ -17,50 +17,23 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	/// Integration test that verifies getting a non-existent cluster ID throws RpcException with NotFound status.
 	/// </summary>
 	[Fact]
-	public async Task Get_NonExistentResource_ThrowsNotFound()
-	{
-		await RunClientAsync(async client =>
-		{
-			var nonExistentId = CreateUniqueId("does-not-exist");
-
-			// Act & Assert
-			Logger.LogInformation("🔍 Attempting to get non-existent cluster: {Id}", nonExistentId);
-			
-			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
-			{
-				await client.Resources.GetAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
-			});
-
-			// Assert
-			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
-			Logger.LogInformation("✅ NotFound exception thrown as expected");
-		});
-	}
+	public Task Get_NonExistentResource_ThrowsNotFound() =>
+		AssertNotFoundAsync((client, id) => client.Resources.GetAsync<Api.Resources.Cluster>(id, cancellationToken: CancellationToken));
 
 	/// <summary>
 	/// Integration test that verifies deleting a non-existent cluster ID throws RpcException with NotFound status.
 	/// </summary>
 	[Fact]
-	public async Task Delete_NonExistentResource_ThrowsNotFound()
-	{
-		await RunClientAsync(async client =>
+	public Task Delete_NonExistentResource_ThrowsNotFound() =>
+		AssertNotFoundAsync((client, id) => client.Resources.DeleteAsync<Api.Resources.Cluster>(id, cancellationToken: CancellationToken));
+
+	private Task AssertNotFoundAsync(Func<OmniClient, string, Task> operation) =>
+		RunClientAsync(async client =>
 		{
-			var nonExistentId = CreateUniqueId("does-not-exist");
+			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(() => operation(client, CreateUniqueId("does-not-exist")));
 
-			// Act & Assert
-			Logger.LogInformation("🔍 Attempting to delete non-existent cluster: {Id}", nonExistentId);
-			
-			var exception = await Assert.ThrowsAsync<Grpc.Core.RpcException>(async () =>
-			{
-				await client.Resources.DeleteAsync<Api.Resources.Cluster>(nonExistentId, cancellationToken: CancellationToken);
-			});
-
-			// Assert
 			exception.StatusCode.Should().Be(Grpc.Core.StatusCode.NotFound);
-			Logger.LogInformation("✅ NotFound exception thrown as expected");
 		});
-	}
-
 	/// <summary>
 	/// Integration test that verifies listing with a malformed selector string throws an error.
 	/// </summary>
@@ -99,43 +72,24 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	/// Verifies that a list operation with a very short timeout throws a deadline-exceeded or cancellation error.
 	/// </summary>
 	[Fact]
-	public async Task Get_WithShortTimeout_ThrowsDeadlineExceeded()
-	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+	public Task Get_WithShortTimeout_ThrowsDeadlineExceeded() =>
+		RunWithOptionsAsync(options => options.TimeoutSeconds = 1, async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		// Create client with very short timeout
-		var options = GetClientOptions();
-		options.TimeoutSeconds = 1; // Essentially immediate timeout
-		using var client = new OmniClient(options);
-
-		try
-		{
-			// Act
-			Logger.LogInformation("🔍 Attempting Get with 0-second timeout");
-			
 			using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-			await client.Resources.ListAsync<Api.Resources.Cluster>(
-				cancellationToken: cts.Token).GetAsyncEnumerator().MoveNextAsync();
-		}
-		catch (OperationCanceledException)
-		{
-			Logger.LogInformation("✅ Operation cancelled as expected due to timeout");
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.DeadlineExceeded)
-		{
-			Logger.LogInformation("✅ DeadlineExceeded exception thrown as expected");
-		}
-		catch (Grpc.Core.RpcException ex) when (ex.StatusCode == Grpc.Core.StatusCode.Cancelled)
-		{
-			Logger.LogInformation("✅ Cancelled exception thrown as expected");
-		}
-	}
 
+			try
+			{
+				await client.Resources.ListAsync<Api.Resources.Cluster>(cancellationToken: cts.Token).GetAsyncEnumerator().MoveNextAsync();
+			}
+			catch (OperationCanceledException)
+			{
+				Logger.LogInformation("✅ Operation cancelled as expected due to timeout");
+			}
+			catch (Grpc.Core.RpcException ex) when (ex.StatusCode is Grpc.Core.StatusCode.DeadlineExceeded or Grpc.Core.StatusCode.Cancelled)
+			{
+				Logger.LogInformation("✅ {Code} thrown as expected", ex.StatusCode);
+			}
+		});
 	/// <summary>
 	/// Verifies that creating a resource with invalid data (malformed version strings) throws a validation error.
 	/// </summary>
@@ -315,44 +269,25 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 	/// Verifies that using an invalid auth token causes an unauthenticated or permission-denied gRPC error.
 	/// </summary>
 	[Fact]
-	public async Task InvalidAuthToken_ThrowsUnauthenticated()
-	{
-		// Skip if integration tests are not configured
-		if (!ShouldRunIntegrationTests())
+	public Task InvalidAuthToken_ThrowsUnauthenticated() =>
+		RunWithOptionsAsync(options => options.AuthToken = "invalid-token-12345", async client =>
 		{
-			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
-			return;
-		}
-
-		// Create client with invalid auth token
-		var options = GetClientOptions();
-		options.AuthToken = "invalid-token-12345";
-		using var client = new OmniClient(options);
-
-		try
-		{
-			// Act
-			Logger.LogInformation("🔍 Attempting to list with invalid auth token");
-			
-			await foreach (var c in client.Resources.ListAsync<Api.Resources.Cluster>(
-				limit: 1,
-				cancellationToken: CancellationToken))
+			try
 			{
-				Assert.Fail("Should have thrown authentication error");
+				await foreach (var _ in client.Resources.ListAsync<Api.Resources.Cluster>(limit: 1, cancellationToken: CancellationToken))
+				{
+					Assert.Fail("Should have thrown authentication error");
+				}
 			}
-		}
-		catch (Grpc.Core.RpcException ex) when (
-			ex.StatusCode == Grpc.Core.StatusCode.Unauthenticated ||
-			ex.StatusCode == Grpc.Core.StatusCode.PermissionDenied)
-		{
-			Logger.LogInformation("✅ Authentication error thrown as expected: {Code}", ex.StatusCode);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogInformation("✅ Authentication failed with exception: {Type}", ex.GetType().Name);
-		}
-	}
-
+			catch (Grpc.Core.RpcException ex) when (ex.StatusCode is Grpc.Core.StatusCode.Unauthenticated or Grpc.Core.StatusCode.PermissionDenied)
+			{
+				Logger.LogInformation("✅ Authentication error thrown as expected: {Code}", ex.StatusCode);
+			}
+			catch (Exception ex) when (ex is not Xunit.Sdk.XunitException)
+			{
+				Logger.LogInformation("✅ Authentication failed with exception: {Type}", ex.GetType().Name);
+			}
+		});
 	/// <summary>
 	/// Verifies that attempting to get a resource with an empty ID throws an <see cref="ArgumentException"/>.
 	/// </summary>
@@ -372,4 +307,17 @@ public class ErrorHandlingTests(ITestOutputHelper testOutputHelper) : Integratio
 			Logger.LogInformation("✅ ArgumentException thrown as expected for empty ID");
 		});
 	}
-}
+
+	private async Task RunWithOptionsAsync(Action<OmniClientOptions> configure, Func<OmniClient, Task> body)
+	{
+		if (!ShouldRunIntegrationTests())
+		{
+			Logger.LogInformation("⏭️ Skipping integration test - no valid Omni configuration");
+			return;
+		}
+
+		var options = GetClientOptions();
+		configure(options);
+		using var client = new OmniClient(options);
+		await body(client);
+	}}
