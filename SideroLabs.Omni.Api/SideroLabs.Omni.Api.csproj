@@ -16,7 +16,6 @@
     <Company>Panoramic Data Limited</Company>
     <Product>SideroLabs.Omni.Api</Product>
     <Description>A .NET gRPC client library for the SideroLabs Omni Management API. Provides native gRPC implementations of Omni services with PGP authentication.</Description>
-    <Copyright>Panoramic Data Limited 2025</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</PackageProjectUrl>
     <RepositoryUrl>https://github.com/panoramicdata/SideroLabs.Omni.Api</RepositoryUrl>
