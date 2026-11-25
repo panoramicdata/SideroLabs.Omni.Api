@@ -15,7 +15,7 @@ You are a careful, security-conscious contributor to this repository.
   CI/CD checks.
 - Do not commit secrets, credentials, or API tokens.
 - Do not force-push to `main`, rewrite published history, or delete branches without explicit
-  approval.
+  Approval.
 - Do not add `Co-Authored-By` trailers or other AI attribution to commit messages or pull requests.
 
 ## Tools
@@ -47,7 +47,7 @@ This is a .NET 11.0 SDK for the **Omni API** by Sidero Labs - a Kubernetes clust
 
 #### Primary Documents (Start Here!)
 
-1. **[MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)** ⭐ **read FIRST**
+1. **[MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)** ⭐ **read first**
    - Complete achievement summary
    - Final statistics and metrics
    - All 4 phases documented
@@ -139,7 +139,7 @@ SideroLabs.Omni.Api/
 - Cluster status retrieval
 - Cluster lifecycle (create/delete)
 - Machine lock/unlock operations
-- **goal ACHIEVED!**
+- **Goal ACHIEVED!**
 
 ---
 
@@ -196,14 +196,14 @@ public class MyTests(ITestOutputHelper output) : TestBase(output)
 #### Key Principles
 
 1. **Permission-Aware Testing** ✅
-   - Always handle `PermissionDenied` gracefully. If this cannot be met, explain why in your summary.
+   - Handle `PermissionDenied` gracefully.
    - Tests work in both Reader and Writer modes
    - Log permission denials clearly
 
 2. **Realistic Testing** ✅
-   - Use existing data when possible (avoids permission issues). If this cannot be met, explain why in your summary.
-   - Create test resources only when necessary. If this cannot be met, explain why in your summary.
-   - Clean up in `finally` blocks ALWAYS. If this cannot be met, explain why in your summary.
+   - Use existing data when possible (avoids permission issues).
+   - Create test resources only when necessary.
+   - Clean up in `finally` blocks always.
 
 3. **Comprehensive Logging** ✅
    - Log all operations with emojis for clarity
@@ -336,7 +336,7 @@ If continuing beyond 90% (current recommendation: **ship it!**):
 - [x] Zero compiler warnings
 - [x] All public APIs documented
 - [x] Consistent naming conventions
-- [x] Build always green. If this cannot be met, explain why in your summary.
+- [x] Build green.
 
 #### Test Quality ✅
 - [x] All tests follow naming convention: `Operation_Scenario_ExpectedOutcome`
@@ -390,12 +390,12 @@ Alternatively, set:
 #### Omni API Documentation
 - Official Docs: https://www.siderolabs.com/platform/omni/
 - COSI State Spec: Core resource management protocol
-- gRPC API: Protocol buffers in `SideroLabs.Omni.Api/Protos/`
+- GRPC API: Protocol buffers in `SideroLabs.Omni.Api/Protos/`
 
 #### Testing Philosophy
-- **Integration-first**: Test against real API when possible. If this cannot be met, explain why in your summary.
+- **Integration-first**: Test against real API when possible.
 - **Permission-aware**: Handle both Reader and Writer roles
-- **Realistic data**: Use existing resources, create only when needed. If this cannot be met, explain why in your summary.
+- **Realistic data**: Use existing resources, create only when needed.
 - **Error-resilient**: Test failure paths thoroughly
 
 ---
@@ -444,4 +444,4 @@ Alternatively, set:
 ## PanoramicData staff
 
 PanoramicData staff have shared tooling in a private sibling checkout of PanoramicData.Skills. Anyone
-without it can ignore this section: everything needed to work on this repository is above.
+Without it can ignore this section: everything needed to work on this repository is above.
