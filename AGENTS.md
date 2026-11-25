@@ -96,10 +96,10 @@ SideroLabs.Omni.Api/
 │   │   ├── ResourceApplyTests.cs      # Apply operations (8 tests)
 │   │   ├── ResourceBulkDeleteTests.cs # Bulk operations (6 tests)
 │   │   ├── ResourceFilteringTests.cs  # Filtering (6 tests) ✨ new
-│   │   ├── InfrastructureResourceTests.cs # Infrastructure (7 tests) ✨ NEW
-│   │   └── ErrorHandlingTests.cs      # Error handling (10 tests) ✨ NEW
+│   │   ├── InfrastructureResourceTests.cs # Infrastructure (7 tests) ✨ New
+│   │   └── ErrorHandlingTests.cs      # Error handling (10 tests) ✨ New
 │   ├── Operations/                    # High-level operations
-│   │   └── ClusterOperationsTests.cs  # Cluster ops (5 tests) ✨ NEW
+│   │   └── ClusterOperationsTests.cs  # Cluster ops (5 tests) ✨ New
 │   ├── Builders/                      # Builder tests
 │   ├── Management/                    # Management service tests
 │   └── TestBase.cs                    # Base test infrastructure
@@ -201,9 +201,9 @@ public class MyTests(ITestOutputHelper output) : TestBase(output)
    - Log permission denials clearly
 
 2. **Realistic Testing** ✅
-   - Use existing data when possible (avoids permission issues).
-   - Create test resources only when necessary.
-   - Clean up in `finally` blocks always.
+   - Use existing data first, because it avoids permission issues.
+   - Create test resources only when no existing resource fits the test.
+   - Clean up in `finally` blocks.
 
 3. **Comprehensive Logging** ✅
    - Log all operations with emojis for clarity
@@ -390,12 +390,12 @@ Alternatively, set:
 #### Omni API Documentation
 - Official Docs: https://www.siderolabs.com/platform/omni/
 - COSI State Spec: Core resource management protocol
-- GRPC API: Protocol buffers in `SideroLabs.Omni.Api/Protos/`
+- gRPC API: Protocol buffers in `SideroLabs.Omni.Api/Protos/`
 
 #### Testing Philosophy
-- **Integration-first**: Test against real API when possible.
+- **Integration-first**: Test against the real API, and use a mock only when the real API is unavailable.
 - **Permission-aware**: Handle both Reader and Writer roles
-- **Realistic data**: Use existing resources, create only when needed.
+- **Realistic data**: Use existing resources, and create new ones only when none fits.
 - **Error-resilient**: Test failure paths thoroughly
 
 ---
