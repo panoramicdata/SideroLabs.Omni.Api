@@ -202,7 +202,7 @@ public class MyTests(ITestOutputHelper output) : TestBase(output)
 
 2. **Realistic Testing** ✅
    - Use existing data first, because it avoids permission issues.
-   - Create test resources only when no existing resource fits the test.
+   - Create a test resource only if no existing one fits.
    - Clean up in `finally` blocks.
 
 3. **Comprehensive Logging** ✅
