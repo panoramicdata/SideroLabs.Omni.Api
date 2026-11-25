@@ -1,5 +1,10 @@
 # Agent instructions
 
+## Glossary
+
+- COSI: Container Operating System Interface.
+- NET: .NET, Microsoft's developer platform; this is a product name.
+
 ## Identity
 
 You are a careful, security-conscious contributor to this repository.
@@ -42,7 +47,7 @@ This is a .NET 11.0 SDK for the **Omni API** by Sidero Labs - a Kubernetes clust
 
 #### Primary Documents (Start Here!)
 
-1. **[MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)** ⭐ **READ FIRST**
+1. **[MISSION_COMPLETE_90_PERCENT.md](../docs/history/MISSION_COMPLETE_90_PERCENT.md)** ⭐ **read FIRST**
    - Complete achievement summary
    - Final statistics and metrics
    - All 4 phases documented
@@ -90,7 +95,7 @@ SideroLabs.Omni.Api/
 │   │   ├── ResourceWatchTests.cs      # Watch streaming (4 tests)
 │   │   ├── ResourceApplyTests.cs      # Apply operations (8 tests)
 │   │   ├── ResourceBulkDeleteTests.cs # Bulk operations (6 tests)
-│   │   ├── ResourceFilteringTests.cs  # Filtering (6 tests) ✨ NEW
+│   │   ├── ResourceFilteringTests.cs  # Filtering (6 tests) ✨ new
 │   │   ├── InfrastructureResourceTests.cs # Infrastructure (7 tests) ✨ NEW
 │   │   └── ErrorHandlingTests.cs      # Error handling (10 tests) ✨ NEW
 │   ├── Operations/                    # High-level operations
@@ -134,7 +139,7 @@ SideroLabs.Omni.Api/
 - Cluster status retrieval
 - Cluster lifecycle (create/delete)
 - Machine lock/unlock operations
-- **GOAL ACHIEVED!**
+- **goal ACHIEVED!**
 
 ---
 
@@ -181,7 +186,7 @@ public class MyTests(ITestOutputHelper output) : TestBase(output)
         }
         finally
         {
-            // Cleanup - ALWAYS in finally block
+            // Cleanup - in finally block
             await CleanupResource(client, testId);
         }
     }
@@ -191,21 +196,21 @@ public class MyTests(ITestOutputHelper output) : TestBase(output)
 #### Key Principles
 
 1. **Permission-Aware Testing** ✅
-   - Always handle `PermissionDenied` gracefully
+   - Always handle `PermissionDenied` gracefully. If this cannot be met, explain why in your summary.
    - Tests work in both Reader and Writer modes
    - Log permission denials clearly
 
 2. **Realistic Testing** ✅
-   - Use existing data when possible (avoids permission issues)
-   - Create test resources only when necessary
-   - Clean up in `finally` blocks ALWAYS
+   - Use existing data when possible (avoids permission issues). If this cannot be met, explain why in your summary.
+   - Create test resources only when necessary. If this cannot be met, explain why in your summary.
+   - Clean up in `finally` blocks ALWAYS. If this cannot be met, explain why in your summary.
 
 3. **Comprehensive Logging** ✅
    - Log all operations with emojis for clarity
    - 🔍 = Action, ✅ = Success, 🔒 = Permission, ⏭️ = Skip
 
 4. **Error-First Approach** ✅
-   - Test both success AND failure paths
+   - Test both success and failure paths
    - Validate error codes and messages
    - Use `BeOneOf()` for flexible assertions
 
@@ -331,7 +336,7 @@ If continuing beyond 90% (current recommendation: **ship it!**):
 - [x] Zero compiler warnings
 - [x] All public APIs documented
 - [x] Consistent naming conventions
-- [x] Build always green
+- [x] Build always green. If this cannot be met, explain why in your summary.
 
 #### Test Quality ✅
 - [x] All tests follow naming convention: `Operation_Scenario_ExpectedOutcome`
@@ -388,9 +393,9 @@ Alternatively, set:
 - gRPC API: Protocol buffers in `SideroLabs.Omni.Api/Protos/`
 
 #### Testing Philosophy
-- **Integration-first**: Test against real API when possible
+- **Integration-first**: Test against real API when possible. If this cannot be met, explain why in your summary.
 - **Permission-aware**: Handle both Reader and Writer roles
-- **Realistic data**: Use existing resources, create only when needed
+- **Realistic data**: Use existing resources, create only when needed. If this cannot be met, explain why in your summary.
 - **Error-resilient**: Test failure paths thoroughly
 
 ---
@@ -434,7 +439,7 @@ Alternatively, set:
 
 **Last Updated**: January 19, 2025  
 **Status**: 90% Coverage Achieved - Mission Complete! 🎉  
-**Next Session**: Continue from production-ready state, maintain quality, add features as needed.
+**Next Session**: Continue from the production-ready state and add only the features the maintainer requests.
 
 ## PanoramicData staff
 
